@@ -66,11 +66,11 @@ EWRAM_DATA bool8 gDisableTextPrinters = 0;
 EWRAM_DATA TextFlags gTextFlags = {0};
 IWRAM_DATA struct TextGlyph gCurGlyph = {0};
 
-static const u8 sDownArrowTiles[] = INCBIN_U8("graphics/fonts/down_arrow.4bpp");
+static const u8 sDownArrowTiles[] = INCBIN_U8("graphics/fonts/caret.4bpp");
 static const u8 sDarkDownArrowTiles[] = INCBIN_U8("graphics/fonts/down_arrow_alt.4bpp");
 static const u8 sUnusedFRLGBlankedDownArrow[] = INCBIN_U8("graphics/fonts/unused_frlg_blanked_down_arrow.4bpp");
 static const u8 sUnusedFRLGDownArrow[] = INCBIN_U8("graphics/fonts/unused_frlg_down_arrow.4bpp");
-static const u8 sDownArrowYCoords[] = { 0, 1, 2, 1 };
+static const u8 sDownArrowYCoords[] = { 0, 0, 16, 16 };
 
 static const struct GlyphWidthFunc sGlyphWidthFuncs[] =
 {
@@ -557,6 +557,17 @@ void RunTextPrinters(void)
                         switch (currentPrinter->printerTemplate.type)
                         {
                         case WINDOW_TEXT_PRINTER:
+                            // Draw typing caret at next character position (non-instant only)
+                            if (currentPrinter->textSpeed > 0)
+                            {
+                                BlitBitmapRectToWindow(
+                                    currentPrinter->printerTemplate.windowId,
+                                    sDownArrowTiles,
+                                    0, 0, 8, 16,
+                                    currentPrinter->printerTemplate.currentX,
+                                    currentPrinter->printerTemplate.currentY,
+                                    8, 16);
+                            }
                             CopyWindowToVram(currentPrinter->printerTemplate.windowId, COPYWIN_GFX);
                             break;
                         case SPRITE_TEXT_PRINTER:

@@ -30,7 +30,7 @@ static const u8 sTextWindowFrame18_Gfx[] = INCBIN_U8("graphics/text_window/18.4b
 static const u8 sTextWindowFrame19_Gfx[] = INCBIN_U8("graphics/text_window/19.4bpp");
 static const u8 sTextWindowFrame20_Gfx[] = INCBIN_U8("graphics/text_window/20.4bpp");
 
-const u16 gTextWindowFrame1_Pal[] = INCBIN_U16("graphics/text_window/1.gbapal");
+const u16 gTextWindowFrame1_Pal[] = INCBIN_U16("graphics/text_window/pip1.gbapal");
 static const u16 sTextWindowFrame2_Pal[] = INCBIN_U16("graphics/text_window/2.gbapal");
 static const u16 sTextWindowFrame3_Pal[] = INCBIN_U16("graphics/text_window/3.gbapal");
 static const u16 sTextWindowFrame4_Pal[] = INCBIN_U16("graphics/text_window/4.gbapal");
@@ -53,7 +53,7 @@ static const u16 sTextWindowFrame20_Pal[] = INCBIN_U16("graphics/text_window/20.
 
 static const u16 sTextWindowPalettes[][16] =
 {
-    INCBIN_U16("graphics/text_window/message_box.gbapal"),
+    INCBIN_U16("graphics/text_window/piptext_pal1.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal1.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal2.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal3.gbapal"),

@@ -423,7 +423,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
 };
 
 static const u16 sMainMenuBgPal[] = INCBIN_U16("graphics/interface/main_menu_bg.gbapal");
-static const u16 sMainMenuTextPal[] = INCBIN_U16("graphics/interface/main_menu_text.gbapal");
+static const u16 sMainMenuTextPal[] = INCBIN_U16("graphics/text_window/piptext_pal1.gbapal");
 
 static const u8 sTextColor_Headers[] = {TEXT_DYNAMIC_COLOR_1, TEXT_DYNAMIC_COLOR_2, TEXT_DYNAMIC_COLOR_3};
 static const u8 sTextColor_MenuInfo[] = {TEXT_DYNAMIC_COLOR_1, TEXT_COLOR_WHITE, TEXT_DYNAMIC_COLOR_3};
@@ -774,27 +774,18 @@ static void Task_DisplayMainMenu(u8 taskId)
         palette = RGB_BLACK;
         LoadPalette(&palette, BG_PLTT_ID(15) + 14, PLTT_SIZEOF(1));
 
-        palette = RGB_WHITE;
+        palette = RGB_BLACK;
         LoadPalette(&palette, BG_PLTT_ID(15) + 10, PLTT_SIZEOF(1));
 
-        palette = RGB(12, 12, 12);
+        palette = RGB(9, 25, 4);
         LoadPalette(&palette, BG_PLTT_ID(15) + 11, PLTT_SIZEOF(1));
 
-        palette = RGB(26, 26, 25);
+        palette = RGB(1, 8, 1);
         LoadPalette(&palette, BG_PLTT_ID(15) + 12, PLTT_SIZEOF(1));
 
-        // Note: If there is no save file, the save block is zeroed out,
-        // so the default gender is MALE.
-        if (gSaveBlock2Ptr->playerGender == MALE)
-        {
-            palette = RGB(4, 16, 31);
-            LoadPalette(&palette, BG_PLTT_ID(15) + 1, PLTT_SIZEOF(1));
-        }
-        else
-        {
-            palette = RGB(31, 3, 21);
-            LoadPalette(&palette, BG_PLTT_ID(15) + 1, PLTT_SIZEOF(1));
-        }
+        // Window background — black for PipBoy theme
+        palette = RGB_BLACK;
+        LoadPalette(&palette, BG_PLTT_ID(15) + 1, PLTT_SIZEOF(1));
 
         switch (gTasks[taskId].tMenuType)
         {
