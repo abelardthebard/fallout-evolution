@@ -1,4 +1,5 @@
 #include "global.h"
+#include "constants/rgb.h"
 #include "text.h"
 #include "text_window.h"
 #include "window.h"
@@ -9,79 +10,67 @@
 
 static const u16 sStdTextWindow_Gfx[]  = INCBIN_U16("graphics/text_window/std.4bpp");
 
+// All themes share the same tile art; only palettes differ
 const u8 gTextWindowFrame1_Gfx[] = INCBIN_U8("graphics/text_window/1.4bpp");
-static const u8 sTextWindowFrame2_Gfx[] = INCBIN_U8("graphics/text_window/2.4bpp");
-static const u8 sTextWindowFrame3_Gfx[] = INCBIN_U8("graphics/text_window/3.4bpp");
-static const u8 sTextWindowFrame4_Gfx[] = INCBIN_U8("graphics/text_window/4.4bpp");
-static const u8 sTextWindowFrame5_Gfx[] = INCBIN_U8("graphics/text_window/5.4bpp");
-static const u8 sTextWindowFrame6_Gfx[] = INCBIN_U8("graphics/text_window/6.4bpp");
-static const u8 sTextWindowFrame7_Gfx[] = INCBIN_U8("graphics/text_window/7.4bpp");
-static const u8 sTextWindowFrame8_Gfx[] = INCBIN_U8("graphics/text_window/8.4bpp");
-static const u8 sTextWindowFrame9_Gfx[] = INCBIN_U8("graphics/text_window/9.4bpp");
-static const u8 sTextWindowFrame10_Gfx[] = INCBIN_U8("graphics/text_window/10.4bpp");
-static const u8 sTextWindowFrame11_Gfx[] = INCBIN_U8("graphics/text_window/11.4bpp");
-static const u8 sTextWindowFrame12_Gfx[] = INCBIN_U8("graphics/text_window/12.4bpp");
-static const u8 sTextWindowFrame13_Gfx[] = INCBIN_U8("graphics/text_window/13.4bpp");
-static const u8 sTextWindowFrame14_Gfx[] = INCBIN_U8("graphics/text_window/14.4bpp");
-static const u8 sTextWindowFrame15_Gfx[] = INCBIN_U8("graphics/text_window/15.4bpp");
-static const u8 sTextWindowFrame16_Gfx[] = INCBIN_U8("graphics/text_window/16.4bpp");
-static const u8 sTextWindowFrame17_Gfx[] = INCBIN_U8("graphics/text_window/17.4bpp");
-static const u8 sTextWindowFrame18_Gfx[] = INCBIN_U8("graphics/text_window/18.4bpp");
-static const u8 sTextWindowFrame19_Gfx[] = INCBIN_U8("graphics/text_window/19.4bpp");
-static const u8 sTextWindowFrame20_Gfx[] = INCBIN_U8("graphics/text_window/20.4bpp");
 
-const u16 gTextWindowFrame1_Pal[] = INCBIN_U16("graphics/text_window/pip1.gbapal");
-static const u16 sTextWindowFrame2_Pal[] = INCBIN_U16("graphics/text_window/2.gbapal");
-static const u16 sTextWindowFrame3_Pal[] = INCBIN_U16("graphics/text_window/3.gbapal");
-static const u16 sTextWindowFrame4_Pal[] = INCBIN_U16("graphics/text_window/4.gbapal");
-static const u16 sTextWindowFrame5_Pal[] = INCBIN_U16("graphics/text_window/5.gbapal");
-static const u16 sTextWindowFrame6_Pal[] = INCBIN_U16("graphics/text_window/6.gbapal");
-static const u16 sTextWindowFrame7_Pal[] = INCBIN_U16("graphics/text_window/7.gbapal");
-static const u16 sTextWindowFrame8_Pal[] = INCBIN_U16("graphics/text_window/8.gbapal");
-static const u16 sTextWindowFrame9_Pal[] = INCBIN_U16("graphics/text_window/9.gbapal");
-static const u16 sTextWindowFrame10_Pal[] = INCBIN_U16("graphics/text_window/10.gbapal");
-static const u16 sTextWindowFrame11_Pal[] = INCBIN_U16("graphics/text_window/11.gbapal");
-static const u16 sTextWindowFrame12_Pal[] = INCBIN_U16("graphics/text_window/12.gbapal");
-static const u16 sTextWindowFrame13_Pal[] = INCBIN_U16("graphics/text_window/13.gbapal");
-static const u16 sTextWindowFrame14_Pal[] = INCBIN_U16("graphics/text_window/14.gbapal");
-static const u16 sTextWindowFrame15_Pal[] = INCBIN_U16("graphics/text_window/15.gbapal");
-static const u16 sTextWindowFrame16_Pal[] = INCBIN_U16("graphics/text_window/16.gbapal");
-static const u16 sTextWindowFrame17_Pal[] = INCBIN_U16("graphics/text_window/17.gbapal");
-static const u16 sTextWindowFrame18_Pal[] = INCBIN_U16("graphics/text_window/18.gbapal");
-static const u16 sTextWindowFrame19_Pal[] = INCBIN_U16("graphics/text_window/19.gbapal");
-static const u16 sTextWindowFrame20_Pal[] = INCBIN_U16("graphics/text_window/20.gbapal");
+// Per-theme frame border palettes
+const u16 gTextWindowFrame1_Pal[]     = INCBIN_U16("graphics/text_window/pip0.gbapal");
+static const u16 sThemeFramePal1[]    = INCBIN_U16("graphics/text_window/pip1.gbapal");
+static const u16 sThemeFramePal2[]    = INCBIN_U16("graphics/text_window/pip2.gbapal");
+static const u16 sThemeFramePal3[]    = INCBIN_U16("graphics/text_window/pip3.gbapal");
 
+// Per-theme text window palettes
+static const u16 sThemeTextPal0[]     = INCBIN_U16("graphics/text_window/piptext_pal0.gbapal");
+static const u16 sThemeTextPal1[]     = INCBIN_U16("graphics/text_window/piptext_pal1.gbapal");
+static const u16 sThemeTextPal2[]     = INCBIN_U16("graphics/text_window/piptext_pal2.gbapal");
+static const u16 sThemeTextPal3[]     = INCBIN_U16("graphics/text_window/piptext_pal3.gbapal");
+
+// Vanilla text palettes (used by signpost, naming screen, etc.)
 static const u16 sTextWindowPalettes[][16] =
 {
-    INCBIN_U16("graphics/text_window/piptext_pal1.gbapal"),
+    INCBIN_U16("graphics/text_window/piptext_pal0.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal1.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal2.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal3.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal4.gbapal")
 };
 
+// Theme table — indexed by optionsWindowFrameType (0-3)
+const struct PipTheme gPipThemes[THEME_COUNT] =
+{
+    [THEME_GREEN] = {
+        .framePal     = gTextWindowFrame1_Pal,
+        .textPal      = sThemeTextPal0,
+        .mainMenuFg   = RGB(9, 25, 4),
+        .mainMenuShadow = RGB(1, 8, 1),
+    },
+    [THEME_BLUE] = {
+        .framePal     = sThemeFramePal1,
+        .textPal      = sThemeTextPal1,
+        .mainMenuFg   = RGB(9, 19, 28),
+        .mainMenuShadow = RGB(3, 5, 10),
+    },
+    [THEME_RED] = {
+        .framePal     = sThemeFramePal2,
+        .textPal      = sThemeTextPal2,
+        .mainMenuFg   = RGB(29, 8, 6),
+        .mainMenuShadow = RGB(10, 2, 1),
+    },
+    [THEME_YELLOW] = {
+        .framePal     = sThemeFramePal3,
+        .textPal      = sThemeTextPal3,
+        .mainMenuFg   = RGB(26, 23, 0),
+        .mainMenuShadow = RGB(7, 6, 0),
+    },
+};
+
+// Frame table — all entries share tile art, palette varies per theme
 static const struct TilesPal sWindowFrames[WINDOW_FRAMES_COUNT] =
 {
     {gTextWindowFrame1_Gfx, gTextWindowFrame1_Pal},
-    {sTextWindowFrame2_Gfx, sTextWindowFrame2_Pal},
-    {sTextWindowFrame3_Gfx, sTextWindowFrame3_Pal},
-    {sTextWindowFrame4_Gfx, sTextWindowFrame4_Pal},
-    {sTextWindowFrame5_Gfx, sTextWindowFrame5_Pal},
-    {sTextWindowFrame6_Gfx, sTextWindowFrame6_Pal},
-    {sTextWindowFrame7_Gfx, sTextWindowFrame7_Pal},
-    {sTextWindowFrame8_Gfx, sTextWindowFrame8_Pal},
-    {sTextWindowFrame9_Gfx, sTextWindowFrame9_Pal},
-    {sTextWindowFrame10_Gfx, sTextWindowFrame10_Pal},
-    {sTextWindowFrame11_Gfx, sTextWindowFrame11_Pal},
-    {sTextWindowFrame12_Gfx, sTextWindowFrame12_Pal},
-    {sTextWindowFrame13_Gfx, sTextWindowFrame13_Pal},
-    {sTextWindowFrame14_Gfx, sTextWindowFrame14_Pal},
-    {sTextWindowFrame15_Gfx, sTextWindowFrame15_Pal},
-    {sTextWindowFrame16_Gfx, sTextWindowFrame16_Pal},
-    {sTextWindowFrame17_Gfx, sTextWindowFrame17_Pal},
-    {sTextWindowFrame18_Gfx, sTextWindowFrame18_Pal},
-    {sTextWindowFrame19_Gfx, sTextWindowFrame19_Pal},
-    {sTextWindowFrame20_Gfx, sTextWindowFrame20_Pal}
+    {gTextWindowFrame1_Gfx, sThemeFramePal1},
+    {gTextWindowFrame1_Gfx, sThemeFramePal2},
+    {gTextWindowFrame1_Gfx, sThemeFramePal3},
 };
 
 static const u16 sTextWindowDexNavFrame[] = INCBIN_U16("graphics/text_window/dexnav_pal.gbapal");
@@ -202,9 +191,25 @@ const u16 *GetTextWindowPalette(u8 id)
     return (const u16 *)(sTextWindowPalettes) + id;
 }
 
+const u16 *GetActiveThemeTextPal(void)
+{
+    u8 theme = gSaveBlock2Ptr->optionsWindowFrameType;
+    if (theme >= THEME_COUNT)
+        theme = THEME_GREEN;
+    return gPipThemes[theme].textPal;
+}
+
+const u16 *GetActiveThemeFramePal(void)
+{
+    u8 theme = gSaveBlock2Ptr->optionsWindowFrameType;
+    if (theme >= THEME_COUNT)
+        theme = THEME_GREEN;
+    return gPipThemes[theme].framePal;
+}
+
 const u16 *GetOverworldTextboxPalettePtr(void)
 {
-    return gMessageBox_Pal;
+    return GetActiveThemeTextPal();
 }
 
 // Effectively LoadUserWindowBorderGfx but specifying the bg directly instead of a window from that bg

@@ -3122,7 +3122,7 @@ static void LoadKeyboardSwapWindow(void)
     FillWindowPixelBuffer(WIN_SWAP_MENU, PIXEL_FILL(1));
     LoadUserWindowBorderGfx(WIN_SWAP_MENU, 1, BG_PLTT_ID(13));
     LoadUserWindowBorderGfx_(WIN_SWAP_MENU, 0xA, BG_PLTT_ID(2));
-    LoadPalette(gStandardMenuPalette, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(14), PLTT_SIZE_4BPP);
 }
 
 static void InitScanlineEffect(void)

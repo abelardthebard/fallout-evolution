@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "string_util.h"
+#include "text_window.h"
 #include "text.h"
 #include "window.h"
 #include "constants/songs.h"
@@ -1369,6 +1370,16 @@ static u16 RenderText(struct TextPrinter *textPrinter)
         switch (currChar)
         {
         case CHAR_NEWLINE:
+            // Erase typing caret before line wrap moves the cursor
+            if (textPrinter->textSpeed > 0 && textPrinter->printerTemplate.type == WINDOW_TEXT_PRINTER)
+            {
+                FillWindowPixelRect(
+                    textPrinter->printerTemplate.windowId,
+                    PIXEL_FILL(textPrinter->printerTemplate.color.background),
+                    textPrinter->printerTemplate.currentX,
+                    textPrinter->printerTemplate.currentY,
+                    8, 16);
+            }
             textPrinter->printerTemplate.currentX = textPrinter->printerTemplate.x;
             textPrinter->printerTemplate.currentY += (gFonts[textPrinter->printerTemplate.fontId].maxLetterHeight + textPrinter->printerTemplate.lineSpacing);
             if (textPrinter->printerTemplate.type == SPRITE_TEXT_PRINTER)
@@ -2828,6 +2839,8 @@ u8 CreateTextCursorSprite(u8 sheetId, u16 x, u16 y, u8 priority, u8 subpriority)
     u8 spriteId;
     LoadSpriteSheet(&sSpriteSheets_TextCursor[sheetId & 1]);
     LoadSpritePalette(&sSpritePalettes_TextCursor[0]);
+    // Overwrite cursor palette with active theme colors
+    LoadPalette(GetActiveThemeTextPal(), OBJ_PLTT_ID(IndexOfSpritePaletteTag(TAG_CURSOR)), PLTT_SIZE_4BPP);
     spriteId = CreateSprite(&sSpriteTemplate_TextCursor, x + 3, y + 4, subpriority);
     gSprites[spriteId].oam.priority = (priority & 3);
     gSprites[spriteId].oam.matrixNum = 0;

@@ -594,7 +594,7 @@ static u32 InitMainMenu(bool8 returningFromOptionsMenu)
 
     ResetPaletteFade();
     LoadPalette(sMainMenuBgPal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
-    LoadPalette(sMainMenuTextPal, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
     ScanlineEffect_Stop();
     ResetTasks();
     ResetSpriteData();
@@ -777,10 +777,10 @@ static void Task_DisplayMainMenu(u8 taskId)
         palette = RGB_BLACK;
         LoadPalette(&palette, BG_PLTT_ID(15) + 10, PLTT_SIZEOF(1));
 
-        palette = RGB(9, 25, 4);
+        palette = gPipThemes[gSaveBlock2Ptr->optionsWindowFrameType < THEME_COUNT ? gSaveBlock2Ptr->optionsWindowFrameType : 0].mainMenuFg;
         LoadPalette(&palette, BG_PLTT_ID(15) + 11, PLTT_SIZEOF(1));
 
-        palette = RGB(1, 8, 1);
+        palette = gPipThemes[gSaveBlock2Ptr->optionsWindowFrameType < THEME_COUNT ? gSaveBlock2Ptr->optionsWindowFrameType : 0].mainMenuShadow;
         LoadPalette(&palette, BG_PLTT_ID(15) + 12, PLTT_SIZEOF(1));
 
         // Window background — black for PipBoy theme

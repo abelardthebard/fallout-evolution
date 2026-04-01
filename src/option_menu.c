@@ -82,8 +82,16 @@ static const u8 gText_BattleStyleShift[]   = _("{COLOR GREEN}{SHADOW LIGHT_GREEN
 static const u8 gText_BattleStyleSet[]     = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}SET");
 static const u8 gText_SoundMono[]          = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}MONO");
 static const u8 gText_SoundStereo[]        = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}STEREO");
-static const u8 gText_FrameType[]          = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}TYPE");
-static const u8 gText_FrameTypeNumber[]    = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}");
+static const u8 gText_ThemeGreen[]  = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}GREEN");
+static const u8 gText_ThemeBlue[]   = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}BLUE");
+static const u8 gText_ThemeRed[]    = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}RED");
+static const u8 gText_ThemeYellow[] = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}YELLOW");
+static const u8 *const sThemeNames[THEME_COUNT] = {
+    [THEME_GREEN]  = gText_ThemeGreen,
+    [THEME_BLUE]   = gText_ThemeBlue,
+    [THEME_RED]    = gText_ThemeRed,
+    [THEME_YELLOW] = gText_ThemeYellow,
+};
 static const u8 gText_ButtonTypeNormal[]   = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}NORMAL");
 static const u8 gText_ButtonTypeLR[]       = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}LR");
 static const u8 gText_ButtonTypeLEqualsA[] = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}L=A");
@@ -99,7 +107,7 @@ static const u8 *const sOptionMenuItemsNames[MENUITEM_COUNT] =
     [MENUITEM_BATTLESTYLE] = COMPOUND_STRING("BATTLE STYLE"),
     [MENUITEM_SOUND]       = COMPOUND_STRING("SOUND"),
     [MENUITEM_BUTTONMODE]  = COMPOUND_STRING("BUTTON MODE"),
-    [MENUITEM_FRAMETYPE]   = COMPOUND_STRING("FRAME"),
+    [MENUITEM_FRAMETYPE]   = COMPOUND_STRING("THEME"),
     [MENUITEM_CANCEL]      = COMPOUND_STRING("CANCEL"),
 };
 
@@ -556,33 +564,9 @@ static u8 FrameType_ProcessInput(u8 selection)
 
 static void FrameType_DrawChoices(u8 selection)
 {
-    u8 text[16] = {EOS};
-    u8 n = selection + 1;
-    u16 i;
-
-    for (i = 0; gText_FrameTypeNumber[i] != EOS && i <= 5; i++)
-        text[i] = gText_FrameTypeNumber[i];
-
-    // Convert a number to decimal string
-    if (n / 10 != 0)
-    {
-        text[i] = n / 10 + CHAR_0;
-        i++;
-        text[i] = n % 10 + CHAR_0;
-        i++;
-    }
-    else
-    {
-        text[i] = n % 10 + CHAR_0;
-        i++;
-        text[i] = CHAR_SPACER;
-        i++;
-    }
-
-    text[i] = EOS;
-
-    DrawOptionMenuChoice(gText_FrameType, 104, YPOS_FRAMETYPE, 0);
-    DrawOptionMenuChoice(text, 128, YPOS_FRAMETYPE, 1);
+    if (selection >= THEME_COUNT)
+        selection = THEME_GREEN;
+    DrawOptionMenuChoice(sThemeNames[selection], 104, YPOS_FRAMETYPE, 1);
 }
 
 static u8 ButtonMode_ProcessInput(u8 selection)

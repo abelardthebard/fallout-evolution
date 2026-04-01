@@ -205,5 +205,5 @@ static void InitClearSaveDataScreenWindows(void)
     DeactivateAllTextPrinters();
     FillWindowPixelBuffer(0, PIXEL_FILL(0));
     LoadWindowGfx(0, 0, 2, BG_PLTT_ID(14));
-    LoadPalette(gStandardMenuPalette, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
 }

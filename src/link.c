@@ -18,6 +18,7 @@
 #include "scanline_effect.h"
 #include "menu.h"
 #include "text.h"
+#include "text_window.h"
 #include "strings.h"
 #include "constants/songs.h"
 #include "sound.h"
@@ -1574,7 +1575,7 @@ void CB2_LinkError(void)
         SetGpuReg(REG_OFFSET_BG1HOFS, 0);
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);
         ClearGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_WIN1_ON | DISPCNT_OBJWIN_ON);
-        LoadPalette(gStandardMenuPalette, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+        LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
         gSoftResetDisabled = FALSE;
         CreateTask(Task_DestroySelf, 0);
         StopMapMusic();

@@ -353,17 +353,17 @@ void LoadMessageBoxAndFrameGfx(u8 windowId, bool8 copyToVram)
 
 void Menu_LoadStdPal(void)
 {
-    LoadPalette(gStandardMenuPalette, BG_PLTT_ID(STD_WINDOW_PALETTE_NUM), STD_WINDOW_PALETTE_SIZE);
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(STD_WINDOW_PALETTE_NUM), STD_WINDOW_PALETTE_SIZE);
 }
 
 void Menu_LoadStdPalAt(u16 offset)
 {
-    LoadPalette(gStandardMenuPalette, offset, STD_WINDOW_PALETTE_SIZE);
+    LoadPalette(GetActiveThemeTextPal(), offset, STD_WINDOW_PALETTE_SIZE);
 }
 
 static UNUSED const u16* Menu_GetStdPal(void)
 {
-    return gStandardMenuPalette;
+    return GetActiveThemeTextPal();
 }
 
 static u16 UNUSED Menu_GetStdPalColor(u8 colorNum)
