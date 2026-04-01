@@ -246,14 +246,36 @@ static void MainMenu_FormatSavegameBadges(void);
 
 // .rodata
 
-static const u16 sBirchSpeechBgPals[][16] = {
-    INCBIN_U16("graphics/birch_speech/bg0.gbapal"),
-    INCBIN_U16("graphics/birch_speech/bg1.gbapal")
+// BG slot 0 palettes per theme
+static const u16 sBirchBg0_Green[] = INCBIN_U16("graphics/birch_speech/bg0.gbapal");
+static const u16 sBirchBg0_Blue[] = INCBIN_U16("graphics/birch_speech/bg0_blue.gbapal");
+static const u16 sBirchBg0_Red[] = INCBIN_U16("graphics/birch_speech/bg0_red.gbapal");
+static const u16 sBirchBg0_Yellow[] = INCBIN_U16("graphics/birch_speech/bg0_yellow.gbapal");
+
+// BG slot 1 palettes per theme
+static const u16 sBirchBg1_Green[] = INCBIN_U16("graphics/birch_speech/bg1.gbapal");
+static const u16 sBirchBg1_Blue[] = INCBIN_U16("graphics/birch_speech/bg1_blue.gbapal");
+static const u16 sBirchBg1_Red[] = INCBIN_U16("graphics/birch_speech/bg1_red.gbapal");
+static const u16 sBirchBg1_Yellow[] = INCBIN_U16("graphics/birch_speech/bg1_yellow.gbapal");
+
+// Spotlight gradient palettes per theme
+static const u16 sBirchGradient_Green[] = INCBIN_U16("graphics/birch_speech/bg2.gbapal");
+static const u16 sBirchGradient_Blue[] = INCBIN_U16("graphics/birch_speech/bg2_blue.gbapal");
+static const u16 sBirchGradient_Red[] = INCBIN_U16("graphics/birch_speech/bg2_red.gbapal");
+static const u16 sBirchGradient_Yellow[] = INCBIN_U16("graphics/birch_speech/bg2_yellow.gbapal");
+
+static const u16 *const sBirchBg0Pals[THEME_COUNT] = {
+    sBirchBg0_Green, sBirchBg0_Blue, sBirchBg0_Red, sBirchBg0_Yellow,
+};
+static const u16 *const sBirchBg1Pals[THEME_COUNT] = {
+    sBirchBg1_Green, sBirchBg1_Blue, sBirchBg1_Red, sBirchBg1_Yellow,
+};
+static const u16 *const sBirchGradientPals[THEME_COUNT] = {
+    sBirchGradient_Green, sBirchGradient_Blue, sBirchGradient_Red, sBirchGradient_Yellow,
 };
 
 static const u32 sBirchSpeechShadowGfx[] = INCBIN_U32("graphics/birch_speech/shadow.4bpp.smol");
 static const u32 sBirchSpeechBgMap[] = INCBIN_U32("graphics/birch_speech/map.bin.smolTM");
-static const u16 sBirchSpeechBgGradientPal[] = INCBIN_U16("graphics/birch_speech/bg2.gbapal");
 
 static const u8 gText_SaveFileCorrupted[] = _("The save file is corrupted. The\nprevious save file will be loaded.");
 static const u8 gText_SaveFileErased[] = _("The save file has been erased\ndue to corruption or damage.");
@@ -1299,8 +1321,12 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
 
     DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (void *)VRAM);
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (void *)(BG_SCREEN_ADDR(7)));
-    LoadPalette(sBirchSpeechBgPals, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
-    LoadPalette(&sBirchSpeechBgGradientPal[8], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+    {
+        u8 theme = GetActiveTheme();
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        LoadPalette(&sBirchGradientPals[theme][8], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+    }
     ScanlineEffect_Stop();
     ResetSpriteData();
     FreeAllSpritePalettes();
@@ -1836,8 +1862,12 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     ResetPaletteFade();
     DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
-    LoadPalette(sBirchSpeechBgPals, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
-    LoadPalette(&sBirchSpeechBgGradientPal[1], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+    {
+        u8 theme = GetActiveTheme();
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        LoadPalette(&sBirchGradientPals[theme][1], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+    }
     ResetTasks();
     taskId = CreateTask(Task_NewGameBirchSpeech_ReturnFromNamingScreenShowTextbox, 0);
     gTasks[taskId].tTimer = 5;
@@ -2056,7 +2086,7 @@ static void Task_NewGameBirchSpeech_FadePlatformIn(u8 taskId)
     {
         gTasks[taskId].tDelayTimer = gTasks[taskId].tDelay;
         gTasks[taskId].tPalIndex++;
-        LoadPalette(&sBirchSpeechBgGradientPal[gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&sBirchGradientPals[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
     }
 }
 
@@ -2090,7 +2120,7 @@ static void Task_NewGameBirchSpeech_FadePlatformOut(u8 taskId)
     {
         gTasks[taskId].tDelayTimer = gTasks[taskId].tDelay;
         gTasks[taskId].tPalIndex--;
-        LoadPalette(&sBirchSpeechBgGradientPal[gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&sBirchGradientPals[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
     }
 }
 
