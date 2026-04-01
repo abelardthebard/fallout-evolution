@@ -59,7 +59,7 @@ const struct PipTheme gPipThemes[THEME_COUNT] =
     [THEME_YELLOW] = {
         .framePal     = sThemeFramePal3,
         .textPal      = sThemeTextPal3,
-        .mainMenuFg   = RGB(26, 23, 0),
+        .mainMenuFg   = RGB(27, 25, 5),
         .mainMenuShadow = RGB(7, 6, 0),
     },
 };
