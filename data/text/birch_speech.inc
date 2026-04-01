@@ -35,9 +35,9 @@ gText_MissNanny_RememberQuestion::
 	.string "$"
 
 gText_MissNanny_RemindResponse::
-	.string "In 2077, the United States and\n"
-	.string "China engaged in a brief but\l"
-	.string "productive nuclear exchange.\p"
+	.string "In 2077, the United States and China\n"
+	.string "engaged in a brief but productive\l"
+	.string "nuclear exchange.\p"
 	.string "This is commonly referred to\n"
 	.string "as the Great War.\p"
 	.string "Vault-Tec, in its wisdom,\n"
@@ -48,14 +48,32 @@ gText_MissNanny_RemindResponse::
 	.string "to preserve humanity.\p"
 	.string "Outside these walls lies the\n"
 	.string "Chicago metropolitan area.\p"
-	.string "It is, technically, still there.\n"
-	.string "But...\l"
-	.string "You are not missing anything.\p"
+	.string "It is, technically, still there but...\n"
+	.string "you are not missing anything.\p"
 	.string "$"
 
 gText_MissNanny_RememberResponse::
 	.string "Good.\n"
 	.string "That is one less concern.\p"
+	.string "$"
+
+gText_MissNanny_YearQuestion::
+	.string "Second question. More specifically...\n"
+	.string "What year is it?\p"
+	.string "$"
+
+gText_MissNanny_YearWrong::
+	.string "That is not correct.\n"
+	.string "I will note this in your file.\p"
+	.string "Some memories do not come back.\n"
+	.string "It is better not to dwell.\p"
+	.string "The current year is 2291.\n"
+	.string "214 years since the Great War.\p"
+	.string "$"
+
+gText_MissNanny_YearCorrect::
+	.string "Correct.\n"
+	.string "214 years since the Great War.\p"
 	.string "$"
 
 gText_Birch_AndYouAre::

@@ -202,6 +202,12 @@ static void Task_NewGameBirchSpeech_ProcessRememberChoice(u8);
 static void Task_NewGameBirchSpeech_ShowRemindLore(u8);
 static void Task_NewGameBirchSpeech_ShowRememberResponse(u8);
 static void Task_NewGameBirchSpeech_WaitRememberResponse(u8);
+static void Task_NewGameBirchSpeech_AskYear(u8);
+static void Task_NewGameBirchSpeech_WaitToShowYearMenu(u8);
+static void Task_NewGameBirchSpeech_ProcessYearChoice(u8);
+static void Task_NewGameBirchSpeech_ShowYearWrong(u8);
+static void Task_NewGameBirchSpeech_ShowYearCorrect(u8);
+static void Task_NewGameBirchSpeech_WaitYearResponse(u8);
 static void Task_NewGameBirchSpeech_AndYouAre(u8);
 static void Task_NewGameBirchSpeech_StartBirchPlatformFade(u8);
 static void NewGameBirchSpeech_StartFadeOutTarget1InTarget2(u8, u8);
@@ -445,10 +451,19 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .bg = 0,
         .tilemapLeft = 3,
         .tilemapTop = 5,
-        .width = 9,
+        .width = 8,
         .height = 4,
         .paletteNum = 15,
         .baseBlock = 0x110
+    },
+    { // Window 4: year grid menu (3 rows x 2 cols)
+        .bg = 0,
+        .tilemapLeft = 3,
+        .tilemapTop = 3,
+        .width = 9,
+        .height = 6,
+        .paletteNum = 15,
+        .baseBlock = 0x130
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -513,6 +528,24 @@ static const u8 sText_IRemember[] = _("I remember");
 static const struct MenuAction sMenuActions_Remember[] = {
     {sText_RemindMe, {NULL}},
     {sText_IRemember, {NULL}}
+};
+
+static const u8 sText_2271[] = _("2271");
+static const u8 sText_2277[] = _("2277");
+static const u8 sText_2281[] = _("2281");
+static const u8 sText_2287[] = _("2287");
+static const u8 sText_2291[] = _("2291");
+static const u8 sText_2297[] = _("2297");
+
+#define YEAR_CORRECT_INDEX 4 // 2291 = row 2, col 0
+
+static const struct MenuAction sMenuActions_Year[] = {
+    {sText_2271, {NULL}},
+    {sText_2277, {NULL}},
+    {sText_2281, {NULL}},
+    {sText_2287, {NULL}},
+    {sText_2291, {NULL}},
+    {sText_2297, {NULL}},
 };
 
 static const u8 *const sMalePresetNames[] = {
@@ -1486,6 +1519,72 @@ static void Task_NewGameBirchSpeech_ShowRememberResponse(u8 taskId)
 }
 
 static void Task_NewGameBirchSpeech_WaitRememberResponse(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskYear;
+    }
+}
+
+static void Task_NewGameBirchSpeech_AskYear(u8 taskId)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_YearQuestion);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowYearMenu;
+}
+
+static void Task_NewGameBirchSpeech_WaitToShowYearMenu(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[4], 0xF3);
+        FillWindowPixelBuffer(4, PIXEL_FILL(1));
+        PrintMenuGridTable(4, 36, 2, 3, sMenuActions_Year);
+        InitMenuActionGrid(4, 36, 2, 3, 0);
+        PutWindowTilemap(4);
+        CopyWindowToVram(4, COPYWIN_FULL);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessYearChoice;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ProcessYearChoice(u8 taskId)
+{
+    s8 input = Menu_ProcessGridInput();
+
+    switch (input)
+    {
+    case MENU_B_PRESSED:
+        break; // must pick a year
+    case MENU_NOTHING_CHOSEN:
+        break;
+    default:
+        PlaySE(SE_SELECT);
+        NewGameBirchSpeech_ClearGenderWindow(4, 1);
+        NewGameBirchSpeech_ClearWindow(0);
+        if (input == YEAR_CORRECT_INDEX)
+            gTasks[taskId].func = Task_NewGameBirchSpeech_ShowYearCorrect;
+        else
+            gTasks[taskId].func = Task_NewGameBirchSpeech_ShowYearWrong;
+        break;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ShowYearWrong(u8 taskId)
+{
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_YearWrong);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitYearResponse;
+}
+
+static void Task_NewGameBirchSpeech_ShowYearCorrect(u8 taskId)
+{
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_YearCorrect);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitYearResponse;
+}
+
+static void Task_NewGameBirchSpeech_WaitYearResponse(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
