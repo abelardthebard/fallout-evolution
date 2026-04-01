@@ -191,12 +191,17 @@ const u16 *GetTextWindowPalette(u8 id)
     return (const u16 *)(sTextWindowPalettes) + id;
 }
 
-const u16 *GetActiveThemeTextPal(void)
+u8 GetActiveTheme(void)
 {
     u8 theme = gSaveBlock2Ptr->optionsWindowFrameType;
     if (theme >= THEME_COUNT)
         theme = THEME_GREEN;
-    return gPipThemes[theme].textPal;
+    return theme;
+}
+
+const u16 *GetActiveThemeTextPal(void)
+{
+    return gPipThemes[GetActiveTheme()].textPal;
 }
 
 const u16 *GetActiveThemeFramePal(void)
