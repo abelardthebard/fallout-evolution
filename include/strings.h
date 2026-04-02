@@ -232,6 +232,8 @@ extern const u8 gText_MissNanny_YearWrong[];
 extern const u8 gText_MissNanny_YearCorrect[];
 extern const u8 gText_Birch_AndYouAre[];
 extern const u8 gText_Birch_BoyOrGirl[];
+extern const u8 gText_MissNanny_HairColor[];
+extern const u8 gText_MissNanny_SkinTone[];
 extern const u8 gText_Birch_WhatsYourName[];
 extern const u8 gText_Birch_SoItsPlayer[];
 extern const u8 gText_Birch_YourePlayer[];

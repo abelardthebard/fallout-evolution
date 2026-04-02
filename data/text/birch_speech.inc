@@ -2,7 +2,7 @@ gText_Birch_Welcome::
 	.string "You are conscious.\n"
 	.string "This is an improvement.\p"
 	.string "I am a Miss Nanny unit assigned\n"
-	.string "to Vault 42 Medical.\p"
+	.string "to the Vault 42 Medical Bay.\p"
 	.string "$"
 
 gText_Birch_Pokemon::
@@ -25,7 +25,7 @@ gText_Birch_MainSpeech::
 	.string "That last part was not true.\n"
 	.string "I cannot detect dishonesty.\p"
 	.string "But it does make things more\n"
-	.string "difficult...\p"
+	.string "efficient if you are truthful.\p"
 	.string "$"
 
 gText_MissNanny_RememberQuestion::
@@ -77,11 +77,21 @@ gText_MissNanny_YearCorrect::
 	.string "$"
 
 gText_Birch_AndYouAre::
-	.string "And you are?$"
+	.string "Now I need to evaluate your\n"
+	.string "self-perception.\p"
+	.string "$"
 
 gText_Birch_BoyOrGirl::
-	.string "Are you a boy?\n"
-	.string "Or are you a girl?$"
+	.string "What is your gender presentation?\p"
+	.string "$"
+
+gText_MissNanny_HairColor::
+	.string "Next, what is your hair color?\p"
+	.string "$"
+
+gText_MissNanny_SkinTone::
+	.string "And last, what is your complexion?\p"
+	.string "$"
 
 gText_Birch_WhatsYourName::
 	.string "All right.\n"

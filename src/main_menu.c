@@ -224,6 +224,12 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8);
 static void NewGameBirchSpeech_ShowGenderMenu(void);
 static s8 NewGameBirchSpeech_ProcessGenderMenuInput(void);
 static void NewGameBirchSpeech_ClearGenderWindow(u8, u8);
+static void Task_NewGameBirchSpeech_AskHairColor(u8);
+static void Task_NewGameBirchSpeech_WaitToShowHairMenu(u8);
+static void Task_NewGameBirchSpeech_ProcessHairChoice(u8);
+static void Task_NewGameBirchSpeech_AskSkinTone(u8);
+static void Task_NewGameBirchSpeech_WaitToShowSkinMenu(u8);
+static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8);
 static void Task_NewGameBirchSpeech_WhatsYourName(u8);
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8);
 static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8);
@@ -433,7 +439,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .bg = 0,
         .tilemapLeft = 3,
         .tilemapTop = 5,
-        .width = 6,
+        .width = 8,
         .height = 4,
         .paletteNum = 15,
         .baseBlock = 0x6D
@@ -445,7 +451,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .width = 9,
         .height = 10,
         .paletteNum = 15,
-        .baseBlock = 0x85
+        .baseBlock = 0x8D
     },
     {
         .bg = 0,
@@ -464,6 +470,15 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .height = 6,
         .paletteNum = 15,
         .baseBlock = 0x130
+    },
+    { // Window 5: hair grid menu (5 rows x 2 cols)
+        .bg = 0,
+        .tilemapLeft = 3,
+        .tilemapTop = 1,
+        .width = 10,
+        .height = 10,
+        .paletteNum = 15,
+        .baseBlock = 0x8D
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -517,9 +532,12 @@ static const union AffineAnimCmd *const sSpriteAffineAnimTable_PlayerShrink[] =
     sSpriteAffineAnim_PlayerShrink
 };
 
+static const u8 sText_Masculine[] = _("Masculine");
+static const u8 sText_Feminine[] = _("Feminine");
+
 static const struct MenuAction sMenuActions_Gender[] = {
-    {gText_Boy, {NULL}},
-    {gText_Girl, {NULL}}
+    {sText_Masculine, {NULL}},
+    {sText_Feminine, {NULL}}
 };
 
 static const u8 sText_RemindMe[] = _("Remind me");
@@ -547,6 +565,80 @@ static const struct MenuAction sMenuActions_Year[] = {
     {sText_2291, {NULL}},
     {sText_2297, {NULL}},
 };
+
+// Hair color palettes — indices 4-6 of trainer sprite palette
+static const u16 sHairPalettes[][3] = {
+    { RGB(29, 27, 18), RGB(25, 22, 13), RGB(16, 13,  7) }, // Blonde 01 (default)
+    { RGB(25, 22, 13), RGB(16, 13,  7), RGB(11,  9,  4) }, // Blonde 02
+    { RGB(14, 12, 11), RGB(10,  8,  7), RGB( 7,  6,  5) }, // Brown 01
+    { RGB(10,  8,  7), RGB( 7,  6,  5), RGB( 5,  3,  3) }, // Brown 02
+    { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
+    { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
+    { RGB( 8,  9, 10), RGB( 5,  6,  7), RGB( 3,  3,  4) }, // Black
+    { RGB( 5,  6,  7), RGB( 3,  3,  4), RGB( 1,  1,  2) }, // Raven
+    { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // Ash 01
+    { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash 02
+};
+
+static const u8 sText_Blonde[] = _("Blond");
+static const u8 sText_Sandy[] = _("Sandy");
+static const u8 sText_Brown[] = _("Brown");
+static const u8 sText_Umber[] = _("Umber");
+static const u8 sText_Ginger[] = _("Ginger");
+static const u8 sText_Red[] = _("Red");
+static const u8 sText_Black[] = _("Black");
+static const u8 sText_Raven[] = _("Raven");
+static const u8 sText_White[] = _("White");
+static const u8 sText_Ash[] = _("Ash");
+
+static const struct MenuAction sMenuActions_Hair[] = {
+    {sText_Blonde, {NULL}},
+    {sText_Sandy, {NULL}},
+    {sText_Brown, {NULL}},
+    {sText_Umber, {NULL}},
+    {sText_Ginger, {NULL}},
+    {sText_Red, {NULL}},
+    {sText_Black, {NULL}},
+    {sText_Raven, {NULL}},
+    {sText_White, {NULL}},
+    {sText_Ash, {NULL}},
+};
+
+static const u8 sHairActionIds[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+#define HAIR_PALETTE_INDEX_START 4 // Indices 4-6 in OBJ palette
+#define HAIR_GRID_COLUMNS 2
+#define HAIR_GRID_ROWS 5
+
+// Skin color palettes — indices 1-3 of trainer sprite palette
+static const u16 sSkinPalettes[][3] = {
+    { RGB(30, 26, 24), RGB(27, 22, 20), RGB(20, 15, 13) }, // Fair
+    { RGB(27, 22, 20), RGB(24, 18, 16), RGB(16, 12, 10) }, // Light
+    { RGB(24, 18, 16), RGB(20, 15, 13), RGB(12,  9,  7) }, // Mid
+    { RGB(20, 15, 13), RGB(16, 12, 10), RGB( 9,  7,  5) }, // Tan
+    { RGB(16, 12, 10), RGB(12,  9,  7), RGB( 5,  3,  3) }, // Dark
+    { RGB(12,  9,  7), RGB( 9,  7,  5), RGB( 5,  3,  3) }, // Deep
+};
+
+static const u8 sText_Fair[] = _("Fair");
+static const u8 sText_Light[] = _("Light");
+static const u8 sText_Mid[] = _("Mid");
+static const u8 sText_Tan[] = _("Tan");
+static const u8 sText_Dark[] = _("Dark");
+static const u8 sText_Deep[] = _("Deep");
+
+static const struct MenuAction sMenuActions_Skin[] = {
+    {sText_Fair, {NULL}},
+    {sText_Light, {NULL}},
+    {sText_Mid, {NULL}},
+    {sText_Tan, {NULL}},
+    {sText_Dark, {NULL}},
+    {sText_Deep, {NULL}},
+};
+
+#define SKIN_PALETTE_INDEX_START 1 // Indices 1-3 in OBJ palette
+#define SKIN_GRID_COLUMNS 2
+#define SKIN_GRID_ROWS 3
 
 static const u8 *const sMalePresetNames[] = {
     COMPOUND_STRING("STU"),
@@ -1691,13 +1783,13 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8 taskId)
         PlaySE(SE_SELECT);
         gSaveBlock2Ptr->playerGender = gender;
         NewGameBirchSpeech_ClearGenderWindow(1, 1);
-        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskHairColor;
         break;
     case FEMALE:
         PlaySE(SE_SELECT);
         gSaveBlock2Ptr->playerGender = gender;
         NewGameBirchSpeech_ClearGenderWindow(1, 1);
-        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskHairColor;
         break;
     default: //repeat task if nothing is selected
         break;
@@ -1754,6 +1846,144 @@ static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8 taskId)
         }
     }
 }
+
+#define tHairCursorPos data[3]
+#define tHairSelection data[9]
+
+static void ApplyHairPalette(u8 taskId, u8 hairIndex)
+{
+    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
+    LoadPalette(sHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+}
+
+static void Task_NewGameBirchSpeech_AskHairColor(u8 taskId)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_HairColor);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowHairMenu;
+}
+
+static void Task_NewGameBirchSpeech_WaitToShowHairMenu(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[5], 0xF3);
+        FillWindowPixelBuffer(5, PIXEL_FILL(1));
+        PrintMenuGridTable(5, 40, HAIR_GRID_COLUMNS, HAIR_GRID_ROWS, sMenuActions_Hair);
+        InitMenuActionGrid(5, 40, HAIR_GRID_COLUMNS, HAIR_GRID_ROWS, gTasks[taskId].tHairSelection);
+        PutWindowTilemap(5);
+        CopyWindowToVram(5, COPYWIN_FULL);
+        gTasks[taskId].tHairCursorPos = gTasks[taskId].tHairSelection;
+        ApplyHairPalette(taskId, gTasks[taskId].tHairSelection);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessHairChoice;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ProcessHairChoice(u8 taskId)
+{
+    s8 input = Menu_ProcessGridInput();
+    s8 cursorPos = Menu_GetCursorPos();
+
+    // Live preview on cursor move
+    if (cursorPos != gTasks[taskId].tHairCursorPos)
+    {
+        gTasks[taskId].tHairCursorPos = cursorPos;
+        ApplyHairPalette(taskId, cursorPos);
+    }
+
+    switch (input)
+    {
+    case MENU_B_PRESSED:
+        // Keep current hair selection and go back to gender
+        gTasks[taskId].tHairSelection = gTasks[taskId].tHairCursorPos;
+        ApplyHairPalette(taskId, gTasks[taskId].tHairSelection);
+        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
+        break;
+    case MENU_NOTHING_CHOSEN:
+        break;
+    default:
+        // Confirmed
+        PlaySE(SE_SELECT);
+        gTasks[taskId].tHairSelection = input;
+        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskSkinTone;
+        break;
+    }
+}
+
+#undef tHairCursorPos
+
+#define tSkinCursorPos data[12]
+#define tSkinSelection data[13]
+
+static void ApplySkinPalette(u8 taskId, u8 skinIndex)
+{
+    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
+    LoadPalette(sSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+}
+
+static void Task_NewGameBirchSpeech_AskSkinTone(u8 taskId)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_SkinTone);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowSkinMenu;
+}
+
+static void Task_NewGameBirchSpeech_WaitToShowSkinMenu(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[5], 0xF3);
+        FillWindowPixelBuffer(5, PIXEL_FILL(1));
+        PrintMenuGridTable(5, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, sMenuActions_Skin);
+        InitMenuActionGrid(5, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, gTasks[taskId].tSkinSelection);
+        PutWindowTilemap(5);
+        CopyWindowToVram(5, COPYWIN_FULL);
+        gTasks[taskId].tSkinCursorPos = gTasks[taskId].tSkinSelection;
+        ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessSkinChoice;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8 taskId)
+{
+    s8 input = Menu_ProcessGridInput();
+    s8 cursorPos = Menu_GetCursorPos();
+
+    // Live preview on cursor move
+    if (cursorPos != gTasks[taskId].tSkinCursorPos)
+    {
+        gTasks[taskId].tSkinCursorPos = cursorPos;
+        ApplySkinPalette(taskId, cursorPos);
+    }
+
+    switch (input)
+    {
+    case MENU_B_PRESSED:
+        // Keep current skin selection and go back to hair
+        gTasks[taskId].tSkinSelection = gTasks[taskId].tSkinCursorPos;
+        ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
+        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskHairColor;
+        break;
+    case MENU_NOTHING_CHOSEN:
+        break;
+    default:
+        // Confirmed
+        PlaySE(SE_SELECT);
+        gTasks[taskId].tSkinSelection = input;
+        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+        break;
+    }
+}
+
+#undef tSkinCursorPos
+#undef tSkinSelection
+#undef tHairSelection
 
 static void Task_NewGameBirchSpeech_WhatsYourName(u8 taskId)
 {
@@ -2260,7 +2490,7 @@ static void NewGameBirchSpeech_ShowGenderMenu(void)
     DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[1], 0xF3);
     FillWindowPixelBuffer(1, PIXEL_FILL(1));
     PrintMenuTable(1, ARRAY_COUNT(sMenuActions_Gender), sMenuActions_Gender);
-    InitMenuInUpperLeftCornerNormal(1, ARRAY_COUNT(sMenuActions_Gender), 0);
+    InitMenuInUpperLeftCornerNormal(1, ARRAY_COUNT(sMenuActions_Gender), gSaveBlock2Ptr->playerGender);
     PutWindowTilemap(1);
     CopyWindowToVram(1, COPYWIN_FULL);
 }
