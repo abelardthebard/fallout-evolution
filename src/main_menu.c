@@ -230,6 +230,11 @@ static void Task_NewGameBirchSpeech_ProcessHairChoice(u8);
 static void Task_NewGameBirchSpeech_AskSkinTone(u8);
 static void Task_NewGameBirchSpeech_WaitToShowSkinMenu(u8);
 static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8);
+static void Task_NewGameBirchSpeech_AskConfirm(u8);
+static void Task_NewGameBirchSpeech_WaitToShowConfirmMenu(u8);
+static void Task_NewGameBirchSpeech_ProcessConfirmChoice(u8);
+static void Task_NewGameBirchSpeech_ShowFaceComment(u8);
+static void Task_NewGameBirchSpeech_WaitFaceComment(u8);
 static void Task_NewGameBirchSpeech_WhatsYourName(u8);
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8);
 static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8);
@@ -575,7 +580,7 @@ static const u16 sHairPalettes[][3] = {
     { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
     { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
     { RGB( 8,  9, 10), RGB( 5,  6,  7), RGB( 3,  3,  4) }, // Black
-    { RGB( 5,  6,  7), RGB( 3,  3,  4), RGB( 1,  1,  2) }, // Raven
+    { RGB( 5,  6,  7), RGB( 3,  3,  4), RGB( 2,  2,  3) }, // Raven
     { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // Ash 01
     { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash 02
 };
@@ -639,6 +644,14 @@ static const struct MenuAction sMenuActions_Skin[] = {
 #define SKIN_PALETTE_INDEX_START 1 // Indices 1-3 in OBJ palette
 #define SKIN_GRID_COLUMNS 2
 #define SKIN_GRID_ROWS 3
+
+static const u8 sText_Yes[] = _("Yes");
+static const u8 sText_Back[] = _("Back");
+
+static const struct MenuAction sMenuActions_Confirm[] = {
+    {sText_Yes, {NULL}},
+    {sText_Back, {NULL}},
+};
 
 static const u8 *const sMalePresetNames[] = {
     COMPOUND_STRING("STU"),
@@ -1804,6 +1817,23 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8 taskId)
     }
 }
 
+#define tHairCursorPos data[3]
+#define tHairSelection data[9]
+#define tSkinCursorPos data[12]
+#define tSkinSelection data[13]
+
+static void ApplyHairPalette(u8 taskId, u8 hairIndex)
+{
+    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
+    LoadPalette(sHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+}
+
+static void ApplySkinPalette(u8 taskId, u8 skinIndex)
+{
+    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
+    LoadPalette(sSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+}
+
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8 taskId)
 {
     u8 spriteId = gTasks[taskId].tPlayerSpriteId;
@@ -1842,18 +1872,12 @@ static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8 taskId)
         if (gTasks[taskId].tIsDoneFadingSprites)
         {
             gSprites[spriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
+            // Re-apply hair and skin palette choices to new gender sprite
+            ApplyHairPalette(taskId, gTasks[taskId].tHairSelection);
+            ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
             gTasks[taskId].func = Task_NewGameBirchSpeech_ChooseGender;
         }
     }
-}
-
-#define tHairCursorPos data[3]
-#define tHairSelection data[9]
-
-static void ApplyHairPalette(u8 taskId, u8 hairIndex)
-{
-    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(sHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
 }
 
 static void Task_NewGameBirchSpeech_AskHairColor(u8 taskId)
@@ -1913,17 +1937,6 @@ static void Task_NewGameBirchSpeech_ProcessHairChoice(u8 taskId)
     }
 }
 
-#undef tHairCursorPos
-
-#define tSkinCursorPos data[12]
-#define tSkinSelection data[13]
-
-static void ApplySkinPalette(u8 taskId, u8 skinIndex)
-{
-    u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(sSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
-}
-
 static void Task_NewGameBirchSpeech_AskSkinTone(u8 taskId)
 {
     NewGameBirchSpeech_ClearWindow(0);
@@ -1976,7 +1989,7 @@ static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8 taskId)
         PlaySE(SE_SELECT);
         gTasks[taskId].tSkinSelection = input;
         NewGameBirchSpeech_ClearGenderWindow(5, 1);
-        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskConfirm;
         break;
     }
 }
@@ -1984,6 +1997,64 @@ static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8 taskId)
 #undef tSkinCursorPos
 #undef tSkinSelection
 #undef tHairSelection
+
+static void Task_NewGameBirchSpeech_AskConfirm(u8 taskId)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_Confirm);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowConfirmMenu;
+}
+
+static void Task_NewGameBirchSpeech_WaitToShowConfirmMenu(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[3], 0xF3);
+        FillWindowPixelBuffer(3, PIXEL_FILL(1));
+        PrintMenuTable(3, ARRAY_COUNT(sMenuActions_Confirm), sMenuActions_Confirm);
+        InitMenuInUpperLeftCornerNormal(3, ARRAY_COUNT(sMenuActions_Confirm), 0);
+        PutWindowTilemap(3);
+        CopyWindowToVram(3, COPYWIN_FULL);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessConfirmChoice;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ProcessConfirmChoice(u8 taskId)
+{
+    s8 input = Menu_ProcessInputNoWrap();
+
+    switch (input)
+    {
+    case 0: // Yes
+        PlaySE(SE_SELECT);
+        NewGameBirchSpeech_ClearGenderWindow(3, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_ShowFaceComment;
+        break;
+    case MENU_B_PRESSED:
+    case 1: // Back
+        PlaySE(SE_SELECT);
+        NewGameBirchSpeech_ClearGenderWindow(3, 1);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AskSkinTone;
+        break;
+    }
+}
+
+static void Task_NewGameBirchSpeech_ShowFaceComment(u8 taskId)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    StringExpandPlaceholders(gStringVar4, gText_MissNanny_FaceComment);
+    AddTextPrinterForMessage(TRUE);
+    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitFaceComment;
+}
+
+static void Task_NewGameBirchSpeech_WaitFaceComment(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+    }
+}
 
 static void Task_NewGameBirchSpeech_WhatsYourName(u8 taskId)
 {

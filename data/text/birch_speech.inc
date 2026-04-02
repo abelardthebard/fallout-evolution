@@ -93,9 +93,23 @@ gText_MissNanny_SkinTone::
 	.string "And last, what is your complexion?\p"
 	.string "$"
 
+gText_MissNanny_Confirm::
+	.string "Confirm?\p"
+	.string "$"
+
+gText_MissNanny_FaceComment::
+	.string "Oh! I see... Well...\n"
+	.string "I should note, you have some bruising.\p"
+	.string "And some swelling.\p"
+	.string "And some additional bruising\n"
+	.string "around the swelling.\p"
+	.string "Your face should return to normal...\n"
+	.string "Eventually...\p"
+	.string "$"
+
 gText_Birch_WhatsYourName::
-	.string "All right.\n"
-	.string "What's your name?$"
+	.string "Moving on...\n"
+	.string "Do you remember your name?$"
 
 gText_Birch_SoItsPlayer::
 	.string "So it's {PLAYER}{KUN}?$"
