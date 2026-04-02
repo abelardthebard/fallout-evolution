@@ -11,12 +11,11 @@ gText_Birch_Pokemon::
 gText_Birch_MainSpeech::
 	.string "You were brought in approximately\n"
 	.string "four hours ago in a condition\l"
-	.string "I would describe as...\p"
-	.string "Bad.\p"
+	.string "I would describe as... bad.\p"
 	.string "You were hit by a door.\p"
 	.string "Specifically, by someone opening\n"
 	.string "it into your face.\p"
-	.string "I have been asked to conduct a\n"
+	.string "Protocol requires that I conduct a\n"
 	.string "cognitive evaluation before\l"
 	.string "clearing you for discharge.\p"
 	.string "I will ask you some questions.\n"
@@ -29,9 +28,8 @@ gText_Birch_MainSpeech::
 	.string "$"
 
 gText_MissNanny_RememberQuestion::
-	.string "First question.\n"
-	.string "Do you know the basics of where\l"
-	.string "and when you are?\p"
+	.string "First question. Do you know the\n"
+	.string "basics of where and when you are?\p"
 	.string "$"
 
 gText_MissNanny_RemindResponse::
@@ -40,12 +38,11 @@ gText_MissNanny_RemindResponse::
 	.string "nuclear exchange.\p"
 	.string "This is commonly referred to\n"
 	.string "as the Great War.\p"
-	.string "Vault-Tec, in its wisdom,\n"
+	.string "Vault-Tec, in its infinite wisdom,\n"
 	.string "anticipated this outcome.\p"
-	.string "Vault 42 is one of many\n"
-	.string "state-of-the-art underground\l"
-	.string "residential facilities built\l"
-	.string "to preserve humanity.\p"
+	.string "Vault 42 is one of many underground\n"
+	.string "residential facilities built to\l"
+	.string "preserve humankind.\p"
 	.string "Outside these walls lies the\n"
 	.string "Chicago metropolitan area.\p"
 	.string "It is, technically, still there but...\n"

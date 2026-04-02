@@ -224,6 +224,8 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8);
 static void NewGameBirchSpeech_ShowGenderMenu(void);
 static s8 NewGameBirchSpeech_ProcessGenderMenuInput(void);
 static void NewGameBirchSpeech_ClearGenderWindow(u8, u8);
+static void ApplyHairPalette(u8, u8);
+static void ApplySkinPalette(u8, u8);
 static void Task_NewGameBirchSpeech_AskHairColor(u8);
 static void Task_NewGameBirchSpeech_WaitToShowHairMenu(u8);
 static void Task_NewGameBirchSpeech_ProcessHairChoice(u8);
@@ -241,6 +243,7 @@ static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8);
 static void Task_NewGameBirchSpeech_WaitForWhatsYourNameToPrint(u8);
 static void Task_NewGameBirchSpeech_WaitPressBeforeNameChoice(u8);
 static void Task_NewGameBirchSpeech_StartNamingScreen(u8);
+static void Task_NewGameBirchSpeech_RenamePlayer(u8);
 static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void);
 static void Task_NewGameBirchSpeech_CreateNameYesNo(u8);
 static void Task_NewGameBirchSpeech_ProcessNameYesNoMenu(u8);
@@ -579,8 +582,8 @@ static const u16 sHairPalettes[][3] = {
     { RGB(10,  8,  7), RGB( 7,  6,  5), RGB( 5,  3,  3) }, // Brown 02
     { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
     { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
-    { RGB( 8,  9, 10), RGB( 5,  6,  7), RGB( 3,  3,  4) }, // Black
-    { RGB( 5,  6,  7), RGB( 3,  3,  4), RGB( 2,  2,  3) }, // Raven
+    { RGB( 8,  9, 11), RGB( 5,  6,  8), RGB( 3,  4,  6) }, // Black
+    { RGB( 5,  6,  8), RGB( 3,  4,  6), RGB( 2,  3,  5) }, // Raven
     { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // Ash 01
     { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash 02
 };
@@ -1487,7 +1490,8 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     ResetAllPicSprites();
     AddBirchSpeechObjects(taskId);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
-    gTasks[taskId].tBG1HOFS = 0;
+    gTasks[taskId].tBG1HOFS = -8;
+    SetGpuReg(REG_OFFSET_BG1HOFS, -8);
     gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowBirch;
     gTasks[taskId].tPlayerSpriteId = SPRITE_NONE;
     gTasks[taskId].data[3] = 0xFF;
@@ -1764,6 +1768,12 @@ static void Task_NewGameBirchSpeech_WaitForPlayerFadeIn(u8 taskId)
     if (gTasks[taskId].tIsDoneFadingSprites)
     {
         gSprites[gTasks[taskId].tPlayerSpriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
+        // Reset blend registers from player sprite fade-in animation
+        SetGpuReg(REG_OFFSET_BLDCNT, 0);
+        SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+        // Apply default hair/skin palettes to match character creator defaults
+        ApplyHairPalette(taskId, 0);
+        ApplySkinPalette(taskId, 0);
         gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
     }
 }
@@ -1872,6 +1882,9 @@ static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8 taskId)
         if (gTasks[taskId].tIsDoneFadingSprites)
         {
             gSprites[spriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
+            // Reset blend registers left active by sprite slide animation
+            SetGpuReg(REG_OFFSET_BLDCNT, 0);
+            SetGpuReg(REG_OFFSET_BLDALPHA, 0);
             // Re-apply hair and skin palette choices to new gender sprite
             ApplyHairPalette(taskId, gTasks[taskId].tHairSelection);
             ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
@@ -2090,6 +2103,16 @@ static void Task_NewGameBirchSpeech_StartNamingScreen(u8 taskId)
     }
 }
 
+static void Task_NewGameBirchSpeech_RenamePlayer(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        FreeAllWindowBuffers();
+        DestroyTask(taskId);
+        DoNamingScreen(NAMING_SCREEN_PLAYER, gSaveBlock2Ptr->playerName, gSaveBlock2Ptr->playerGender, 0, 0, CB2_NewGameBirchSpeech_ReturnFromNamingScreen);
+    }
+}
+
 static void Task_NewGameBirchSpeech_SoItsPlayerName(u8 taskId)
 {
     NewGameBirchSpeech_ClearWindow(0);
@@ -2121,7 +2144,8 @@ static void Task_NewGameBirchSpeech_ProcessNameYesNoMenu(u8 taskId)
     case MENU_B_PRESSED:
     case 1:
         PlaySE(SE_SELECT);
-        gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_RenamePlayer;
     }
 }
 
