@@ -60,6 +60,7 @@ enum {
     GFXTAG_CURSOR_FILLED,
     GFXTAG_INPUT_ARROW,
     GFXTAG_UNDERSCORE,
+    GFXTAG_CARET,
     GFXTAG_RIVAL = 255,
 };
 
@@ -187,6 +188,7 @@ EWRAM_DATA static struct NamingScreenData *sNamingScreen = NULL;
 
 static const u8 sPCIconOff_Gfx[] = INCBIN_U8("graphics/naming_screen/pc_icon_off.4bpp");
 static const u8 sPCIconOn_Gfx[] = INCBIN_U8("graphics/naming_screen/pc_icon_on.4bpp");
+static const u8 sCaret_Gfx[] = INCBIN_U8("graphics/naming_screen/caret.4bpp");
 static const u16 sKeyboard_Pal[] = INCBIN_U16("graphics/naming_screen/keyboard.gbapal");
 static const u16 sRival_Gfx[] = INCBIN_U16("graphics/naming_screen/rival.4bpp");
 static const u16 sRival_Pal[] = INCBIN_U16("graphics/naming_screen/rival.gbapal");
@@ -328,6 +330,8 @@ static const struct SpriteTemplate sSpriteTemplate_OkButton;
 static const struct SpriteTemplate sSpriteTemplate_Cursor;
 static const struct SpriteTemplate sSpriteTemplate_InputArrow;
 static const struct SpriteTemplate sSpriteTemplate_Underscore;
+static const struct SpriteTemplate sSpriteTemplate_Caret;
+static u8 sCaretSpriteId;
 static const struct SpriteTemplate sSpriteTemplate_PCIcon;
 static const u8 *const sNamingScreenKeyboardText[KBPAGE_COUNT][KBROW_COUNT];
 static const struct SpriteSheet sSpriteSheets[];
@@ -1083,25 +1087,35 @@ static void SpriteCB_InputArrow(struct Sprite *sprite)
 
 static void SpriteCB_Underscore(struct Sprite *sprite)
 {
-    const s16 y[] = {2, 3, 2, 1};
-    u8 pos;
+    u8 pos = GetTextEntryPosition();
 
-    pos = GetTextEntryPosition();
-    if (pos != (u8)sprite->sId)
+    if (pos == (u8)sprite->sId)
     {
-        sprite->y2 = 0;
-        sprite->sYPosId = 0;
-        sprite->sDelay = 0;
+        // Active position: blink between caret and underscore
+        sprite->sDelay++;
+        if (sprite->sDelay < 16)
+        {
+            // Caret on, underscore off
+            sprite->invisible = TRUE;
+            gSprites[sCaretSpriteId].x = sprite->x;
+            gSprites[sCaretSpriteId].invisible = FALSE;
+        }
+        else
+        {
+            // Caret off, underscore on (static)
+            sprite->invisible = FALSE;
+            sprite->y2 = 0;
+            gSprites[sCaretSpriteId].invisible = TRUE;
+        }
+        if (sprite->sDelay >= 32)
+            sprite->sDelay = 0;
     }
     else
     {
-        sprite->y2 = y[sprite->sYPosId];
-        sprite->sDelay++;
-        if (sprite->sDelay > 8)
-        {
-            sprite->sYPosId = MOD(sprite->sYPosId + 1, ARRAY_COUNT(y));
-            sprite->sDelay = 0;
-        }
+        // Non-active positions: static underscore, no bob
+        sprite->invisible = FALSE;
+        sprite->y2 = 0;
+        sprite->sDelay = 0;
     }
 }
 
@@ -1364,6 +1378,10 @@ static void CreateTextEntrySprites(void)
         gSprites[spriteId].data[0] = i;
         gSprites[spriteId].invisible = TRUE;
     }
+    // Create single caret sprite (positioned by underscore callback)
+    sCaretSpriteId = CreateSprite(&sSpriteTemplate_Caret, 0, 54, 0);
+    gSprites[sCaretSpriteId].oam.priority = 3;
+    gSprites[sCaretSpriteId].invisible = TRUE;
 }
 
 //--------------------------------------------------
@@ -2237,6 +2255,20 @@ static const struct OamData sOam_8x8 =
     .paletteNum = 0,
 };
 
+static const struct OamData sOam_8x16 =
+{
+    .y = 0,
+    .affineMode = ST_OAM_AFFINE_OFF,
+    .objMode = ST_OAM_OBJ_NORMAL,
+    .bpp = ST_OAM_4BPP,
+    .shape = SPRITE_SHAPE(8x16),
+    .x = 0,
+    .size = SPRITE_SIZE(8x16),
+    .tileNum = 0,
+    .priority = 0,
+    .paletteNum = 0,
+};
+
 static const struct OamData sOam_16x16 =
 {
     .y = 0,
@@ -2585,6 +2617,15 @@ static const struct SpriteTemplate sSpriteTemplate_Underscore =
     .callback = SpriteCB_Underscore
 };
 
+static const struct SpriteTemplate sSpriteTemplate_Caret =
+{
+    .tileTag = GFXTAG_CARET,
+    .paletteTag = PALTAG_CURSOR,
+    .oam = &sOam_8x16,
+    .anims = sAnims_Loop,
+    .callback = SpriteCallbackDummy
+};
+
 static const struct SpriteTemplate sSpriteTemplate_PCIcon =
 {
     .tileTag = TAG_NONE,
@@ -2633,6 +2674,7 @@ static const struct SpriteSheet sSpriteSheets[] =
     {gNamingScreenCursorFilled_Gfx,   0x080,  GFXTAG_CURSOR_FILLED},
     {gNamingScreenInputArrow_Gfx,     0x020,  GFXTAG_INPUT_ARROW},
     {gNamingScreenUnderscore_Gfx,     0x020,  GFXTAG_UNDERSCORE},
+    {sCaret_Gfx,                      0x040,  GFXTAG_CARET},
     {}
 };
 
