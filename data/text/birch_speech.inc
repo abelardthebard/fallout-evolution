@@ -60,8 +60,7 @@ gText_MissNanny_YearQuestion::
 	.string "$"
 
 gText_MissNanny_YearWrong::
-	.string "That is not correct.\n"
-	.string "I will note this in your file.\p"
+	.string "That is not correct...\p"
 	.string "Some memories do not come back.\n"
 	.string "It is better not to dwell.\p"
 	.string "The current year is 2291.\n"

@@ -561,19 +561,6 @@ void RunTextPrinters(void)
                             // Draw typing caret at next character position (non-instant only)
                             if (currentPrinter->textSpeed > 0)
                             {
-                                // Erase previous caret if position changed (e.g. line wrap)
-                                if (currentPrinter->caretPrevX != currentPrinter->printerTemplate.currentX
-                                 || currentPrinter->caretPrevY != currentPrinter->printerTemplate.currentY)
-                                {
-                                    FillWindowPixelRect(
-                                        currentPrinter->printerTemplate.windowId,
-                                        currentPrinter->printerTemplate.color.background << 4 | currentPrinter->printerTemplate.color.background,
-                                        currentPrinter->caretPrevX,
-                                        currentPrinter->caretPrevY,
-                                        8, 16);
-                                }
-                                currentPrinter->caretPrevX = currentPrinter->printerTemplate.currentX;
-                                currentPrinter->caretPrevY = currentPrinter->printerTemplate.currentY;
                                 BlitBitmapRectToWindow(
                                     currentPrinter->printerTemplate.windowId,
                                     sDownArrowTiles,
@@ -594,6 +581,17 @@ void RunTextPrinters(void)
                         isInstantText = FALSE;
                         break;
                     case RENDER_FINISH:
+                        // Erase typing caret left at end of text
+                        if (currentPrinter->textSpeed > 0 && currentPrinter->printerTemplate.type == WINDOW_TEXT_PRINTER)
+                        {
+                            FillWindowPixelRect(
+                                currentPrinter->printerTemplate.windowId,
+                                PIXEL_FILL(currentPrinter->printerTemplate.color.background),
+                                currentPrinter->printerTemplate.currentX,
+                                currentPrinter->printerTemplate.currentY,
+                                8, 16);
+                            CopyWindowToVram(currentPrinter->printerTemplate.windowId, COPYWIN_GFX);
+                        }
                         currentPrinter->active = FALSE;
                         currentPrinter->isInUse = FALSE;
                         isInstantText = FALSE;

@@ -489,7 +489,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
     { // Window 5: hair grid menu (5 rows x 2 cols)
         .bg = 0,
         .tilemapLeft = 3,
-        .tilemapTop = 1,
+        .tilemapTop = 3,
         .width = 10,
         .height = 10,
         .paletteNum = 15,
@@ -498,7 +498,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
     { // Window 6: skin grid menu (3 rows x 2 cols)
         .bg = 0,
         .tilemapLeft = 3,
-        .tilemapTop = 1,
+        .tilemapTop = 3,
         .width = 10,
         .height = 6,
         .paletteNum = 15,
@@ -652,41 +652,11 @@ static const struct MenuAction sMenuActions_Confirm[] = {
 };
 
 static const u8 *const sMalePresetNames[] = {
-    COMPOUND_STRING("ABELARD"),
-    COMPOUND_STRING("BUTCH"),
-    COMPOUND_STRING("COOPER"),
-    COMPOUND_STRING("DEAN"),
-    COMPOUND_STRING("EARL"),
-    COMPOUND_STRING("FRANK"),
-    COMPOUND_STRING("GUS"),
-    COMPOUND_STRING("HANK"),
-    COMPOUND_STRING("JESSIE"),
-    COMPOUND_STRING("LEON"),
-    COMPOUND_STRING("MACK"),
-    COMPOUND_STRING("NATE"),
-    COMPOUND_STRING("PRICE"),
-    COMPOUND_STRING("RUSTY"),
-    COMPOUND_STRING("TUCKER"),
-    COMPOUND_STRING("WALTER"),
+    COMPOUND_STRING("Cary"),
 };
 
 static const u8 *const sFemalePresetNames[] = {
-    COMPOUND_STRING("AMY"),
-    COMPOUND_STRING("BETTY"),
-    COMPOUND_STRING("CADY"),
-    COMPOUND_STRING("FRANKIE"),
-    COMPOUND_STRING("GRETCHEN"),
-    COMPOUND_STRING("JANIS"),
-    COMPOUND_STRING("KAREN"),
-    COMPOUND_STRING("MIDGE"),
-    COMPOUND_STRING("NORA"),
-    COMPOUND_STRING("OPAL"),
-    COMPOUND_STRING("PEARL"),
-    COMPOUND_STRING("REGINA"),
-    COMPOUND_STRING("SUSIE"),
-    COMPOUND_STRING("TRUDY"),
-    COMPOUND_STRING("SUSAN"),
-    COMPOUND_STRING("WANDA"),
+    COMPOUND_STRING("Audrey"),
 };
 
 // The number of male vs. female names is assumed to be the same.
@@ -1477,8 +1447,8 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     ResetAllPicSprites();
     AddBirchSpeechObjects(taskId);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
-    gTasks[taskId].tBG1HOFS = -8;
-    SetGpuReg(REG_OFFSET_BG1HOFS, -8);
+    gTasks[taskId].tBG1HOFS = -16;
+    SetGpuReg(REG_OFFSET_BG1HOFS, -16);
     gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowBirch;
     gTasks[taskId].tPlayerSpriteId = SPRITE_NONE;
     gTasks[taskId].data[3] = 0xFF;
@@ -2114,7 +2084,7 @@ static void Task_NewGameBirchSpeech_CreateNameYesNo(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
-        CreateYesNoMenuParameterized(2, 1, 0xF3, 0xDF, 2, 15);
+        CreateYesNoMenuParameterized(3, 5, STD_WINDOW_BASE_TILE_NUM, 0xDF, STD_WINDOW_PALETTE_NUM, 15);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessNameYesNoMenu;
     }
 }
@@ -2154,16 +2124,25 @@ static void Task_NewGameBirchSpeech_SlidePlatformAway2(u8 taskId)
 static void Task_NewGameBirchSpeech_ReshowBirch(u8 taskId)
 {
     u8 spriteId;
+    u8 toddSpriteId;
 
     if (gTasks[taskId].tIsDoneFadingSprites)
     {
         gSprites[gTasks[taskId].tBrendanSpriteId].invisible = TRUE;
         gSprites[gTasks[taskId].tMaySpriteId].invisible = TRUE;
+
+        // Miss Nanny — shifted right to make room for Todd
         spriteId = gTasks[taskId].tBirchSpriteId;
-        gSprites[spriteId].x = 136;
+        gSprites[spriteId].x = 176;
         gSprites[spriteId].y = 60;
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
+
+        // Todd — left of Miss Nanny
+        toddSpriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 96, 60, 0, NULL);
+        gSprites[toddSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
+        gSprites[toddSpriteId].oam.priority = 1;
+        gTasks[taskId].data[14] = toddSpriteId;
         NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 2);
         NewGameBirchSpeech_StartFadePlatformOut(taskId, 1);
         NewGameBirchSpeech_ClearWindow(0);
@@ -2237,10 +2216,15 @@ static void CB2_ReturnFromRivalNaming(void)
     FreeAllSpritePalettes();
     ResetAllPicSprites();
     {
-        u8 spriteId = AddNewGameBirchObject(0x88, 0x3C, 1);
+        u8 spriteId;
+        // Miss Nanny — shifted right
+        spriteId = AddNewGameBirchObject(176, 60, 1);
         gSprites[spriteId].callback = SpriteCB_Null;
         gSprites[spriteId].oam.priority = 0;
         gSprites[spriteId].invisible = FALSE;
+        // Todd — left of Miss Nanny
+        spriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 96, 60, 0, NULL);
+        gSprites[spriteId].oam.priority = 1;
     }
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
     SetGpuReg(REG_OFFSET_BG1HOFS, -8);
@@ -2828,13 +2812,12 @@ static void NewGameBirchSpeech_ClearGenderWindow(u8 windowId, bool8 copyToVram)
 
 static void NewGameBirchSpeech_ClearWindow(u8 windowId)
 {
-    u8 bgColor = GetFontAttribute(FONT_NORMAL, FONTATTR_COLOR_BACKGROUND);
     u8 maxCharWidth = GetFontAttribute(FONT_NORMAL, FONTATTR_MAX_LETTER_WIDTH);
     u8 maxCharHeight = GetFontAttribute(FONT_NORMAL, FONTATTR_MAX_LETTER_HEIGHT);
     u8 winWidth = GetWindowAttribute(windowId, WINDOW_WIDTH);
     u8 winHeight = GetWindowAttribute(windowId, WINDOW_HEIGHT);
 
-    FillWindowPixelRect(windowId, bgColor, 0, 0, maxCharWidth * winWidth, maxCharHeight * winHeight);
+    FillWindowPixelRect(windowId, PIXEL_FILL(0), 0, 0, maxCharWidth * winWidth, maxCharHeight * winHeight);
     CopyWindowToVram(windowId, COPYWIN_GFX);
 }
 

@@ -132,9 +132,7 @@ struct TextPrinter
     u8 minLetterSpacing;
 
     u8 textSpeed;
-    u8 caretPrevX;
-    u8 caretPrevY;
-    u8 padding[1];
+    u8 padding[3];
 
     struct TextPrinter *nextPrinter;
 

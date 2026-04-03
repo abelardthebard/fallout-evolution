@@ -220,6 +220,9 @@ const u16 gTrainerPalette_Brendan[] = INCBIN_U16("graphics/trainers/palettes/bre
 const u32 gTrainerFrontPic_May[] = INCBIN_U32("graphics/trainers/front_pics/may.4bpp.smol");
 const u16 gTrainerPalette_May[] = INCBIN_U16("graphics/trainers/palettes/brendan.gbapal");
 
+const u32 gTrainerFrontPic_Todd[] = INCBIN_U32("graphics/trainers/front_pics/todd.4bpp.smol");
+const u16 gTrainerPalette_Todd[] = INCBIN_U16("graphics/trainers/palettes/todd.gbapal");
+
 const u32 gTrainerFrontPic_BugCatcher[] = INCBIN_U32("graphics/trainers/front_pics/bug_catcher.4bpp.smol");
 const u16 gTrainerPalette_BugCatcher[] = INCBIN_U16("graphics/trainers/front_pics/bug_catcher.gbapal");
 
@@ -653,6 +656,7 @@ const struct TrainerSprite gTrainerSprites[] =
     TRAINER_SPRITE(TRAINER_PIC_FRONT_RUIN_MANIAC_FRLG, gTrainerFrontPic_RuinManiacFrlg, gTrainerPalette_RuinManiacFrlg),
     TRAINER_SPRITE(TRAINER_PIC_FRONT_LADY_FRLG, gTrainerFrontPic_LadyFrlg, gTrainerPalette_LadyFrlg),
     TRAINER_SPRITE(TRAINER_PIC_FRONT_PAINTER_FRLG, gTrainerFrontPic_PainterFrlg, gTrainerPalette_PainterFrlg),
+    TRAINER_SPRITE(TRAINER_PIC_FRONT_TODD, gTrainerFrontPic_Todd, gTrainerPalette_Todd),
 };
 
 static const union AnimCmd sAnimCmd_Hoenn[] =

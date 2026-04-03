@@ -1397,16 +1397,18 @@ static void NamingScreen_CreateMonIcon(void);
 static void NamingScreen_CreateWaldaDadIcon(void);
 static void NamingScreen_CreateCodeIcon(void);
 static void NamingScreen_CreateRivalIcon(void);
+static void NamingScreen_CreateToddIcon(void);
 
 static void (*const sIconFunctions[])(void) =
 {
-    NamingScreen_NoIcon,
-    NamingScreen_CreatePlayerIcon,
-    NamingScreen_CreatePCIcon,
-    NamingScreen_CreateMonIcon,
-    NamingScreen_CreateWaldaDadIcon,
-    NamingScreen_CreateCodeIcon,
-    NamingScreen_CreateRivalIcon,
+    NamingScreen_NoIcon,            // 0
+    NamingScreen_CreatePlayerIcon,  // 1
+    NamingScreen_CreatePCIcon,      // 2
+    NamingScreen_CreateMonIcon,     // 3
+    NamingScreen_CreateWaldaDadIcon,// 4
+    NamingScreen_CreateCodeIcon,    // 5
+    NamingScreen_CreateRivalIcon,   // 6
+    NamingScreen_CreateToddIcon,    // 7
 };
 
 static void CreateInputTargetIcon(void)
@@ -1429,6 +1431,15 @@ static void NamingScreen_CreatePlayerIcon(void)
     gSprites[spriteId].oam.priority = 3;
     StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
     ApplyPlayerAppearancePalette(gSprites[spriteId].oam.paletteNum);
+}
+
+static void NamingScreen_CreateToddIcon(void)
+{
+    u8 spriteId;
+
+    spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_TODD_NORMAL, SpriteCallbackDummy, 56, 37, 0);
+    gSprites[spriteId].oam.priority = 3;
+    StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
 }
 
 static void NamingScreen_CreatePCIcon(void)
@@ -2233,7 +2244,7 @@ static const struct NamingScreenTemplate sRivalNamingScreenTemplate =
 {
     .copyExistingString = FALSE,
     .maxChars = PLAYER_NAME_LENGTH,
-    .iconFunction = 1, // TODO: replace with Todd overworld sprite
+    .iconFunction = 7, // NamingScreen_CreateToddIcon
     .addGenderIcon = FALSE,
     .initialPage = KBPAGE_LETTERS_UPPER,
     .title = sText_RivalsName,
