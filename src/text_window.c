@@ -64,6 +64,113 @@ const struct PipTheme gPipThemes[THEME_COUNT] =
     },
 };
 
+// PipBoy theme color ramps — 8 shades bright→dark per theme
+// Green ramp is the base; palettes on disk use these values
+const u16 gPipBoyGreenRamp[PIPBOY_RAMP_SIZE] = {
+    RGB(24, 31, 15), // #C0F878
+    RGB(19, 29, 12), // #98E860
+    RGB(14, 27,  8), // #70D840
+    RGB( 9, 25,  4), // #48C820
+    RGB( 5, 21,  2), // #28A810
+    RGB( 3, 16,  2), // #188010
+    RGB( 2, 12,  1), // #106008
+    RGB( 1,  8,  1), // #084008
+};
+
+const u16 gPipBoyThemeRamps[THEME_COUNT][PIPBOY_RAMP_SIZE] = {
+    [THEME_GREEN] = {
+        RGB(24, 31, 15), RGB(19, 29, 12), RGB(14, 27,  8), RGB( 9, 25,  4),
+        RGB( 5, 21,  2), RGB( 3, 16,  2), RGB( 2, 12,  1), RGB( 1,  8,  1),
+    },
+    [THEME_BLUE] = {
+        RGB(19, 29, 31), RGB(15, 26, 31), RGB(11, 23, 29), RGB( 9, 19, 28),
+        RGB( 7, 15, 24), RGB( 6, 11, 19), RGB( 4,  8, 15), RGB( 3,  5, 10),
+    },
+    [THEME_RED] = {
+        RGB(30, 16, 15), RGB(29, 12, 12), RGB(29, 10,  9), RGB(29,  8,  6),
+        RGB(24,  6,  4), RGB(19,  4,  3), RGB(15,  3,  2), RGB(10,  2,  1),
+    },
+    [THEME_YELLOW] = {
+        RGB(29, 28, 11), RGB(27, 25,  5), RGB(25, 21,  3), RGB(22, 18,  2),
+        RGB(18, 15,  1), RGB(14, 12,  0), RGB(10,  9,  0), RGB( 7,  6,  0),
+    },
+};
+
+void PipBoy_ApplyThemeToPalettes(u16 bgStart, u16 bgCount, u16 objStart, u16 objCount)
+{
+    u8 theme = GetActiveTheme();
+    u16 i, j;
+
+    if (theme == THEME_GREEN)
+        return;
+
+    for (i = bgStart; i < bgStart + bgCount; i++)
+    {
+        for (j = 0; j < PIPBOY_RAMP_SIZE; j++)
+        {
+            if (gPlttBufferUnfaded[i] == gPipBoyGreenRamp[j])
+            {
+                gPlttBufferUnfaded[i] = gPipBoyThemeRamps[theme][j];
+                gPlttBufferFaded[i] = gPipBoyThemeRamps[theme][j];
+                break;
+            }
+        }
+    }
+
+    for (i = objStart; i < objStart + objCount; i++)
+    {
+        for (j = 0; j < PIPBOY_RAMP_SIZE; j++)
+        {
+            if (gPlttBufferUnfaded[i] == gPipBoyGreenRamp[j])
+            {
+                gPlttBufferUnfaded[i] = gPipBoyThemeRamps[theme][j];
+                gPlttBufferFaded[i] = gPipBoyThemeRamps[theme][j];
+                break;
+            }
+        }
+    }
+}
+
+// Player appearance palettes — shared across intro, naming screen, and overworld
+const u16 gHairPalettes[][3] = {
+    { RGB(29, 27, 18), RGB(25, 22, 13), RGB(16, 13,  7) }, // Blond
+    { RGB(25, 22, 13), RGB(16, 13,  7), RGB(11,  9,  4) }, // Sandy
+    { RGB(14, 12, 11), RGB(10,  8,  7), RGB( 7,  6,  5) }, // Brown
+    { RGB(10,  8,  7), RGB( 7,  6,  5), RGB( 5,  3,  3) }, // Umber
+    { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
+    { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
+    { RGB( 8,  9, 11), RGB( 5,  6,  8), RGB( 3,  4,  6) }, // Black
+    { RGB( 5,  6,  8), RGB( 3,  4,  6), RGB( 2,  3,  5) }, // Raven
+    { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // White
+    { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash
+};
+
+const u16 gSkinPalettes[][3] = {
+    { RGB(30, 26, 24), RGB(27, 22, 20), RGB(20, 15, 13) }, // Fair
+    { RGB(27, 22, 20), RGB(24, 18, 16), RGB(16, 12, 10) }, // Light
+    { RGB(24, 18, 16), RGB(20, 15, 13), RGB(12,  9,  7) }, // Mid
+    { RGB(20, 15, 13), RGB(16, 12, 10), RGB( 9,  7,  5) }, // Tan
+    { RGB(16, 12, 10), RGB(12,  9,  7), RGB( 5,  3,  3) }, // Dark
+    { RGB(12,  9,  7), RGB( 9,  7,  5), RGB( 5,  3,  3) }, // Deep
+};
+
+#define HAIR_PALETTE_START 4  // OBJ palette indices 4-6
+#define SKIN_PALETTE_START 1  // OBJ palette indices 1-3
+
+void ApplyPlayerAppearancePalette(u8 paletteSlot)
+{
+    u8 hair = gSaveBlock2Ptr->hairColor;
+    u8 skin = gSaveBlock2Ptr->skinTone;
+
+    if (hair >= ARRAY_COUNT(gHairPalettes))
+        hair = 0;
+    if (skin >= ARRAY_COUNT(gSkinPalettes))
+        skin = 0;
+
+    LoadPalette(gHairPalettes[hair], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_START, PLTT_SIZEOF(3));
+    LoadPalette(gSkinPalettes[skin], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_START, PLTT_SIZEOF(3));
+}
+
 // Frame table — all entries share tile art, palette varies per theme
 static const struct TilesPal sWindowFrames[WINDOW_FRAMES_COUNT] =
 {

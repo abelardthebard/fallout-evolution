@@ -168,7 +168,10 @@
 
 static EWRAM_DATA u16 sCurrItemAndOptionMenuCheck = 0;
 
-
+static u8 sRivalNameBuffer[PLAYER_NAME_LENGTH + 1];
+static const u8 sText_Todd[] = _("Todd");
+static const u8 sText_ToddUpper[] = _("TODD");
+static const u8 sText_ToddLower[] = _("todd");
 
 // Static ROM declarations
 
@@ -238,6 +241,10 @@ static void Task_NewGameBirchSpeech_ProcessConfirmChoice(u8);
 static void Task_NewGameBirchSpeech_ShowFaceComment(u8);
 static void Task_NewGameBirchSpeech_WaitFaceComment(u8);
 static void Task_NewGameBirchSpeech_WhatsYourName(u8);
+static void Task_NewGameBirchSpeech_StartRivalNaming(u8);
+static void CB2_ReturnFromRivalNaming(void);
+static void Task_NewGameBirchSpeech_ShowToddResult(u8);
+static void Task_NewGameBirchSpeech_WaitToddResult(u8);
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8);
 static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8);
 static void Task_NewGameBirchSpeech_WaitForWhatsYourNameToPrint(u8);
@@ -488,6 +495,15 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .paletteNum = 15,
         .baseBlock = 0x8D
     },
+    { // Window 6: skin grid menu (3 rows x 2 cols)
+        .bg = 0,
+        .tilemapLeft = 3,
+        .tilemapTop = 1,
+        .width = 10,
+        .height = 6,
+        .paletteNum = 15,
+        .baseBlock = 0x8D
+    },
     DUMMY_WIN_TEMPLATE
 };
 
@@ -574,19 +590,7 @@ static const struct MenuAction sMenuActions_Year[] = {
     {sText_2297, {NULL}},
 };
 
-// Hair color palettes — indices 4-6 of trainer sprite palette
-static const u16 sHairPalettes[][3] = {
-    { RGB(29, 27, 18), RGB(25, 22, 13), RGB(16, 13,  7) }, // Blonde 01 (default)
-    { RGB(25, 22, 13), RGB(16, 13,  7), RGB(11,  9,  4) }, // Blonde 02
-    { RGB(14, 12, 11), RGB(10,  8,  7), RGB( 7,  6,  5) }, // Brown 01
-    { RGB(10,  8,  7), RGB( 7,  6,  5), RGB( 5,  3,  3) }, // Brown 02
-    { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
-    { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
-    { RGB( 8,  9, 11), RGB( 5,  6,  8), RGB( 3,  4,  6) }, // Black
-    { RGB( 5,  6,  8), RGB( 3,  4,  6), RGB( 2,  3,  5) }, // Raven
-    { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // Ash 01
-    { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash 02
-};
+// Hair/skin palette data now in text_window.c (gHairPalettes, gSkinPalettes)
 
 static const u8 sText_Blonde[] = _("Blond");
 static const u8 sText_Sandy[] = _("Sandy");
@@ -618,15 +622,6 @@ static const u8 sHairActionIds[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 #define HAIR_GRID_COLUMNS 2
 #define HAIR_GRID_ROWS 5
 
-// Skin color palettes — indices 1-3 of trainer sprite palette
-static const u16 sSkinPalettes[][3] = {
-    { RGB(30, 26, 24), RGB(27, 22, 20), RGB(20, 15, 13) }, // Fair
-    { RGB(27, 22, 20), RGB(24, 18, 16), RGB(16, 12, 10) }, // Light
-    { RGB(24, 18, 16), RGB(20, 15, 13), RGB(12,  9,  7) }, // Mid
-    { RGB(20, 15, 13), RGB(16, 12, 10), RGB( 9,  7,  5) }, // Tan
-    { RGB(16, 12, 10), RGB(12,  9,  7), RGB( 5,  3,  3) }, // Dark
-    { RGB(12,  9,  7), RGB( 9,  7,  5), RGB( 5,  3,  3) }, // Deep
-};
 
 static const u8 sText_Fair[] = _("Fair");
 static const u8 sText_Light[] = _("Light");
@@ -1827,13 +1822,13 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8 taskId)
 static void ApplyHairPalette(u8 taskId, u8 hairIndex)
 {
     u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(sHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+    LoadPalette(gHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
 }
 
 static void ApplySkinPalette(u8 taskId, u8 skinIndex)
 {
     u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(sSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+    LoadPalette(gSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
 }
 
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8 taskId)
@@ -1954,12 +1949,12 @@ static void Task_NewGameBirchSpeech_WaitToShowSkinMenu(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
-        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[5], 0xF3);
-        FillWindowPixelBuffer(5, PIXEL_FILL(1));
-        PrintMenuGridTable(5, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, sMenuActions_Skin);
-        InitMenuActionGrid(5, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, gTasks[taskId].tSkinSelection);
-        PutWindowTilemap(5);
-        CopyWindowToVram(5, COPYWIN_FULL);
+        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[6], 0xF3);
+        FillWindowPixelBuffer(6, PIXEL_FILL(1));
+        PrintMenuGridTable(6, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, sMenuActions_Skin);
+        InitMenuActionGrid(6, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, gTasks[taskId].tSkinSelection);
+        PutWindowTilemap(6);
+        CopyWindowToVram(6, COPYWIN_FULL);
         gTasks[taskId].tSkinCursorPos = gTasks[taskId].tSkinSelection;
         ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessSkinChoice;
@@ -1984,7 +1979,7 @@ static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8 taskId)
         // Keep current skin selection and go back to hair
         gTasks[taskId].tSkinSelection = gTasks[taskId].tSkinCursorPos;
         ApplySkinPalette(taskId, gTasks[taskId].tSkinSelection);
-        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        NewGameBirchSpeech_ClearGenderWindow(6, 1);
         gTasks[taskId].func = Task_NewGameBirchSpeech_AskHairColor;
         break;
     case MENU_NOTHING_CHOSEN:
@@ -1993,7 +1988,7 @@ static void Task_NewGameBirchSpeech_ProcessSkinChoice(u8 taskId)
         // Confirmed
         PlaySE(SE_SELECT);
         gTasks[taskId].tSkinSelection = input;
-        NewGameBirchSpeech_ClearGenderWindow(5, 1);
+        NewGameBirchSpeech_ClearGenderWindow(6, 1);
         gTasks[taskId].func = Task_NewGameBirchSpeech_AskConfirm;
         break;
     }
@@ -2031,8 +2026,10 @@ static void Task_NewGameBirchSpeech_ProcessConfirmChoice(u8 taskId)
 
     switch (input)
     {
-    case 0: // Yes
+    case 0: // Yes — lock character creator choices to save block
         PlaySE(SE_SELECT);
+        gSaveBlock2Ptr->hairColor = gTasks[taskId].data[9];  // tHairSelection
+        gSaveBlock2Ptr->skinTone = gTasks[taskId].data[13];   // tSkinSelection
         NewGameBirchSpeech_ClearGenderWindow(3, 1);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ShowFaceComment;
         break;
@@ -2183,12 +2180,118 @@ static void Task_NewGameBirchSpeech_WaitForSpriteFadeInAndTextPrinter(u8 taskId)
         gSprites[gTasks[taskId].tBirchSpriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
         if (!RunTextPrintersAndIsPrinter0Active())
         {
-            gSprites[gTasks[taskId].tBirchSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
-            NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
-            NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
-            gTasks[taskId].tTimer = 64;
-            gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouReady;
+            BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+            gTasks[taskId].func = Task_NewGameBirchSpeech_StartRivalNaming;
         }
+    }
+}
+
+static void Task_NewGameBirchSpeech_StartRivalNaming(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        memset(sRivalNameBuffer, 0, sizeof(sRivalNameBuffer));
+        FreeAllWindowBuffers();
+        DestroyTask(taskId);
+        DoNamingScreen(NAMING_SCREEN_RIVAL, sRivalNameBuffer,
+                       SPECIES_NONE, MON_GENDERLESS, 0,
+                       CB2_ReturnFromRivalNaming);
+    }
+}
+
+static void CB2_ReturnFromRivalNaming(void)
+{
+    u16 savedIme;
+
+    ResetBgsAndClearDma3BusyFlags(0);
+    SetGpuReg(REG_OFFSET_DISPCNT, 0);
+    SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
+    InitBgsFromTemplates(0, sMainMenuBgTemplates, ARRAY_COUNT(sMainMenuBgTemplates));
+    InitBgFromTemplate(&sBirchBgTemplate);
+    SetVBlankCallback(NULL);
+    SetGpuReg(REG_OFFSET_BG2CNT, 0);
+    SetGpuReg(REG_OFFSET_BG1CNT, 0);
+    SetGpuReg(REG_OFFSET_BG0CNT, 0);
+    SetGpuReg(REG_OFFSET_BG2HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG2VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+    DmaFill16(3, 0, VRAM, VRAM_SIZE);
+    DmaFill32(3, 0, OAM, OAM_SIZE);
+    DmaFill16(3, 0, PLTT, PLTT_SIZE);
+    ResetPaletteFade();
+    {
+        u8 theme = GetActiveTheme();
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        LoadPalette(&sBirchGradientPals[theme][1], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+    }
+    DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
+    DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
+    ResetTasks();
+    CreateTask(Task_NewGameBirchSpeech_ShowToddResult, 0);
+    ScanlineEffect_Stop();
+    ResetSpriteData();
+    FreeAllSpritePalettes();
+    ResetAllPicSprites();
+    {
+        u8 spriteId = AddNewGameBirchObject(0x88, 0x3C, 1);
+        gSprites[spriteId].callback = SpriteCB_Null;
+        gSprites[spriteId].oam.priority = 0;
+        gSprites[spriteId].invisible = FALSE;
+    }
+    BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
+    SetGpuReg(REG_OFFSET_BG1HOFS, -8);
+    SetGpuReg(REG_OFFSET_WIN0H, 0);
+    SetGpuReg(REG_OFFSET_WIN0V, 0);
+    SetGpuReg(REG_OFFSET_WININ, 0);
+    SetGpuReg(REG_OFFSET_WINOUT, 0);
+    SetGpuReg(REG_OFFSET_BLDCNT, 0);
+    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+    SetGpuReg(REG_OFFSET_BLDY, 0);
+    ShowBg(0);
+    ShowBg(1);
+    savedIme = REG_IME;
+    REG_IME = 0;
+    REG_IE |= 1;
+    REG_IME = savedIme;
+    SetVBlankCallback(VBlankCB_MainMenu);
+    SetMainCallback2(CB2_MainMenu);
+    InitWindows(sNewGameBirchSpeechTextWindows);
+    LoadMainMenuWindowFrameTiles(0, 0xF3);
+    LoadMessageBoxGfx(0, BIRCH_DLG_BASE_TILE_NUM, BG_PLTT_ID(15));
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    PutWindowTilemap(0);
+    CopyWindowToVram(0, COPYWIN_FULL);
+}
+
+static void Task_NewGameBirchSpeech_ShowToddResult(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        DrawDialogFrameWithCustomTile(0, TRUE, BIRCH_DLG_BASE_TILE_NUM);
+        if (StringCompare(sRivalNameBuffer, sText_Todd) == 0
+         || StringCompare(sRivalNameBuffer, sText_ToddUpper) == 0
+         || StringCompare(sRivalNameBuffer, sText_ToddLower) == 0)
+        {
+            StringExpandPlaceholders(gStringVar4, gText_MissNanny_ToddCorrect);
+        }
+        else
+        {
+            StringExpandPlaceholders(gStringVar4, gText_MissNanny_ToddWrong);
+        }
+        AddTextPrinterForMessage(TRUE);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToddResult;
+    }
+}
+
+static void Task_NewGameBirchSpeech_WaitToddResult(u8 taskId)
+{
+    if (!RunTextPrintersAndIsPrinter0Active())
+    {
+        gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouReady;
     }
 }
 
@@ -2332,6 +2435,7 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     gSprites[spriteId].y = 60;
     gSprites[spriteId].invisible = FALSE;
     gTasks[taskId].tPlayerSpriteId = spriteId;
+    ApplyPlayerAppearancePalette(gSprites[spriteId].oam.paletteNum);
     SetGpuReg(REG_OFFSET_BG1HOFS, -60);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
     SetGpuReg(REG_OFFSET_WIN0H, 0);

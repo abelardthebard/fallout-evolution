@@ -109,13 +109,25 @@ gText_Birch_WhatsYourName::
 	.string "Do you remember your name?$"
 
 gText_Birch_SoItsPlayer::
-	.string "So it's {PLAYER}{KUN}?$"
+	.string "And you are certain it's {PLAYER}?$"
 
 gText_Birch_YourePlayer::
-	.string "Ah, okay!\p"
-	.string "You're {PLAYER}{KUN} who's moving to my\n"
-	.string "hometown of LITTLEROOT.\l"
-	.string "I get it now!\p"
+	.string "Your classmate found you on the floor\n"
+	.string "and carried you here.\p"
+	.string "Can you recall their name?\p"
+	.string "$"
+
+gText_MissNanny_ToddCorrect::
+	.string "Correct.\n"
+	.string "Your memory is improving.\p"
+	.string "$"
+
+gText_MissNanny_ToddWrong::
+	.string "That is not correct.\n"
+	.string "His name is Todd.\p"
+	.string "You did not remember the person\n"
+	.string "who may have saved your life.\p"
+	.string "I will note this in your file.\p"
 	.string "$"
 
 gText_Birch_AreYouReady::

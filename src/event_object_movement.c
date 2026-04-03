@@ -36,6 +36,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "task.h"
+#include "text_window.h"
 #include "trainer_see.h"
 #include "trainer_hill.h"
 #include "util.h"
@@ -3323,6 +3324,8 @@ u8 LoadObjectEventPaletteCopy(u16 originalTag, u16 copyTag)
 u8 LoadPlayerObjectEventPalette(enum Gender gender)
 {
     u16 paletteTag;
+    u8 slot;
+
     switch (gender)
     {
     default:
@@ -3333,7 +3336,9 @@ u8 LoadPlayerObjectEventPalette(enum Gender gender)
         paletteTag = OBJ_EVENT_PAL_TAG_MAY;
         break;
     }
-    return LoadObjectEventPalette(paletteTag);
+    slot = LoadObjectEventPalette(paletteTag);
+    ApplyPlayerAppearancePalette(slot);
+    return slot;
 }
 
 static void UNUSED LoadObjectEventPaletteSet(u16 *paletteTags)

@@ -239,6 +239,8 @@ extern const u8 gText_MissNanny_FaceComment[];
 extern const u8 gText_Birch_WhatsYourName[];
 extern const u8 gText_Birch_SoItsPlayer[];
 extern const u8 gText_Birch_YourePlayer[];
+extern const u8 gText_MissNanny_ToddCorrect[];
+extern const u8 gText_MissNanny_ToddWrong[];
 extern const u8 gText_Birch_AreYouReady[];
 
 extern const u8 gText_BirchInTrouble[];

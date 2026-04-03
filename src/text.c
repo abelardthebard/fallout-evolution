@@ -561,6 +561,19 @@ void RunTextPrinters(void)
                             // Draw typing caret at next character position (non-instant only)
                             if (currentPrinter->textSpeed > 0)
                             {
+                                // Erase previous caret if position changed (e.g. line wrap)
+                                if (currentPrinter->caretPrevX != currentPrinter->printerTemplate.currentX
+                                 || currentPrinter->caretPrevY != currentPrinter->printerTemplate.currentY)
+                                {
+                                    FillWindowPixelRect(
+                                        currentPrinter->printerTemplate.windowId,
+                                        currentPrinter->printerTemplate.color.background << 4 | currentPrinter->printerTemplate.color.background,
+                                        currentPrinter->caretPrevX,
+                                        currentPrinter->caretPrevY,
+                                        8, 16);
+                                }
+                                currentPrinter->caretPrevX = currentPrinter->printerTemplate.currentX;
+                                currentPrinter->caretPrevY = currentPrinter->printerTemplate.currentY;
                                 BlitBitmapRectToWindow(
                                     currentPrinter->printerTemplate.windowId,
                                     sDownArrowTiles,

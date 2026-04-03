@@ -1428,6 +1428,7 @@ static void NamingScreen_CreatePlayerIcon(void)
     spriteId = CreateObjectGraphicsSprite(rivalGfxId, SpriteCallbackDummy, 56, 37, 0);
     gSprites[spriteId].oam.priority = 3;
     StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
+    ApplyPlayerAppearancePalette(gSprites[spriteId].oam.paletteNum);
 }
 
 static void NamingScreen_CreatePCIcon(void)
@@ -1968,74 +1969,10 @@ static void CreateHelperTasks(void)
     CreateButtonFlashTask();
 }
 
-// Green ramp values (the base theme, matches palette files on disk)
-static const u16 sGreenRamp[] = {
-    RGB(24, 31, 15), // #C0F878
-    RGB(19, 29, 12), // #98E860
-    RGB(14, 27,  8), // #70D840
-    RGB( 9, 25,  4), // #48C820
-    RGB( 5, 21,  2), // #28A810
-    RGB( 3, 16,  2), // #188010
-    RGB( 2, 12,  1), // #106008
-    RGB( 1,  8,  1), // #084008
-};
-
-// Theme ramps indexed by theme ID
-static const u16 sThemeRamps[THEME_COUNT][8] = {
-    [THEME_GREEN] = {
-        RGB(24, 31, 15), RGB(19, 29, 12), RGB(14, 27,  8), RGB( 9, 25,  4),
-        RGB( 5, 21,  2), RGB( 3, 16,  2), RGB( 2, 12,  1), RGB( 1,  8,  1),
-    },
-    [THEME_BLUE] = {
-        RGB(19, 29, 31), RGB(15, 26, 31), RGB(11, 23, 29), RGB( 9, 19, 28),
-        RGB( 7, 15, 24), RGB( 6, 11, 19), RGB( 4,  8, 15), RGB( 3,  5, 10),
-    },
-    [THEME_RED] = {
-        RGB(30, 16, 15), RGB(29, 12, 12), RGB(29, 10,  9), RGB(29,  8,  6),
-        RGB(24,  6,  4), RGB(19,  4,  3), RGB(15,  3,  2), RGB(10,  2,  1),
-    },
-    [THEME_YELLOW] = {
-        RGB(29, 28, 11), RGB(27, 25,  5), RGB(25, 21,  3), RGB(22, 18,  2),
-        RGB(18, 15,  1), RGB(14, 12,  0), RGB(10,  9,  0), RGB( 7,  6,  0),
-    },
-};
-
-// Replace green ramp colors with active theme colors in loaded palettes
+// Apply PipBoy theme to all naming screen palettes (BG slots 0-11, all OBJ slots)
 static void ApplyThemeToPalettes(void)
 {
-    u8 theme = GetActiveTheme();
-    u16 i, j;
-
-    if (theme == THEME_GREEN)
-        return; // Palettes are already green on disk
-
-    // Scan all BG palette slots used by the naming screen (0-11)
-    for (i = 0; i < 12 * 16; i++)
-    {
-        for (j = 0; j < ARRAY_COUNT(sGreenRamp); j++)
-        {
-            if (gPlttBufferUnfaded[i] == sGreenRamp[j])
-            {
-                gPlttBufferUnfaded[i] = sThemeRamps[theme][j];
-                gPlttBufferFaded[i] = sThemeRamps[theme][j];
-                break;
-            }
-        }
-    }
-
-    // Scan OBJ palette slots used by naming screen sprites
-    for (i = OBJ_PLTT_OFFSET; i < OBJ_PLTT_OFFSET + 16 * 16; i++)
-    {
-        for (j = 0; j < ARRAY_COUNT(sGreenRamp); j++)
-        {
-            if (gPlttBufferUnfaded[i] == sGreenRamp[j])
-            {
-                gPlttBufferUnfaded[i] = sThemeRamps[theme][j];
-                gPlttBufferFaded[i] = sThemeRamps[theme][j];
-                break;
-            }
-        }
-    }
+    PipBoy_ApplyThemeToPalettes(0, 12 * 16, OBJ_PLTT_OFFSET, 16 * 16);
 }
 
 static void LoadPalettes(void)
@@ -2296,7 +2233,7 @@ static const struct NamingScreenTemplate sRivalNamingScreenTemplate =
 {
     .copyExistingString = FALSE,
     .maxChars = PLAYER_NAME_LENGTH,
-    .iconFunction = 6,
+    .iconFunction = 1, // TODO: replace with Todd overworld sprite
     .addGenderIcon = FALSE,
     .initialPage = KBPAGE_LETTERS_UPPER,
     .title = sText_RivalsName,

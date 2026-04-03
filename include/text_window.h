@@ -3,6 +3,7 @@
 
 #define WINDOW_FRAMES_COUNT 4
 #define THEME_COUNT 4
+#define PIPBOY_RAMP_SIZE 8
 
 enum {
     THEME_GREEN,
@@ -28,6 +29,12 @@ struct PipTheme
 extern const u8 gTextWindowFrame1_Gfx[];
 extern const u16 gTextWindowFrame1_Pal[];
 extern const struct PipTheme gPipThemes[THEME_COUNT];
+extern const u16 gPipBoyGreenRamp[PIPBOY_RAMP_SIZE];
+extern const u16 gPipBoyThemeRamps[THEME_COUNT][PIPBOY_RAMP_SIZE];
+void PipBoy_ApplyThemeToPalettes(u16 bgStart, u16 bgCount, u16 objStart, u16 objCount);
+extern const u16 gHairPalettes[][3];
+extern const u16 gSkinPalettes[][3];
+void ApplyPlayerAppearancePalette(u8 paletteSlot);
 
 const struct TilesPal *GetWindowFrameTilesPal(u8 id);
 void LoadMessageBoxGfx(u8 windowId, u16 destOffset, u8 palOffset);
