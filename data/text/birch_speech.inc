@@ -49,13 +49,12 @@ gText_MissNanny_RemindResponse::
 	.string "$"
 
 gText_MissNanny_RememberResponse::
-	.string "Good.\n"
-	.string "That is one less concern.\p"
+	.string "Good...\p"
 	.string "$"
 
 gText_MissNanny_YearQuestion::
 	.string "Second question. More specifically...\n"
-	.string "What year is it?$"
+	.string "What year is it at present?$"
 
 gText_MissNanny_YearWrong::
 	.string "That is not correct...\p"
@@ -66,7 +65,7 @@ gText_MissNanny_YearWrong::
 	.string "$"
 
 gText_MissNanny_YearCorrect::
-	.string "Correct.\n"
+	.string "Correct...\n"
 	.string "214 years since the Great War.\p"
 	.string "$"
 

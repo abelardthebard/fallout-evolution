@@ -643,13 +643,6 @@ static const struct MenuAction sMenuActions_Skin[] = {
 #define SKIN_GRID_COLUMNS 2
 #define SKIN_GRID_ROWS 3
 
-static const u8 sText_Yes[] = _("Yes");
-static const u8 sText_Back[] = _("Back");
-
-static const struct MenuAction sMenuActions_Confirm[] = {
-    {sText_Yes, {NULL}},
-    {sText_Back, {NULL}},
-};
 
 static const u8 *const sMalePresetNames[] = {
     COMPOUND_STRING("Cary"),
@@ -1469,7 +1462,7 @@ static void Task_NewGameBirchSpeech_WaitToShowBirch(u8 taskId)
     else
     {
         spriteId = gTasks[taskId].tBirchSpriteId;
-        gSprites[spriteId].x = 136;
+        gSprites[spriteId].x = 137;
         gSprites[spriteId].y = 60;
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
@@ -1980,33 +1973,24 @@ static void Task_NewGameBirchSpeech_WaitToShowConfirmMenu(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
-        DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[3], 0xF3);
-        FillWindowPixelBuffer(3, PIXEL_FILL(1));
-        PrintMenuTable(3, ARRAY_COUNT(sMenuActions_Confirm), sMenuActions_Confirm);
-        InitMenuInUpperLeftCornerNormal(3, ARRAY_COUNT(sMenuActions_Confirm), 0);
-        PutWindowTilemap(3);
-        CopyWindowToVram(3, COPYWIN_FULL);
+        CreateYesNoMenuParameterized(3, 5, 0xF3, 0xDF, 2, 15);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessConfirmChoice;
     }
 }
 
 static void Task_NewGameBirchSpeech_ProcessConfirmChoice(u8 taskId)
 {
-    s8 input = Menu_ProcessInputNoWrap();
-
-    switch (input)
+    switch (Menu_ProcessInputNoWrapClearOnChoose())
     {
     case 0: // Yes — lock character creator choices to save block
         PlaySE(SE_SELECT);
         gSaveBlock2Ptr->hairColor = gTasks[taskId].data[9];  // tHairSelection
         gSaveBlock2Ptr->skinTone = gTasks[taskId].data[13];   // tSkinSelection
-        NewGameBirchSpeech_ClearGenderWindow(3, 1);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ShowFaceComment;
         break;
     case MENU_B_PRESSED:
-    case 1: // Back
+    case 1: // No
         PlaySE(SE_SELECT);
-        NewGameBirchSpeech_ClearGenderWindow(3, 1);
         gTasks[taskId].func = Task_NewGameBirchSpeech_AskSkinTone;
         break;
     }
