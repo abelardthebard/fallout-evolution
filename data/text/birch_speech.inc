@@ -29,8 +29,7 @@ gText_Birch_MainSpeech::
 
 gText_MissNanny_RememberQuestion::
 	.string "First question. Do you know the\n"
-	.string "basics of where and when you are?\p"
-	.string "$"
+	.string "basics of where and when you are?$"
 
 gText_MissNanny_RemindResponse::
 	.string "In 2077, the United States and China\n"
@@ -56,8 +55,7 @@ gText_MissNanny_RememberResponse::
 
 gText_MissNanny_YearQuestion::
 	.string "Second question. More specifically...\n"
-	.string "What year is it?\p"
-	.string "$"
+	.string "What year is it?$"
 
 gText_MissNanny_YearWrong::
 	.string "That is not correct...\p"
@@ -78,20 +76,16 @@ gText_Birch_AndYouAre::
 	.string "$"
 
 gText_Birch_BoyOrGirl::
-	.string "What is your gender presentation?\p"
-	.string "$"
+	.string "What is your gender presentation?$"
 
 gText_MissNanny_HairColor::
-	.string "Next, what is your hair color?\p"
-	.string "$"
+	.string "Next, what is your hair color?$"
 
 gText_MissNanny_SkinTone::
-	.string "And last, what is your complexion?\p"
-	.string "$"
+	.string "And last, what is your complexion?$"
 
 gText_MissNanny_Confirm::
-	.string "Confirm?\p"
-	.string "$"
+	.string "Are you sure?$"
 
 gText_MissNanny_FaceComment::
 	.string "Oh! I see... Well...\n"
@@ -130,12 +124,11 @@ gText_MissNanny_ToddWrong::
 	.string "$"
 
 gText_Birch_AreYouReady::
-	.string "All right, are you ready?\p"
-	.string "Your very own adventure is about\n"
-	.string "to unfold.\p"
-	.string "Take courage, and leap into the\n"
-	.string "world of POKéMON where dreams,\l"
-	.string "adventure, and friendships await!\p"
-	.string "Well, I'll be expecting you later.\n"
-	.string "Come see me in my POKéMON LAB.\p"
+	.string "The evaluation is now complete.\n"
+	.string "Results have been logged.\p"
+	.string "One additional item of concern...\p"
+	.string "You are eleven minutes late\n"
+	.string "for your aptitude exam.\p"
+	.string "I would recommend haste.\n"
+	.string "To the extent you are able...\p"
 	.string "$"

@@ -2084,7 +2084,7 @@ static void Task_NewGameBirchSpeech_CreateNameYesNo(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
-        CreateYesNoMenuParameterized(3, 5, STD_WINDOW_BASE_TILE_NUM, 0xDF, STD_WINDOW_PALETTE_NUM, 15);
+        CreateYesNoMenuParameterized(3, 5, 0xF3, 0xDF, 2, 15);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ProcessNameYesNoMenu;
     }
 }
@@ -2133,16 +2133,17 @@ static void Task_NewGameBirchSpeech_ReshowBirch(u8 taskId)
 
         // Miss Nanny — shifted right to make room for Todd
         spriteId = gTasks[taskId].tBirchSpriteId;
-        gSprites[spriteId].x = 176;
+        gSprites[spriteId].x = 158;
         gSprites[spriteId].y = 60;
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
 
-        // Todd — left of Miss Nanny
-        toddSpriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 96, 60, 0, NULL);
+        // Todd — pre-created at init, just show and position
+        toddSpriteId = gTasks[taskId].data[14];
+        gSprites[toddSpriteId].x = 94;
+        gSprites[toddSpriteId].y = 60;
+        gSprites[toddSpriteId].invisible = FALSE;
         gSprites[toddSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
-        gSprites[toddSpriteId].oam.priority = 1;
-        gTasks[taskId].data[14] = toddSpriteId;
         NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 2);
         NewGameBirchSpeech_StartFadePlatformOut(taskId, 1);
         NewGameBirchSpeech_ClearWindow(0);
@@ -2210,21 +2211,39 @@ static void CB2_ReturnFromRivalNaming(void)
     DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
     ResetTasks();
-    CreateTask(Task_NewGameBirchSpeech_ShowToddResult, 0);
-    ScanlineEffect_Stop();
-    ResetSpriteData();
-    FreeAllSpritePalettes();
-    ResetAllPicSprites();
     {
+        u8 taskId = CreateTask(Task_NewGameBirchSpeech_ShowToddResult, 0);
         u8 spriteId;
+
+        ScanlineEffect_Stop();
+        ResetSpriteData();
+        FreeAllSpritePalettes();
+        ResetAllPicSprites();
+
         // Miss Nanny — shifted right
-        spriteId = AddNewGameBirchObject(176, 60, 1);
+        spriteId = AddNewGameBirchObject(158, 60, 1);
         gSprites[spriteId].callback = SpriteCB_Null;
         gSprites[spriteId].oam.priority = 0;
         gSprites[spriteId].invisible = FALSE;
+        gTasks[taskId].tBirchSpriteId = spriteId;
+
         // Todd — left of Miss Nanny
-        spriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 96, 60, 0, NULL);
+        spriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 94, 60, 0, NULL);
         gSprites[spriteId].oam.priority = 1;
+        gTasks[taskId].data[14] = spriteId;
+
+        // Player sprites (for AreYouReady scene)
+        spriteId = CreateTrainerSprite(FacilityClassToPicIndex(FACILITY_CLASS_BRENDAN), 120, 60, 0, NULL);
+        gSprites[spriteId].callback = SpriteCB_Null;
+        gSprites[spriteId].invisible = TRUE;
+        gSprites[spriteId].oam.priority = 0;
+        gTasks[taskId].tBrendanSpriteId = spriteId;
+
+        spriteId = CreateTrainerSprite(FacilityClassToPicIndex(FACILITY_CLASS_MAY), 120, 60, 0, NULL);
+        gSprites[spriteId].callback = SpriteCB_Null;
+        gSprites[spriteId].invisible = TRUE;
+        gSprites[spriteId].oam.priority = 0;
+        gTasks[taskId].tMaySpriteId = spriteId;
     }
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
     SetGpuReg(REG_OFFSET_BG1HOFS, -8);
@@ -2275,6 +2294,12 @@ static void Task_NewGameBirchSpeech_WaitToddResult(u8 taskId)
 {
     if (!RunTextPrintersAndIsPrinter0Active())
     {
+        // Fade out Miss Nanny + Todd, fade in platform
+        gSprites[gTasks[taskId].tBirchSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
+        gSprites[gTasks[taskId].data[14]].oam.objMode = ST_OAM_OBJ_BLEND;
+        NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
+        NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
+        gTasks[taskId].tTimer = 64;
         gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouReady;
     }
 }
@@ -2286,6 +2311,7 @@ static void Task_NewGameBirchSpeech_AreYouReady(u8 taskId)
     if (gTasks[taskId].tIsDoneFadingSprites)
     {
         gSprites[gTasks[taskId].tBirchSpriteId].invisible = TRUE;
+        gSprites[gTasks[taskId].data[14]].invisible = TRUE;
         if (gTasks[taskId].tTimer)
         {
             gTasks[taskId].tTimer--;
@@ -2300,8 +2326,10 @@ static void Task_NewGameBirchSpeech_AreYouReady(u8 taskId)
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
         gTasks[taskId].tPlayerSpriteId = spriteId;
+        ApplyPlayerAppearancePalette(gSprites[spriteId].oam.paletteNum);
         NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 2);
         NewGameBirchSpeech_StartFadePlatformOut(taskId, 1);
+        NewGameBirchSpeech_ClearWindow(0);
         StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouReady);
         AddTextPrinterForMessage(TRUE);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ShrinkPlayer;
@@ -2462,6 +2490,7 @@ static void AddBirchSpeechObjects(u8 taskId)
     u8 birchSpriteId;
     u8 brendanSpriteId;
     u8 maySpriteId;
+    u8 toddSpriteId;
 
     birchSpriteId = AddNewGameBirchObject(0x88, 0x3C, 1);
     gSprites[birchSpriteId].callback = SpriteCB_Null;
@@ -2478,6 +2507,11 @@ static void AddBirchSpeechObjects(u8 taskId)
     gSprites[maySpriteId].invisible = TRUE;
     gSprites[maySpriteId].oam.priority = 0;
     gTasks[taskId].tMaySpriteId = maySpriteId;
+    toddSpriteId = CreateTrainerSprite(TRAINER_PIC_FRONT_TODD, 112, 60, 0, NULL);
+    gSprites[toddSpriteId].callback = SpriteCB_Null;
+    gSprites[toddSpriteId].invisible = TRUE;
+    gSprites[toddSpriteId].oam.priority = 1;
+    gTasks[taskId].data[14] = toddSpriteId;
 }
 
 #undef tPlayerSpriteId
@@ -2812,12 +2846,11 @@ static void NewGameBirchSpeech_ClearGenderWindow(u8 windowId, bool8 copyToVram)
 
 static void NewGameBirchSpeech_ClearWindow(u8 windowId)
 {
-    u8 maxCharWidth = GetFontAttribute(FONT_NORMAL, FONTATTR_MAX_LETTER_WIDTH);
-    u8 maxCharHeight = GetFontAttribute(FONT_NORMAL, FONTATTR_MAX_LETTER_HEIGHT);
-    u8 winWidth = GetWindowAttribute(windowId, WINDOW_WIDTH);
-    u8 winHeight = GetWindowAttribute(windowId, WINDOW_HEIGHT);
+    u8 bgColor = GetFontAttribute(FONT_NORMAL, FONTATTR_COLOR_BACKGROUND);
+    u16 width = GetWindowAttribute(windowId, WINDOW_WIDTH) * 8;
+    u16 height = GetWindowAttribute(windowId, WINDOW_HEIGHT) * 8;
 
-    FillWindowPixelRect(windowId, PIXEL_FILL(0), 0, 0, maxCharWidth * winWidth, maxCharHeight * winHeight);
+    FillWindowPixelRect(windowId, bgColor, 0, 0, width, height);
     CopyWindowToVram(windowId, COPYWIN_GFX);
 }
 

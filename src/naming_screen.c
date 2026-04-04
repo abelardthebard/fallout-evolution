@@ -61,6 +61,7 @@ enum {
     GFXTAG_INPUT_ARROW,
     GFXTAG_UNDERSCORE,
     GFXTAG_CARET,
+    GFXTAG_TODD = 254,
     GFXTAG_RIVAL = 255,
 };
 
@@ -73,6 +74,7 @@ enum {
     PALTAG_CURSOR,
     PALTAG_BACK_BUTTON,
     PALTAG_OK_BUTTON,
+    PALTAG_TODD = 254,
     PALTAG_RIVAL = 255,
 };
 
@@ -192,6 +194,8 @@ static const u8 sCaret_Gfx[] = INCBIN_U8("graphics/naming_screen/caret.4bpp");
 static const u16 sKeyboard_Pal[] = INCBIN_U16("graphics/naming_screen/keyboard.gbapal");
 static const u16 sRival_Gfx[] = INCBIN_U16("graphics/naming_screen/rival.4bpp");
 static const u16 sRival_Pal[] = INCBIN_U16("graphics/naming_screen/rival.gbapal");
+static const u16 sTodd_Gfx[] = INCBIN_U16("graphics/object_events/pics/people/todd/walking.4bpp");
+static const u16 sTodd_Pal[] = INCBIN_U16("graphics/object_events/palettes/todd.gbapal");
 
 static const u8 *const sTransferredToPCMessages[] =
 {
@@ -202,7 +206,7 @@ static const u8 *const sTransferredToPCMessages[] =
 };
 
 
-static const u8 sText_RivalsName[] = _("RIVAL's NAME?");
+static const u8 sText_RivalsName[] = _("CLASSMATE's NAME?");
 static const u8 sText_AlphabetUpperLower[] = _("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!");
 
 static const struct BgTemplate sBgTemplates[] =
@@ -1398,6 +1402,7 @@ static void NamingScreen_CreateWaldaDadIcon(void);
 static void NamingScreen_CreateCodeIcon(void);
 static void NamingScreen_CreateRivalIcon(void);
 static void NamingScreen_CreateToddIcon(void);
+static const union AnimCmd *const sAnims_Rival[];
 
 static void (*const sIconFunctions[])(void) =
 {
@@ -1435,11 +1440,25 @@ static void NamingScreen_CreatePlayerIcon(void)
 
 static void NamingScreen_CreateToddIcon(void)
 {
+    const struct SpriteSheet sheet = {
+        sTodd_Gfx, 0x900, GFXTAG_TODD
+    };
+    const struct SpritePalette palette = {
+        sTodd_Pal, PALTAG_TODD
+    };
+    struct SpriteTemplate template;
+    const struct SubspriteTable *tables_p;
     u8 spriteId;
 
-    spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_TODD_NORMAL, SpriteCallbackDummy, 56, 37, 0);
+    CopyObjectGraphicsInfoToSpriteTemplate(OBJ_EVENT_GFX_TODD_NORMAL, SpriteCallbackDummy, &template, &tables_p);
+    template.tileTag = sheet.tag;
+    template.paletteTag = palette.tag;
+    template.anims = sAnims_Rival;
+    template.images = NULL;
+    LoadSpriteSheet(&sheet);
+    LoadSpritePalette(&palette);
+    spriteId = CreateSprite(&template, 56, 37, 0);
     gSprites[spriteId].oam.priority = 3;
-    StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
 }
 
 static void NamingScreen_CreatePCIcon(void)
