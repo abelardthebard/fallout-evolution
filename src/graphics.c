@@ -2105,10 +2105,8 @@ const u16 gMonIconPalettes[][16] =
 
 const u16 gTitleScreenBgPalettes[]         = INCBIN_U16("graphics/title_screen/fallout_logo.gbapal",
                                                         "graphics/title_screen/falloutevolution_mainmenu.gbapal");
-const u16 gTitleScreenEmeraldVersionPal[]  = INCBIN_U16("graphics/title_screen/evolution.gbapal");
 const u32 gTitleScreenCloudsTilemap[]      = INCBIN_U32("graphics/title_screen/clouds.bin.smolTM");
 const u32 gTitleScreenPokemonLogoGfx[]     = INCBIN_U32("graphics/title_screen/fallout_logo.8bpp.smol");
-const u32 gTitleScreenEmeraldVersionGfx[]  = INCBIN_U32("graphics/title_screen/evolution.8bpp.smol");
 const u16 gTitleScreenPressStartPal[]      = INCBIN_U16("graphics/title_screen/press_start.gbapal");
 const u32 gTitleScreenPressStartGfx[]      = INCBIN_U32("graphics/title_screen/press_start.4bpp.smol");
 const u32 gTitleScreenPokemonLogoTilemap[] = INCBIN_U32("graphics/title_screen/fallout_logo.bin.smolTM");

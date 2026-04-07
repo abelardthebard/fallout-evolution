@@ -180,15 +180,7 @@ static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
     .callback = SpriteCB_VersionBannerRight,
 };
 
-static const struct CompressedSpriteSheet sSpriteSheet_EmeraldVersion[] =
-{
-    {
-        .data = gTitleScreenEmeraldVersionGfx,
-        .size = 0x1000,
-        .tag = TAG_VERSION
-    },
-    {},
-};
+// FE: Version banner removed — baked into logo
 
 static const struct OamData sOamData_CopyrightBanner =
 {
@@ -491,7 +483,7 @@ static void SpriteCB_PokemonLogoShine(struct Sprite *sprite)
              || sprite->x == DISPLAY_WIDTH / 2 + (4 * SHINE_SPEED)
              || sprite->x == DISPLAY_WIDTH / 2 + (5 * SHINE_SPEED)
              || sprite->x == DISPLAY_WIDTH / 2 + (6 * SHINE_SPEED))
-                gPlttBufferFaded[0] = RGB(24, 31, 12);
+                gPlttBufferFaded[0] = RGB(24, 31, 15);
             else
                 gPlttBufferFaded[0] = backgroundColor;
         }
@@ -607,10 +599,9 @@ void CB2_InitTitleScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         gReservedSpritePaletteCount = 9;
-        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldVersion[0]);
+        // FE: Version banner removed — baked into logo
         LoadCompressedSpriteSheet(&sSpriteSheet_PressStart[0]);
         LoadCompressedSpriteSheet(&sPokemonLogoShineSpriteSheet[0]);
-        LoadPalette(gTitleScreenEmeraldVersionPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
         LoadSpritePalette(&sSpritePalette_PressStart[0]);
         gMain.state = 2;
         break;
@@ -618,7 +609,7 @@ void CB2_InitTitleScreen(void)
     {
         u8 taskId = CreateTask(Task_TitleScreenPhase1, 0);
 
-        gTasks[taskId].tCounter = 256;
+        gTasks[taskId].tCounter = 512;
         gTasks[taskId].tSkipToNext = FALSE;
         gTasks[taskId].tPointless = -16;
         gTasks[taskId].tBg2Y = -32;
@@ -626,7 +617,7 @@ void CB2_InitTitleScreen(void)
         break;
     }
     case 3:
-        BeginNormalPaletteFade(PALETTES_ALL, 1, 16, 0, RGB_WHITEALPHA);
+        BeginNormalPaletteFade(PALETTES_ALL, 2, 16, 0, RGB_WHITEALPHA);
         SetVBlankCallback(VBlankCB);
         gMain.state = 4;
         break;
@@ -690,32 +681,19 @@ static void Task_TitleScreenPhase1(u8 taskId)
     if (gTasks[taskId].tCounter != 0)
     {
         u16 frameNum = gTasks[taskId].tCounter;
-        if (frameNum == 176)
+        if (frameNum == 352)
             StartPokemonLogoShine(SHINE_MODE_DOUBLE);
-        else if (frameNum == 64)
+        else if (frameNum == 128)
             StartPokemonLogoShine(SHINE_MODE_SINGLE);
 
         gTasks[taskId].tCounter--;
     }
     else
     {
-        u8 spriteId;
-
         SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_1 | DISPCNT_OBJ_1D_MAP | DISPCNT_BG2_ON | DISPCNT_OBJ_ON);
         SetGpuReg(REG_OFFSET_WININ, 0);
         SetGpuReg(REG_OFFSET_WINOUT, 0);
-        SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_OBJ | BLDCNT_EFFECT_BLEND | BLDCNT_TGT2_ALL);
-        SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(16, 0));
         SetGpuReg(REG_OFFSET_BLDY, 0);
-
-        // Create left side of version banner
-        spriteId = CreateSprite(&sVersionBannerLeftSpriteTemplate, VERSION_BANNER_LEFT_X, VERSION_BANNER_Y, 0);
-        gSprites[spriteId].sAlphaBlendIdx = ARRAY_COUNT(gTitleScreenAlphaBlend);
-        gSprites[spriteId].sParentTaskId = taskId;
-
-        // Create right side of version banner
-        spriteId = CreateSprite(&sVersionBannerRightSpriteTemplate, VERSION_BANNER_RIGHT_X, VERSION_BANNER_Y, 0);
-        gSprites[spriteId].sParentTaskId = taskId;
 
         gTasks[taskId].tCounter = 144;
         gTasks[taskId].func = Task_TitleScreenPhase2;
@@ -758,7 +736,7 @@ static void Task_TitleScreenPhase2(u8 taskId)
 
     if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tPointless != 0)
         gTasks[taskId].tPointless++;
-    if (!(gTasks[taskId].tCounter & 1) && gTasks[taskId].tBg2Y != 0)
+    if (!(gTasks[taskId].tCounter & 1) && gTasks[taskId].tBg2Y != -5)
         gTasks[taskId].tBg2Y++;
 
     // Slide Pokémon logo up
@@ -798,8 +776,8 @@ static void Task_TitleScreenPhase3(u8 taskId)
     }
     else
     {
-        SetGpuReg(REG_OFFSET_BG2Y_L, 0);
-        SetGpuReg(REG_OFFSET_BG2Y_H, 0);
+        SetGpuReg(REG_OFFSET_BG2Y_L, -5 * 256);
+        SetGpuReg(REG_OFFSET_BG2Y_H, -1);
         ++gTasks[taskId].tCounter; // FE: cloud scroll disabled
         // UpdateLegendaryMarkingColor(gTasks[taskId].tCounter); // FE: disabled until custom animation
         if ((gMPlayInfo_BGM.status & 0xFFFF) == 0)

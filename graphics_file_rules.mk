@@ -281,9 +281,6 @@ $(MISCGFXDIR)/emoticons.4bpp: %.4bpp: %.png
 $(TITLESCREENGFXDIR)/fallout_logo.gbapal: %.gbapal: %.pal
 	$(GFX) $< $@ -num_colors 224
 
-$(TITLESCREENGFXDIR)/evolution.8bpp: %.8bpp: %.png
-	$(GFX) $< $@ -mwidth 8 -mheight 4
-
 graphics/pokemon_jump/bg.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 63 -Wnum_tiles
 
