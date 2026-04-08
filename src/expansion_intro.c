@@ -12,7 +12,7 @@
 #include "intro_frlg.h"
 #include "m4a.h"
 #include "expansion_intro.h"
-#include "title_screen.h"
+#include "splash_screen.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
@@ -283,8 +283,8 @@ void Task_HandleExpansionIntro(u8 taskId)
             }
             else
             {
-                // FE: Skip intro cinematic, go straight to title screen
-                SetMainCallback2(CB2_InitTitleScreen);
+                // FE: Show splash screen before title screen
+                SetMainCallback2(CB2_InitSplashScreen);
             }
         }
         break;

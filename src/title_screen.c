@@ -51,11 +51,21 @@ static void CB2_GoToResetRtcScreen(void);
 static void CB2_GoToBerryFixScreen(void);
 static void CB2_GoToCopyrightScreen(void);
 static void UpdateLegendaryMarkingColor(u8);
+static void InitStormReveal(void);
+static void UpdateStormPalette(void);
 
 static void SpriteCB_VersionBannerLeft(struct Sprite *sprite);
 static void SpriteCB_VersionBannerRight(struct Sprite *sprite);
 static void SpriteCB_PressStartCopyrightBanner(struct Sprite *sprite);
 static void SpriteCB_PokemonLogoShine(struct Sprite *sprite);
+
+static s16 sInitDelay; // FE: delay counter for blank screen before fade
+
+// FE: Breathing palette state
+static u8 sStormFrame;
+static u16 sStormCounter;
+static bool8 sStormActive;
+static s8 sStormDirection;
 
 // const rom data
 static const u16 sUnusedUnknownPal[] = INCBIN_U16("graphics/title_screen/unused.gbapal");
@@ -566,7 +576,7 @@ void CB2_InitTitleScreen(void)
         SetGpuReg(REG_OFFSET_BLDCNT, 0);
         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
         SetGpuReg(REG_OFFSET_BLDY, 0);
-        *((u16 *)PLTT) = RGB_WHITE;
+        *((u16 *)PLTT) = RGB_BLACK;
         SetGpuReg(REG_OFFSET_DISPCNT, 0);
         SetGpuReg(REG_OFFSET_BG2CNT, 0);
         SetGpuReg(REG_OFFSET_BG1CNT, 0);
@@ -617,11 +627,18 @@ void CB2_InitTitleScreen(void)
         break;
     }
     case 3:
-        BeginNormalPaletteFade(PALETTES_ALL, 2, 16, 0, RGB_WHITEALPHA);
+        // FE: 2 seconds of blank screen before fade begins
         SetVBlankCallback(VBlankCB);
         gMain.state = 4;
+        sInitDelay = 120;
         break;
     case 4:
+        if (--sInitDelay > 0)
+            break;
+        BeginNormalPaletteFade(PALETTES_ALL, 8, 16, 0, RGB_BLACK);
+        gMain.state = 6;
+        break;
+    case 6:
         PanFadeAndZoomScreen(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, 0x100, 0);
         SetGpuReg(REG_OFFSET_BG2X_L, -29 * 256);
         SetGpuReg(REG_OFFSET_BG2X_H, -1);
@@ -647,13 +664,12 @@ void CB2_InitTitleScreen(void)
                                     | DISPCNT_WIN0_ON
                                     | DISPCNT_OBJWIN_ON);
         m4aSongNumStart(MUS_TITLE);
-        gMain.state = 5;
+        gMain.state = 7;
         break;
-    case 5:
+    case 7:
         if (!UpdatePaletteFade())
         {
             StartPokemonLogoShine(SHINE_MODE_SINGLE_NO_BG_COLOR);
-            // ScanlineEffect_InitWave(0, DISPLAY_HEIGHT, 4, 4, 0, SCANLINE_EFFECT_REG_BG1HOFS, TRUE); // FE: clouds disabled
             SetMainCallback2(MainCB2);
         }
         break;
@@ -723,11 +739,6 @@ static void Task_TitleScreenPhase2(u8 taskId)
     {
         gTasks[taskId].tSkipToNext = TRUE;
         SetGpuReg(REG_OFFSET_BLDY, 0);
-        SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_1
-                                    | DISPCNT_OBJ_1D_MAP
-                                    | DISPCNT_BG0_ON
-                                    | DISPCNT_BG2_ON
-                                    | DISPCNT_OBJ_ON);
         CreatePressStartBanner(START_BANNER_X, 108);
         CreateCopyrightBanner(START_BANNER_X, 148);
         gTasks[taskId].tBg1Y = 0;
@@ -736,14 +747,27 @@ static void Task_TitleScreenPhase2(u8 taskId)
 
     if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tPointless != 0)
         gTasks[taskId].tPointless++;
-    if (!(gTasks[taskId].tCounter & 1) && gTasks[taskId].tBg2Y != -5)
+    if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tBg2Y != -5)
         gTasks[taskId].tBg2Y++;
+
+    // FE: Show background as soon as logo locks into place
+    // Blend to black BEFORE enabling BG0 to prevent 1-frame color flash
+    if (gTasks[taskId].tBg2Y == -5 && !sStormActive)
+    {
+        InitStormReveal();
+        SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_1
+                                    | DISPCNT_OBJ_1D_MAP
+                                    | DISPCNT_BG0_ON
+                                    | DISPCNT_BG2_ON
+                                    | DISPCNT_OBJ_ON);
+    }
 
     // Slide Pokémon logo up
     yPos = gTasks[taskId].tBg2Y * 256;
     SetGpuReg(REG_OFFSET_BG2Y_L, yPos);
     SetGpuReg(REG_OFFSET_BG2Y_H, yPos / 0x10000);
 
+    UpdateStormPalette();
     gTasks[taskId].data[5] = 15; // Unused
     gTasks[taskId].data[6] = 6;  // Unused
 }
@@ -778,8 +802,8 @@ static void Task_TitleScreenPhase3(u8 taskId)
     {
         SetGpuReg(REG_OFFSET_BG2Y_L, -5 * 256);
         SetGpuReg(REG_OFFSET_BG2Y_H, -1);
-        ++gTasks[taskId].tCounter; // FE: cloud scroll disabled
-        // UpdateLegendaryMarkingColor(gTasks[taskId].tCounter); // FE: disabled until custom animation
+        ++gTasks[taskId].tCounter;
+        UpdateStormPalette();
         if ((gMPlayInfo_BGM.status & 0xFFFF) == 0)
         {
             BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_WHITEALPHA);
@@ -823,7 +847,7 @@ static void CB2_GoToBerryFixScreen(void)
 
 static void UpdateLegendaryMarkingColor(u8 frameNum)
 {
-    if ((frameNum % 4) == 0) // Change color every 4th frame
+    if ((frameNum % 4) == 0)
     {
         s32 intensity = Cos(frameNum, Q_8_8(0.5)) + Q_8_8(0.5);
         u32 r = 31 - Q_8_8_TO_INT(intensity * 31);
@@ -833,4 +857,47 @@ static void UpdateLegendaryMarkingColor(u8 frameNum)
         u16 color = RGB(r, g, b);
         LoadPalette(&color, BG_PLTT_ID(14) + 15, sizeof(color));
    }
+}
+
+// FE: Breathing palette using engine's BlendPalettes
+// Coeff 0 = full color, 16 = fully black
+// Ping-pong between BREATHE_MIN (brightest) and BREATHE_MAX (dimmest)
+#define BREATHE_MIN_COEFF   0   // full brightness
+#define BREATHE_MAX_COEFF   12  // how dark it gets (12/16 toward black)
+#define BREATHE_STEP_DELAY  10  // hardware frames between coeff steps
+
+static void InitStormReveal(void)
+{
+    sStormFrame = 16; // start fully black
+    sStormCounter = 0;
+    sStormActive = TRUE;
+    sStormDirection = -1; // fade in (coeff going down = brighter)
+    BlendPalettes(1 << 14, 16, RGB_BLACK);
+}
+
+static void UpdateStormPalette(void)
+{
+    if (!sStormActive)
+        return;
+
+    sStormCounter++;
+
+    if (sStormCounter >= BREATHE_STEP_DELAY)
+    {
+        sStormCounter = 0;
+        sStormFrame += sStormDirection;
+
+        if (sStormFrame <= BREATHE_MIN_COEFF)
+        {
+            sStormFrame = BREATHE_MIN_COEFF;
+            sStormDirection = 1; // start dimming
+        }
+        else if (sStormFrame >= BREATHE_MAX_COEFF)
+        {
+            sStormFrame = BREATHE_MAX_COEFF;
+            sStormDirection = -1; // start brightening
+        }
+    }
+
+    BlendPalettes(1 << 14, sStormFrame, RGB_BLACK);
 }
