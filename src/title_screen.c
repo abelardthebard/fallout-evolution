@@ -597,7 +597,9 @@ void CB2_InitTitleScreen(void)
         // bg2
         DecompressDataWithHeaderVram(gTitleScreenPokemonLogoGfx, (void *)(BG_CHAR_ADDR(0)));
         DecompressDataWithHeaderVram(gTitleScreenPokemonLogoTilemap, (void *)(BG_SCREEN_ADDR(9)));
-        LoadPalette(gTitleScreenBgPalettes, BG_PLTT_ID(0), 15 * PLTT_SIZE_4BPP);
+        // Load only logo palette (14 slots), NOT the background palette at slot 14
+        // Background palette will be loaded when BG0 is enabled, already blacked out
+        LoadPalette(gTitleScreenBgPalettes, BG_PLTT_ID(0), 14 * PLTT_SIZE_4BPP);
         // bg3
         DecompressDataWithHeaderVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2)));
         DecompressDataWithHeaderVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26)));
@@ -751,10 +753,15 @@ static void Task_TitleScreenPhase2(u8 taskId)
         gTasks[taskId].tBg2Y++;
 
     // FE: Show background as soon as logo locks into place
-    // Blend to black BEFORE enabling BG0 to prevent 1-frame color flash
+    // Frame 1: Init palette (blacked out) and force-sync to hardware
+    // Frame 2: Enable BG0 (hardware PLTT is guaranteed black from prior VBlank)
     if (gTasks[taskId].tBg2Y == -5 && !sStormActive)
     {
-        InitStormReveal();
+        InitStormReveal(); // palette loaded, blended to black, force-synced to hardware
+        // BG0 will be enabled next frame via sStormActive check below
+    }
+    if (sStormActive && !(GetGpuReg(REG_OFFSET_DISPCNT) & DISPCNT_BG0_ON))
+    {
         SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_1
                                     | DISPCNT_OBJ_1D_MAP
                                     | DISPCNT_BG0_ON
@@ -868,11 +875,19 @@ static void UpdateLegendaryMarkingColor(u8 frameNum)
 
 static void InitStormReveal(void)
 {
+    // Following the proven intro.c pattern:
+    // 1. LoadPalette writes real colors to BOTH Unfaded and Faded buffers
+    LoadPalette(gTitleScreenBgPalettes + 14 * 16, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
+    // 2. BlendPalettes blacks out the Faded buffer for slot 14
+    BlendPalettes(1 << 14, 16, RGB_BLACK);
+    // 3. Force-sync the blacked-out Faded buffer to hardware PLTT immediately
+    //    (same as BeginNormalPaletteFade line 144 in palette.c)
+    CpuCopy32(gPlttBufferFaded, (void *)PLTT, PLTT_SIZE);
+
     sStormFrame = 16; // start fully black
     sStormCounter = 0;
     sStormActive = TRUE;
     sStormDirection = -1; // fade in (coeff going down = brighter)
-    BlendPalettes(1 << 14, 16, RGB_BLACK);
 }
 
 static void UpdateStormPalette(void)
