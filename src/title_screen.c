@@ -50,7 +50,6 @@ static void CB2_GoToClearSaveDataScreen(void);
 static void CB2_GoToResetRtcScreen(void);
 static void CB2_GoToBerryFixScreen(void);
 static void CB2_GoToCopyrightScreen(void);
-static void UpdateLegendaryMarkingColor(u8);
 static void InitStormReveal(void);
 static void UpdateStormPalette(void);
 
@@ -404,11 +403,11 @@ static void SpriteCB_PressStartCopyrightBanner(struct Sprite *sprite)
 {
     if (sprite->sAnimate == TRUE)
     {
-        // Alternate between hidden and shown every 16th frame
-        if (++sprite->sTimer & 16)
-            sprite->invisible = FALSE;
-        else
-            sprite->invisible = TRUE;
+        // FE: Blink — 30 frames on, 30 off
+        sprite->sTimer++;
+        if (sprite->sTimer >= 60)
+            sprite->sTimer = 0;
+        sprite->invisible = (sprite->sTimer >= 30);
     }
     else
     {
@@ -430,18 +429,7 @@ static void CreatePressStartBanner(s16 x, s16 y)
     }
 }
 
-static void CreateCopyrightBanner(s16 x, s16 y)
-{
-    u8 i;
-    u8 spriteId;
-
-    x -= 64;
-    for (i = 0; i < NUM_COPYRIGHT_FRAMES; i++, x += 32)
-    {
-        spriteId = CreateSprite(&sStartCopyrightBannerSpriteTemplate, x, y, 0);
-        StartSpriteAnim(&gSprites[spriteId], i + NUM_PRESS_START_FRAMES);
-    }
-}
+// FE: CreateCopyrightBanner removed — copyright hidden
 
 #undef sAnimate
 #undef sTimer
@@ -603,9 +591,9 @@ void CB2_InitTitleScreen(void)
         // bg3
         DecompressDataWithHeaderVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2)));
         DecompressDataWithHeaderVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26)));
-        // bg1 — clouds disabled for now
-        // DecompressDataWithHeaderVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3)));
-        // DecompressDataWithHeaderVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27)));
+        // bg1 — clouds
+        DecompressDataWithHeaderVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3)));
+        DecompressDataWithHeaderVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27)));
         ScanlineEffect_Stop();
         ResetTasks();
         ResetSpriteData();
@@ -741,30 +729,32 @@ static void Task_TitleScreenPhase2(u8 taskId)
     {
         gTasks[taskId].tSkipToNext = TRUE;
         SetGpuReg(REG_OFFSET_BLDY, 0);
-        CreatePressStartBanner(START_BANNER_X, 108);
-        CreateCopyrightBanner(START_BANNER_X, 148);
+        CreatePressStartBanner(START_BANNER_X, 152);
         gTasks[taskId].tBg1Y = 0;
         gTasks[taskId].func = Task_TitleScreenPhase3;
     }
 
     if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tPointless != 0)
         gTasks[taskId].tPointless++;
-    if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tBg2Y != -5)
+    if (!(gTasks[taskId].tCounter & 3) && gTasks[taskId].tBg2Y != -8)
         gTasks[taskId].tBg2Y++;
 
     // FE: Show background as soon as logo locks into place
     // Frame 1: Init palette (blacked out) and force-sync to hardware
     // Frame 2: Enable BG0 (hardware PLTT is guaranteed black from prior VBlank)
-    if (gTasks[taskId].tBg2Y == -5 && !sStormActive)
+    if (gTasks[taskId].tBg2Y == -8 && !sStormActive)
     {
         InitStormReveal(); // palette loaded, blended to black, force-synced to hardware
         // BG0 will be enabled next frame via sStormActive check below
     }
     if (sStormActive && !(GetGpuReg(REG_OFFSET_DISPCNT) & DISPCNT_BG0_ON))
     {
+        SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG1 | BLDCNT_EFFECT_BLEND | BLDCNT_TGT2_BG0 | BLDCNT_TGT2_BD);
+        SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(6, 15));
         SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_1
                                     | DISPCNT_OBJ_1D_MAP
                                     | DISPCNT_BG0_ON
+                                    | DISPCNT_BG1_ON
                                     | DISPCNT_BG2_ON
                                     | DISPCNT_OBJ_ON);
     }
@@ -773,6 +763,13 @@ static void Task_TitleScreenPhase2(u8 taskId)
     yPos = gTasks[taskId].tBg2Y * 256;
     SetGpuReg(REG_OFFSET_BG2Y_L, yPos);
     SetGpuReg(REG_OFFSET_BG2Y_H, yPos / 0x10000);
+
+    // Scroll clouds during Phase 2 as well
+    if (sStormActive && (gTasks[taskId].tCounter & 1))
+    {
+        gTasks[taskId].tBg1Y++;
+        gBattle_BG1_Y = gTasks[taskId].tBg1Y / 2;
+    }
 
     UpdateStormPalette();
     gTasks[taskId].data[5] = 15; // Unused
@@ -807,9 +804,14 @@ static void Task_TitleScreenPhase3(u8 taskId)
     }
     else
     {
-        SetGpuReg(REG_OFFSET_BG2Y_L, -5 * 256);
+        SetGpuReg(REG_OFFSET_BG2Y_L, -8 * 256);
         SetGpuReg(REG_OFFSET_BG2Y_H, -1);
         ++gTasks[taskId].tCounter;
+        if (gTasks[taskId].tCounter & 1)
+        {
+            gTasks[taskId].tBg1Y++;
+            gBattle_BG1_Y = gTasks[taskId].tBg1Y / 2;
+        }
         UpdateStormPalette();
         if ((gMPlayInfo_BGM.status & 0xFFFF) == 0)
         {
@@ -852,19 +854,6 @@ static void CB2_GoToBerryFixScreen(void)
     }
 }
 
-static void UpdateLegendaryMarkingColor(u8 frameNum)
-{
-    if ((frameNum % 4) == 0)
-    {
-        s32 intensity = Cos(frameNum, Q_8_8(0.5)) + Q_8_8(0.5);
-        u32 r = 31 - Q_8_8_TO_INT(intensity * 31);
-        u32 g = 31 - Q_8_8_TO_INT(intensity * 22);
-        u32 b = 12;
-
-        u16 color = RGB(r, g, b);
-        LoadPalette(&color, BG_PLTT_ID(14) + 15, sizeof(color));
-   }
-}
 
 // FE: Breathing palette using engine's BlendPalettes
 // Coeff 0 = full color, 16 = fully black
@@ -915,4 +904,13 @@ static void UpdateStormPalette(void)
     }
 
     BlendPalettes(1 << 14, sStormFrame, RGB_BLACK);
+
+    // Logo pulses around its real colors — slightly brighter and darker
+    {
+        s8 swing = (s8)sStormFrame - (BREATHE_MAX_COEFF / 2); // centered: negative=bright, positive=dim
+        if (swing > 0)
+            BlendPalettes(0x3FFF, swing / 4, RGB_BLACK);  // dim side
+        else if (swing < 0)
+            BlendPalettes(0x3FFF, (-swing) / 4, RGB_WHITE); // bright side
+    }
 }

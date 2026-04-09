@@ -1048,6 +1048,9 @@ static void SerialCB_CopyrightScreen(void)
     GameCubeMultiBoot_HandleSerialInterrupt(&gMultibootProgramStruct);
 }
 
+static s16 sCopyrightTimer; // FE: proper timer for disclaimer hold
+#define DISCLAIMER_HOLD_FRAMES 270 // 4.5 seconds at 60fps
+
 static u8 SetUpCopyrightScreen(void)
 {
     if (IS_FRLG)
@@ -1088,10 +1091,14 @@ static u8 SetUpCopyrightScreen(void)
     // The REG_DISPCNT overwrite is NOT needed in m-GBA, No$GBA, VBA 1.8.0, My Boy and Pizza Boy GBA emulators.
     case COPYRIGHT_EMULATOR_BLEND:
         REG_DISPCNT = DISPCNT_MODE_0 | DISPCNT_OBJ_1D_MAP | DISPCNT_BG0_ON;
+        sCopyrightTimer = 0;
+        gMain.state++;
+        break;
     default:
         UpdatePaletteFade();
-        gMain.state++;
         GameCubeMultiBoot_Main(&gMultibootProgramStruct);
+        if (++sCopyrightTimer >= DISCLAIMER_HOLD_FRAMES)
+            gMain.state = COPYRIGHT_START_FADE;
         break;
     case COPYRIGHT_START_FADE:
         GameCubeMultiBoot_Main(&gMultibootProgramStruct);
