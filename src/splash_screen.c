@@ -221,8 +221,11 @@ void CB2_SplashScreenMain(void)
 // =============================================
 
 #define LOGO_ANIM_NUM_FRAMES   26
-#define LOGO_ANIM_FRAME_HOLD   30  // hardware frames per animation frame (slow for debugging)
+#define LOGO_ANIM_FRAME_HOLD   4   // hardware frames per animation frame (~15fps)
 #define LOGO_ANIM_FADE_DELAY   4
+#define LOGO_ANIM_LOGO_HOLD    180 // hold frame 20 for 3 seconds
+#define LOGO_ANIM_BLACK_HOLD   180 // hold frame 0 (black) for 3 seconds
+#define LOGO_ANIM_LOGO_FRAME   20  // frame to hold on (full logo)
 
 // Per-frame tilesets (compressed)
 static const u32 sLogoAnimGfx_00[] = INCBIN_U32("graphics/title_screen/abelard_anim/frame00.4bpp.smol");
@@ -310,30 +313,72 @@ static const u16 sLogoAnimPal[] = INCBIN_U16("graphics/title_screen/abelard_anim
 enum {
     LOGO_ANIM_FADE_IN,
     LOGO_ANIM_PLAYING,
-    LOGO_ANIM_FADE_OUT,
+    LOGO_ANIM_HOLD_LOGO,
+    LOGO_ANIM_PLAYING_END,
+    LOGO_ANIM_HOLD_BLACK,
     LOGO_ANIM_DONE,
 };
 
 static void Task_LogoAnim(u8 taskId);
 static void LogoAnim_LoadFrame(u8 frameNum);
+static void LogoAnim_LoadFrameToBank(u8 frameNum, u8 bank);
+static void LogoAnim_SwapBank(void);
 static void VBlankCB_LogoAnim(void);
 void CB2_LogoAnimMain(void);
+
+// Double-buffer: two VRAM banks for flicker-free frame swaps
+// Bank 0: CHARBASE(0) + SCREENBASE(31)  — tiles at 0x06000000, map at 0x0600F800
+// Bank 1: CHARBASE(2) + SCREENBASE(30)  — tiles at 0x06008000, map at 0x0600F000
+#define LOGO_BANK_CHARBASE_0   0
+#define LOGO_BANK_SCREENBASE_0 31
+#define LOGO_BANK_CHARBASE_1   2
+#define LOGO_BANK_SCREENBASE_1 30
+
+static u8 sLogoAnimActiveBank;   // which bank is currently displayed (0 or 1)
+static bool8 sLogoAnimSwapReady; // next frame is ready in the off-screen bank
 
 static void VBlankCB_LogoAnim(void)
 {
     LoadOam();
     ProcessSpriteCopyRequests();
     TransferPlttBuffer();
+
+    // Swap BG0 to the new bank during VBlank (instant, no flicker)
+    if (sLogoAnimSwapReady)
+    {
+        u8 charbase = (sLogoAnimActiveBank == 0) ? LOGO_BANK_CHARBASE_0 : LOGO_BANK_CHARBASE_1;
+        u8 screenbase = (sLogoAnimActiveBank == 0) ? LOGO_BANK_SCREENBASE_0 : LOGO_BANK_SCREENBASE_1;
+        SetGpuReg(REG_OFFSET_BG0CNT, BGCNT_PRIORITY(0)
+                                    | BGCNT_CHARBASE(charbase)
+                                    | BGCNT_SCREENBASE(screenbase)
+                                    | BGCNT_16COLOR
+                                    | BGCNT_TXT256x256);
+        sLogoAnimSwapReady = FALSE;
+    }
 }
 
+// Load a frame into the INACTIVE bank (safe — PPU isn't reading it)
+static void LogoAnim_LoadFrameToBank(u8 frameNum, u8 bank)
+{
+    u8 charbase = (bank == 0) ? LOGO_BANK_CHARBASE_0 : LOGO_BANK_CHARBASE_1;
+    u8 screenbase = (bank == 0) ? LOGO_BANK_SCREENBASE_0 : LOGO_BANK_SCREENBASE_1;
+    DecompressDataWithHeaderVram(sLogoAnimGfxTable[frameNum], (void *)BG_CHAR_ADDR(charbase));
+    DecompressDataWithHeaderVram(sLogoAnimMapTable[frameNum], (void *)BG_SCREEN_ADDR(screenbase));
+}
+
+// Queue a bank swap for the next VBlank
+static void LogoAnim_SwapBank(void)
+{
+    sLogoAnimActiveBank ^= 1; // toggle 0↔1
+    sLogoAnimSwapReady = TRUE;
+}
+
+// Legacy wrapper for first frame load (display is off, direct write is safe)
 static void LogoAnim_LoadFrame(u8 frameNum)
 {
-    // Briefly force-blank the display, decompress to VRAM, re-enable
-    u16 dispcnt = GetGpuReg(REG_OFFSET_DISPCNT);
-    SetGpuReg(REG_OFFSET_DISPCNT, dispcnt | DISPCNT_FORCED_BLANK);
-    DecompressDataWithHeaderVram(sLogoAnimGfxTable[frameNum], (void *)BG_CHAR_ADDR(0));
-    DecompressDataWithHeaderVram(sLogoAnimMapTable[frameNum], (void *)BG_SCREEN_ADDR(7));
-    SetGpuReg(REG_OFFSET_DISPCNT, dispcnt);
+    LogoAnim_LoadFrameToBank(frameNum, 0);
+    sLogoAnimActiveBank = 0;
+    sLogoAnimSwapReady = FALSE;
 }
 
 static void Task_LogoAnim(u8 taskId)
@@ -341,41 +386,85 @@ static void Task_LogoAnim(u8 taskId)
     switch (gTasks[taskId].tState2)
     {
     case LOGO_ANIM_FADE_IN:
-        if (!gPaletteFade.active)
-        {
-            gTasks[taskId].tState2 = LOGO_ANIM_PLAYING;
-            gTasks[taskId].tAnimFrame = 0;
-            gTasks[taskId].tHoldTimer = 0;
-        }
+        // No fade — frame 0 is already black. Go straight to playing.
+        gTasks[taskId].tState2 = LOGO_ANIM_PLAYING;
+        gTasks[taskId].tAnimFrame = 0;
+        gTasks[taskId].tHoldTimer = 0;
         break;
     case LOGO_ANIM_PLAYING:
         if (JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON))
         {
-            // Skip to end
-            BeginNormalPaletteFade(PALETTES_ALL, LOGO_ANIM_FADE_DELAY, 0, 16, RGB_BLACK);
-            gTasks[taskId].tState2 = LOGO_ANIM_FADE_OUT;
+            gTasks[taskId].tState2 = LOGO_ANIM_DONE;
             break;
         }
 
-        if (++gTasks[taskId].tHoldTimer >= LOGO_ANIM_FRAME_HOLD)
+        gTasks[taskId].tHoldTimer++;
+
+        // Preload next frame into inactive bank halfway through the hold
+        if (gTasks[taskId].tHoldTimer == LOGO_ANIM_FRAME_HOLD / 2)
+        {
+            u8 nextFrame = gTasks[taskId].tAnimFrame + 1;
+            if (nextFrame < LOGO_ANIM_NUM_FRAMES)
+            {
+                u8 inactiveBank = sLogoAnimActiveBank ^ 1;
+                LogoAnim_LoadFrameToBank(nextFrame, inactiveBank);
+            }
+        }
+
+        // Swap to the preloaded bank when hold is done
+        if (gTasks[taskId].tHoldTimer >= LOGO_ANIM_FRAME_HOLD)
         {
             gTasks[taskId].tHoldTimer = 0;
             gTasks[taskId].tAnimFrame++;
 
-            if (gTasks[taskId].tAnimFrame >= LOGO_ANIM_NUM_FRAMES)
+            if (gTasks[taskId].tAnimFrame == LOGO_ANIM_LOGO_FRAME)
             {
-                // Animation complete
-                BeginNormalPaletteFade(PALETTES_ALL, LOGO_ANIM_FADE_DELAY, 0, 16, RGB_BLACK);
-                gTasks[taskId].tState2 = LOGO_ANIM_FADE_OUT;
+                // Hit the logo frame — hold for 3 seconds
+                LogoAnim_SwapBank();
+                gTasks[taskId].tHoldTimer = 0;
+                gTasks[taskId].tState2 = LOGO_ANIM_HOLD_LOGO;
+            }
+            else if (gTasks[taskId].tAnimFrame >= LOGO_ANIM_NUM_FRAMES)
+            {
+                // All frames played — preload frame 0 (black) and swap to it
+                {
+                    u8 inactiveBank = sLogoAnimActiveBank ^ 1;
+                    LogoAnim_LoadFrameToBank(0, inactiveBank);
+                    LogoAnim_SwapBank();
+                }
+                gTasks[taskId].tHoldTimer = 0;
+                gTasks[taskId].tState2 = LOGO_ANIM_HOLD_BLACK;
             }
             else
             {
-                LogoAnim_LoadFrame(gTasks[taskId].tAnimFrame);
+                LogoAnim_SwapBank();
             }
         }
         break;
-    case LOGO_ANIM_FADE_OUT:
-        if (!gPaletteFade.active)
+
+    case LOGO_ANIM_HOLD_LOGO:
+        // Hold on the full logo (frame 20) for 3 seconds
+        if (JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON))
+        {
+            gTasks[taskId].tState2 = LOGO_ANIM_DONE;
+            break;
+        }
+        if (++gTasks[taskId].tHoldTimer >= LOGO_ANIM_LOGO_HOLD)
+        {
+            // Resume playing from frame 21
+            gTasks[taskId].tHoldTimer = 0;
+            gTasks[taskId].tState2 = LOGO_ANIM_PLAYING;
+        }
+        break;
+
+    case LOGO_ANIM_HOLD_BLACK:
+        // Hold black (frame 0) for 3 seconds then transition
+        if (JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON))
+        {
+            gTasks[taskId].tState2 = LOGO_ANIM_DONE;
+            break;
+        }
+        if (++gTasks[taskId].tHoldTimer >= LOGO_ANIM_BLACK_HOLD)
         {
             gTasks[taskId].tState2 = LOGO_ANIM_DONE;
         }
@@ -407,16 +496,15 @@ void CB2_InitLogoAnim(void)
         gMain.state++;
         break;
     case 1:
-        // Load first frame + palette (display is off, safe to write VRAM directly)
-        DecompressDataWithHeaderVram(sLogoAnimGfxTable[0], (void *)BG_CHAR_ADDR(0));
-        DecompressDataWithHeaderVram(sLogoAnimMapTable[0], (void *)BG_SCREEN_ADDR(7));
+        // Load first frame into bank 0 (display is off, safe to write VRAM directly)
+        LogoAnim_LoadFrame(0);
         LoadPalette(sLogoAnimPal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
         gMain.state++;
         break;
     case 2:
         SetGpuReg(REG_OFFSET_BG0CNT, BGCNT_PRIORITY(0)
-                                    | BGCNT_CHARBASE(0)
-                                    | BGCNT_SCREENBASE(7)
+                                    | BGCNT_CHARBASE(LOGO_BANK_CHARBASE_0)
+                                    | BGCNT_SCREENBASE(LOGO_BANK_SCREENBASE_0)
                                     | BGCNT_16COLOR
                                     | BGCNT_TXT256x256);
         SetGpuReg(REG_OFFSET_BG0HOFS, 0);
@@ -425,7 +513,6 @@ void CB2_InitLogoAnim(void)
                                     | DISPCNT_OBJ_1D_MAP
                                     | DISPCNT_BG0_ON);
         SetVBlankCallback(VBlankCB_LogoAnim);
-        BeginNormalPaletteFade(PALETTES_ALL, LOGO_ANIM_FADE_DELAY, 16, 0, RGB_BLACK);
         CreateTask(Task_LogoAnim, 0);
         SetMainCallback2(CB2_LogoAnimMain);
         break;
