@@ -24,6 +24,7 @@
 #include "util.h"
 #include "title_screen.h"
 #include "expansion_intro.h"
+#include "splash_screen.h"
 #include "battle_anim.h"
 #include "intro_frlg.h"
 #include "constants/rgb.h"
@@ -1077,6 +1078,7 @@ static u8 SetUpCopyrightScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_WHITEALPHA);
+        m4aSongNumStart(MUS_FALLOUT_MAIN_THEME);
         SetGpuReg(REG_OFFSET_BG0CNT, BGCNT_PRIORITY(0)
                                    | BGCNT_CHARBASE(0)
                                    | BGCNT_SCREENBASE(7)
@@ -1111,13 +1113,7 @@ static u8 SetUpCopyrightScreen(void)
     case COPYRIGHT_START_INTRO:
         if (UpdatePaletteFade())
             break;
-#if EXPANSION_INTRO == TRUE
-        SetMainCallback2(CB2_ExpansionIntro);
-        CreateTask(Task_HandleExpansionIntro, 0);
-#else
-        // FE: Skip intro cinematic, go straight to title screen
-        SetMainCallback2(CB2_InitTitleScreen);
-#endif
+        SetMainCallback2(CB2_InitLogoAnim);
         if (gMultibootProgramStruct.gcmb_field_2 != 0)
         {
             if (gMultibootProgramStruct.gcmb_field_2 == 2)
@@ -1142,19 +1138,50 @@ static u8 SetUpCopyrightScreen(void)
     return 1;
 }
 
+// FE: Boot-time system init is now handled by CB2_InitBootup. This function is
+// reached later (after the splash screen) and only drives the disclaimer display.
 void CB2_InitCopyrightScreenAfterBootup(void)
 {
-    if (!SetUpCopyrightScreen())
-    {
-        SetSaveBlocksPointers(GetSaveBlocksPointersBaseOffset());
-        ResetMenuAndMonGlobals();
-        Save_ResetSaveCounters();
-        LoadGameSave(SAVE_NORMAL);
-        if (gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_CORRUPT)
-            Sav2_ClearSetDefault();
-        SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
-        InitHeap(gHeap, HEAP_SIZE);
-    }
+    SetUpCopyrightScreen();
+}
+
+// FE: Boot entry — mirrors the system + GPU reset normally performed in
+// SetUpCopyrightScreen's COPYRIGHT_INITIALIZE case, then kicks off the
+// expansion intro directly. The disclaimer display is deferred and runs
+// later via CB2_InitCopyrightScreenAfterBootup after the splash screen.
+void CB2_InitBootup(void)
+{
+    // GPU/display reset (mirrors COPYRIGHT_INITIALIZE, minus the copyright graphics)
+    SetVBlankCallback(NULL);
+    SetGpuReg(REG_OFFSET_BLDCNT, 0);
+    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+    SetGpuReg(REG_OFFSET_BLDY, 0);
+    SetGpuReg(REG_OFFSET_DISPCNT, 0);
+    SetGpuReg(REG_OFFSET_BG0HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+    CpuFill32(0, (void *)VRAM, VRAM_SIZE);
+    CpuFill32(0, (void *)OAM, OAM_SIZE);
+    CpuFill16(0, (void *)PLTT, PLTT_SIZE);
+    ResetPaletteFade();
+    ScanlineEffect_Stop();
+    ResetTasks();
+    ResetSpriteData();
+    FreeAllSpritePalettes();
+    EnableInterrupts(INTR_FLAG_VBLANK);
+
+    // High-level system init (save blocks, heap, etc.)
+    SetSaveBlocksPointers(GetSaveBlocksPointersBaseOffset());
+    ResetMenuAndMonGlobals();
+    Save_ResetSaveCounters();
+    LoadGameSave(SAVE_NORMAL);
+    if (gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_CORRUPT)
+        Sav2_ClearSetDefault();
+    SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
+    InitHeap(gHeap, HEAP_SIZE);
+
+    // Hand off to the expansion intro (RH title card)
+    SetMainCallback2(CB2_ExpansionIntro);
+    CreateTask(Task_HandleExpansionIntro, 0);
 }
 
 void CB2_InitCopyrightScreenAfterTitleScreen(void)

@@ -8,6 +8,7 @@
 #include "sprite.h"
 #include "task.h"
 #include "title_screen.h"
+#include "intro.h"
 #include "constants/rgb.h"
 
 #define SPLASH_DURATION     300 // 5 seconds at 60fps
@@ -144,7 +145,7 @@ static void Task_SplashScreen(u8 taskId)
         ResetSpriteData();
         FreeAllSpritePalettes();
         DestroyTask(taskId);
-        SetMainCallback2(CB2_InitLogoAnim);
+        SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
         break;
     }
 }

@@ -201,3 +201,6 @@
 .include "sound/voicegroups/rg_sevii_45.inc"
 .include "sound/voicegroups/rg_sevii_67.inc"
 .include "sound/voicegroups/drumsets/rg_credits.inc"
+
+@ Fallout Evolution custom voicegroups
+.include "sound/voicegroups/fe_cinematic.inc"
