@@ -203,4 +203,9 @@
 .include "sound/voicegroups/drumsets/rg_credits.inc"
 
 @ Fallout Evolution custom voicegroups
+.include "sound/voicegroups/keysplits/fe/piano.inc"
+.include "sound/voicegroups/keysplits/fe/strings.inc"
+.include "sound/voicegroups/keysplits/fe/cello.inc"
+.include "sound/voicegroups/keysplits/fe/violin.inc"
+.include "sound/voicegroups/keysplits/fe/piano_pedal.inc"
 .include "sound/voicegroups/fe_cinematic.inc"

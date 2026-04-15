@@ -33,3 +33,31 @@ keysplit tuba, 24
 keysplit french_horn, 36
 	split 0, 66
 	split 1, 108
+
+@ Fallout Evolution keysplits (vanilla sc88pro samples only)
+keysplit fe_piano, 0
+	split 0, 53
+	split 1, 65
+	split 2, 77
+	split 3, 127
+
+keysplit fe_strings, 0
+	split 0, 65
+	split 1, 77
+	split 2, 127
+
+keysplit fe_cello, 0
+	split 0, 47
+	split 1, 65
+	split 2, 127
+
+keysplit fe_violin, 0
+	split 0, 65
+	split 1, 77
+	split 2, 127
+
+keysplit fe_piano_pedal, 0
+	split 0, 53
+	split 1, 65
+	split 2, 77
+	split 3, 127

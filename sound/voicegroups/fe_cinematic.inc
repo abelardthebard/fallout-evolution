@@ -6,10 +6,10 @@
 
 voice_group fe_cinematic
 	voice_keysplit_all voicegroup_rs_drumset                                                    @ 0 Drumset (reserved — GM ch10)
-	voice_keysplit voicegroup_piano_keysplit, keysplit_piano                                    @ 1 Acoustic Grand Piano
-	voice_keysplit voicegroup_piano_keysplit, keysplit_piano                                    @ 2 Bright Acoustic Piano
-	voice_keysplit voicegroup_piano_keysplit, keysplit_piano                                    @ 3 Electric Grand Piano
-	voice_keysplit voicegroup_piano_keysplit, keysplit_piano                                    @ 4 Honky-tonk Piano
+	voice_keysplit voicegroup_fe_piano_keysplit, keysplit_fe_piano                                    @ 1 Acoustic Grand Piano
+	voice_keysplit voicegroup_fe_piano_keysplit, keysplit_fe_piano                                    @ 2 Bright Acoustic Piano
+	voice_keysplit voicegroup_fe_piano_pedal_keysplit, keysplit_fe_piano_pedal                        @ 3 Electric Grand Piano (pedal-down ADSR)
+	voice_keysplit voicegroup_fe_piano_keysplit, keysplit_fe_piano                                    @ 4 Honky-tonk Piano
 	voice_directsound 60, 0, DirectSoundWaveData_steinway_b_piano, 128, 204, 51, 242            @ 5 Electric Piano 1 (Steinway — warmer)
 	voice_directsound 60, 0, DirectSoundWaveData_steinway_b_piano, 128, 204, 51, 242            @ 6 Electric Piano 2 (Steinway)
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 7 Harpsichord
@@ -38,25 +38,25 @@ voice_group fe_cinematic
 	voice_directsound 60, 0, DirectSoundWaveData_sd90_classical_overdrive_guitar, 128, 0, 255, 214 @ 30 Distortion Guitar
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 31 Guitar Harmonics
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fretless_bass, 255, 253, 0, 149        @ 32 Acoustic Bass (fretless approx)
-	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fretless_bass, 255, 253, 0, 149        @ 33 Electric Bass (finger)
+	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fingered_bass, 255, 253, 0, 149        @ 33 Electric Bass (finger) — plucked tone
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fretless_bass, 255, 253, 0, 149        @ 34 Electric Bass (pick)
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fretless_bass, 255, 253, 0, 149        @ 35 Fretless Bass
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 36 Slap Bass 1
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 37 Slap Bass 2
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 38 Synth Bass 1
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 39 Synth Bass 2
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 40 Violin (ensemble approx — no solo sample)
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 41 Viola (ensemble approx)
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 42 Cello (ensemble approx — SIGNATURE SOUND MISSING)
+	voice_keysplit voicegroup_fe_violin_keysplit, keysplit_fe_violin                            @ 40 Violin (solo violin samples)
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 41 Viola (extended range)
+	voice_keysplit voicegroup_fe_cello_keysplit, keysplit_fe_cello                              @ 42 Cello (solo cello samples)
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_fretless_bass, 255, 253, 0, 149        @ 43 Contrabass (fretless approx)
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 44 Tremolo Strings (ensemble approx)
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 44 Tremolo Strings
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_pizzicato_strings, 128, 226, 0, 38     @ 45 Pizzicato Strings
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_harp, 255, 242, 51, 242                @ 46 Orchestral Harp
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_timpani, 255, 0, 180, 239              @ 47 Timpani
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 48 String Ensemble 1
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 49 String Ensemble 2
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 50 Synth Strings 1
-	voice_keysplit voicegroup_strings_keysplit, keysplit_strings                                @ 51 Synth Strings 2
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 48 String Ensemble 1
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 49 String Ensemble 2
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 50 Synth Strings 1
+	voice_keysplit voicegroup_fe_strings_keysplit, keysplit_fe_strings                          @ 51 Synth Strings 2
 	voice_directsound 60, 0, DirectSoundWaveData_classical_choir_voice_ahhs, 128, 165, 128, 188 @ 52 Choir Aahs
 	voice_directsound 60, 0, DirectSoundWaveData_unknown_female_voice, 128, 165, 128, 204       @ 53 Voice Oohs (female)
 	voice_directsound 60, 0, DirectSoundWaveData_unknown_female_voice, 128, 165, 128, 204       @ 54 Synth Voice
