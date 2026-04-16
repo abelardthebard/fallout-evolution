@@ -1050,7 +1050,7 @@ static void SerialCB_CopyrightScreen(void)
 }
 
 static s16 sCopyrightTimer; // FE: proper timer for disclaimer hold
-#define DISCLAIMER_HOLD_FRAMES 270 // 4.5 seconds at 60fps
+#define DISCLAIMER_HOLD_FRAMES 375
 
 static u8 SetUpCopyrightScreen(void)
 {

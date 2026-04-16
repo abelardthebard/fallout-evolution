@@ -609,7 +609,7 @@ void CB2_InitTitleScreen(void)
     {
         u8 taskId = CreateTask(Task_TitleScreenPhase1, 0);
 
-        gTasks[taskId].tCounter = 512;
+        gTasks[taskId].tCounter = 787;
         gTasks[taskId].tSkipToNext = FALSE;
         gTasks[taskId].tPointless = -16;
         gTasks[taskId].tBg2Y = -32;
@@ -658,9 +658,15 @@ void CB2_InitTitleScreen(void)
     case 7:
         if (!UpdatePaletteFade())
         {
-            StartPokemonLogoShine(SHINE_MODE_SINGLE_NO_BG_COLOR);
-            SetMainCallback2(MainCB2);
+            sInitDelay = 40;
+            gMain.state = 8;
         }
+        break;
+    case 8:
+        if (--sInitDelay > 0)
+            break;
+        StartPokemonLogoShine(SHINE_MODE_SINGLE_NO_BG_COLOR);
+        SetMainCallback2(MainCB2);
         break;
     }
 }
@@ -686,9 +692,11 @@ static void Task_TitleScreenPhase1(u8 taskId)
     if (gTasks[taskId].tCounter != 0)
     {
         u16 frameNum = gTasks[taskId].tCounter;
-        if (frameNum == 352)
+        if (frameNum == 562)
+            StartPokemonLogoShine(SHINE_MODE_SINGLE_NO_BG_COLOR);
+        else if (frameNum == 337)
             StartPokemonLogoShine(SHINE_MODE_DOUBLE);
-        else if (frameNum == 128)
+        else if (frameNum == 112)
             StartPokemonLogoShine(SHINE_MODE_SINGLE);
 
         gTasks[taskId].tCounter--;
@@ -729,7 +737,7 @@ static void Task_TitleScreenPhase2(u8 taskId)
         gTasks[taskId].tSkipToNext = TRUE;
         SetGpuReg(REG_OFFSET_BLDY, 0);
         CreatePressStartBanner(START_BANNER_X, 152);
-        gTasks[taskId].tBg1Y = 0;
+        // Don't reset tBg1Y here — Phase 3 continues cloud drift from current position
         gTasks[taskId].func = Task_TitleScreenPhase3;
     }
 

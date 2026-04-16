@@ -9,7 +9,9 @@
 #include "task.h"
 #include "title_screen.h"
 #include "intro.h"
+#include "m4a.h"
 #include "constants/rgb.h"
+#include "constants/songs.h"
 
 #define SPLASH_DURATION     300 // 5 seconds at 60fps
 #define SPLASH_FADE_DELAY   4   // fade speed (4 = ~1 second fade in/out)
@@ -102,6 +104,7 @@ enum {
     SPLASH_STATE_FADE_IN,
     SPLASH_STATE_HOLD,
     SPLASH_STATE_FADE_OUT,
+    SPLASH_STATE_SILENCE,
     SPLASH_STATE_DONE,
 };
 
@@ -138,8 +141,15 @@ static void Task_SplashScreen(u8 taskId)
     case SPLASH_STATE_FADE_OUT:
         if (!gPaletteFade.active)
         {
-            gTasks[taskId].tState = SPLASH_STATE_DONE;
+            // Stop static immediately at fade-out end; hold 1s black+silence before disclaimer
+            m4aSongNumStop(MUS_STATIC_LOOP);
+            gTasks[taskId].tCounter = 60;
+            gTasks[taskId].tState = SPLASH_STATE_SILENCE;
         }
+        break;
+    case SPLASH_STATE_SILENCE:
+        if (--gTasks[taskId].tCounter == 0)
+            gTasks[taskId].tState = SPLASH_STATE_DONE;
         break;
     case SPLASH_STATE_DONE:
         ResetSpriteData();
@@ -201,6 +211,9 @@ void CB2_InitSplashScreen(void)
                                     | DISPCNT_OBJ_ON);
         SetVBlankCallback(VBlankCB_Splash);
         BeginNormalPaletteFade(PALETTES_ALL, SPLASH_FADE_DELAY, 16, 0, RGB_BLACK);
+
+        // Start looping TV static under the "Please Stand By" scene
+        m4aSongNumStart(MUS_STATIC_LOOP);
 
         CreateTask(Task_SplashScreen, 0);
         SetMainCallback2(CB2_SplashScreenMain);

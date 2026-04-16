@@ -26,13 +26,17 @@ SRC = os.path.join(os.path.dirname(__file__), '..', 'sound', 'songs', 'midi', 'm
 BAK = SRC + '.velshape-bak'
 
 # prog -> (vmin, vmax, jitter, phrase_boost, top_boost, short_penalty, polyphonic)
+# Targets derived from vanilla Pokemon Emerald velocity statistics
+# (prog 80 squares: vanilla avg 93 stdev 27 — highly dynamic)
 TARGETS = {
-    2:  (80, 120, 6, 10, 10, 8, True),   # piano lead — wide dynamic
-    3:  (65, 95,  4, 6,  6,  6, True),   # pedal piano bed — softer
-    33: (85, 110, 4, 5,  0,  4, False),  # bass
-    48: (75, 95,  3, 0,  0,  0, True),   # pad — minimal variation
-    46: (85, 110, 5, 8,  0,  5, False),  # harp — sparkle accents
-    56: (100, 120, 3, 5,  0,  3, False), # trumpet lead
+    2:  (75, 120, 12, 8,  8, 6, True),   # piano lead — vanilla avg 99 stdev 15
+    3:  (70, 115, 10, 6,  5, 5, True),   # pedal piano — vanilla avg 91 stdev 19
+    33: (88, 112,  4, 4,  0, 3, False),  # bass — vanilla avg 100 stdev 7
+    48: (70, 115, 10, 0,  0, 0, True),   # strings pad — vanilla avg 92 stdev 27
+    46: (70, 110, 12, 8,  0, 5, False),  # harp — vanilla avg 89 stdev 24
+    56: (80, 120, 14, 8,  0, 4, False),  # trumpet — vanilla avg 101 stdev 22
+    80: (70, 115, 14, 8,  0, 6, False),  # square lead — vanilla avg 93 stdev 27
+    81: (70, 115, 14, 8,  0, 6, False),  # saw lead — vanilla avg 98 stdev 22
 }
 
 random.seed(42)

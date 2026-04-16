@@ -9042,7 +9042,10 @@ DirectSoundWaveData_sd90_classical_whistle::
 DirectSoundWaveData_sd90_enhanced_delay_shaku::
 	.incbin "sound/direct_sound_samples/sd90_enhanced_delay_shaku.bin"
 
-@ === Fallout Evolution custom samples (from bpemma/shatter / CyanSMP64 Gen IV music expansion) ===
-@ Credit: Ipatix (HQ m4a mixer), Sierraffinity (sound test), CyanSMP64/Furret (sample rips)
+@ === Fallout Evolution custom samples ===
+
+	.align 2
+DirectSoundWaveData_static::
+	.incbin "sound/direct_sound_samples/static.bin"
 
 	.align 2

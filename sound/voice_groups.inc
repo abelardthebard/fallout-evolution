@@ -209,3 +209,4 @@
 .include "sound/voicegroups/keysplits/fe/violin.inc"
 .include "sound/voicegroups/keysplits/fe/piano_pedal.inc"
 .include "sound/voicegroups/fe_cinematic.inc"
+.include "sound/voicegroups/static_sfx.inc"
