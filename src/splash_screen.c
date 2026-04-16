@@ -122,6 +122,12 @@ static void VBlankCB_Splash(void)
 
 static void Task_SplashScreen(u8 taskId)
 {
+    // Any button (A/B/Start/Select) at any state skips to disclaimer
+    if (JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON | SELECT_BUTTON))
+    {
+        m4aSongNumStop(MUS_STATIC_LOOP);
+        gTasks[taskId].tState = SPLASH_STATE_DONE;
+    }
     switch (gTasks[taskId].tState)
     {
     case SPLASH_STATE_FADE_IN:
@@ -132,7 +138,7 @@ static void Task_SplashScreen(u8 taskId)
         }
         break;
     case SPLASH_STATE_HOLD:
-        if (--gTasks[taskId].tCounter == 0 || JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON))
+        if (--gTasks[taskId].tCounter == 0)
         {
             BeginNormalPaletteFade(PALETTES_ALL, SPLASH_FADE_DELAY, 0, 16, RGB_BLACK);
             gTasks[taskId].tState = SPLASH_STATE_FADE_OUT;
@@ -141,7 +147,6 @@ static void Task_SplashScreen(u8 taskId)
     case SPLASH_STATE_FADE_OUT:
         if (!gPaletteFade.active)
         {
-            // Stop static immediately at fade-out end; hold 1s black+silence before disclaimer
             m4aSongNumStop(MUS_STATIC_LOOP);
             gTasks[taskId].tCounter = 60;
             gTasks[taskId].tState = SPLASH_STATE_SILENCE;

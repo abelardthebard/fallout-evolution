@@ -1099,7 +1099,8 @@ static u8 SetUpCopyrightScreen(void)
     default:
         UpdatePaletteFade();
         GameCubeMultiBoot_Main(&gMultibootProgramStruct);
-        if (++sCopyrightTimer >= DISCLAIMER_HOLD_FRAMES)
+        if (++sCopyrightTimer >= DISCLAIMER_HOLD_FRAMES
+         || JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON | SELECT_BUTTON))
             gMain.state = COPYRIGHT_START_FADE;
         break;
     case COPYRIGHT_START_FADE:

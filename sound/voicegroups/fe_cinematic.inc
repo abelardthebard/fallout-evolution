@@ -86,7 +86,7 @@ voice_group fe_cinematic
 	voice_directsound 60, 0, DirectSoundWaveData_sd90_classical_whistle, 255, 0, 255, 127       @ 78 Whistle
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 79 Ocarina
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 80 Lead 1 (square)
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 81 Lead 2 (sawtooth)
+	voice_square_2 60, 0, 2, 0, 0, 15, 0                                                        @ 81 Lead 2 (Sq2 PSG channel — for harmony)
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 82 Lead 3 (calliope)
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 83 Lead 4 (chiff)
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0                                                     @ 84 Lead 5 (charang)

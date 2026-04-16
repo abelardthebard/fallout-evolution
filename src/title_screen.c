@@ -871,19 +871,14 @@ static void CB2_GoToBerryFixScreen(void)
 
 static void InitStormReveal(void)
 {
-    // Following the proven intro.c pattern:
-    // 1. LoadPalette writes real colors to BOTH Unfaded and Faded buffers
     LoadPalette(gTitleScreenBgPalettes + 14 * 16, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
-    // 2. BlendPalettes blacks out the Faded buffer for slot 14
     BlendPalettes(1 << 14, 16, RGB_BLACK);
-    // 3. Force-sync the blacked-out Faded buffer to hardware PLTT immediately
-    //    (same as BeginNormalPaletteFade line 144 in palette.c)
     CpuCopy32(gPlttBufferFaded, (void *)PLTT, PLTT_SIZE);
 
-    sStormFrame = 16; // start fully black
+    sStormFrame = 16;
     sStormCounter = 0;
     sStormActive = TRUE;
-    sStormDirection = -1; // fade in (coeff going down = brighter)
+    sStormDirection = -1;
 }
 
 static void UpdateStormPalette(void)
@@ -901,23 +896,14 @@ static void UpdateStormPalette(void)
         if (sStormFrame <= BREATHE_MIN_COEFF)
         {
             sStormFrame = BREATHE_MIN_COEFF;
-            sStormDirection = 1; // start dimming
+            sStormDirection = 1;
         }
         else if (sStormFrame >= BREATHE_MAX_COEFF)
         {
             sStormFrame = BREATHE_MAX_COEFF;
-            sStormDirection = -1; // start brightening
+            sStormDirection = -1;
         }
     }
 
     BlendPalettes(1 << 14, sStormFrame, RGB_BLACK);
-
-    // Logo pulses around its real colors — slightly brighter and darker
-    {
-        s8 swing = (s8)sStormFrame - (BREATHE_MAX_COEFF / 2); // centered: negative=bright, positive=dim
-        if (swing > 0)
-            BlendPalettes(0x3FFF, swing / 4, RGB_BLACK);  // dim side
-        else if (swing < 0)
-            BlendPalettes(0x3FFF, (-swing) / 4, RGB_WHITE); // bright side
-    }
 }
