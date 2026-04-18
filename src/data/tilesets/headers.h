@@ -833,6 +833,40 @@ const struct Tileset gTileset_UnionRoom =
     .callback = NULL,
 };
 
+// Fallout Evolution - Vault tilesets
+const struct Tileset gTileset_VaultGeneral =
+{
+    .isCompressed = TRUE,
+    .isSecondary = FALSE,
+    .tiles = gTilesetTiles_VaultGeneral,
+    .palettes = gTilesetPalettes_VaultGeneral,
+    .metatiles = gMetatiles_VaultGeneral,
+    .metatileAttributes = gMetatileAttributes_VaultGeneral,
+    .callback = NULL,
+};
+
+const struct Tileset gTileset_VaultExtras =
+{
+    .isCompressed = TRUE,
+    .isSecondary = TRUE,
+    .tiles = gTilesetTiles_VaultExtras,
+    .palettes = gTilesetPalettes_VaultExtras,
+    .metatiles = gMetatiles_VaultExtras,
+    .metatileAttributes = gMetatileAttributes_VaultExtras,
+    .callback = NULL,
+};
+
+const struct Tileset gTileset_VaultIndustrial =
+{
+    .isCompressed = TRUE,
+    .isSecondary = TRUE,
+    .tiles = gTilesetTiles_VaultIndustrial,
+    .palettes = gTilesetPalettes_VaultIndustrial,
+    .metatiles = gMetatiles_VaultIndustrial,
+    .metatileAttributes = gMetatileAttributes_VaultIndustrial,
+    .callback = NULL,
+};
+
 #else
 
 // FRLG tilesets

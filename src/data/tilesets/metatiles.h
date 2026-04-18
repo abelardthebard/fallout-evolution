@@ -210,6 +210,16 @@ const u16 gMetatileAttributes_MysteryEventsHouse[] = INCBIN_U16("data/tilesets/s
 const u16 gMetatiles_UnionRoom[] = INCBIN_U16("data/tilesets/secondary/union_room/metatiles.bin");
 const u16 gMetatileAttributes_UnionRoom[] = INCBIN_U16("data/tilesets/secondary/union_room/metatile_attributes.bin");
 
+// Fallout Evolution - Vault tilesets
+const u16 gMetatiles_VaultGeneral[] = INCBIN_U16("data/tilesets/primary/vault_general/metatiles.bin");
+const u16 gMetatileAttributes_VaultGeneral[] = INCBIN_U16("data/tilesets/primary/vault_general/metatile_attributes.bin");
+
+const u16 gMetatiles_VaultExtras[] = INCBIN_U16("data/tilesets/secondary/vault_extras/metatiles.bin");
+const u16 gMetatileAttributes_VaultExtras[] = INCBIN_U16("data/tilesets/secondary/vault_extras/metatile_attributes.bin");
+
+const u16 gMetatiles_VaultIndustrial[] = INCBIN_U16("data/tilesets/secondary/vault_industrial/metatiles.bin");
+const u16 gMetatileAttributes_VaultIndustrial[] = INCBIN_U16("data/tilesets/secondary/vault_industrial/metatile_attributes.bin");
+
 #else
 
 const u16 gMetatiles_Building_Frlg[] = INCBIN_U16("data/tilesets/primary/building_frlg/metatiles.bin");

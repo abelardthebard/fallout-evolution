@@ -1635,6 +1635,73 @@ const u16 gTilesetPalettes_UnionRoom[][16] =
 
 const u32 gTilesetTiles_UnionRoom[] = INCBIN_U32("data/tilesets/secondary/union_room/tiles.4bpp.fastSmol");
 
+// Fallout Evolution - Vault tilesets
+const u32 gTilesetTiles_VaultGeneral[] = INCBIN_U32("data/tilesets/primary/vault_general/tiles.4bpp.fastSmol");
+
+const u16 gTilesetPalettes_VaultGeneral[][16] =
+{
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/00.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/01.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/02.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/03.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/04.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/05.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/06.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/07.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/08.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/09.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/10.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/11.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/12.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/13.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/14.gbapal"),
+    INCBIN_U16("data/tilesets/primary/vault_general/palettes/15.gbapal"),
+};
+
+const u32 gTilesetTiles_VaultExtras[] = INCBIN_U32("data/tilesets/secondary/vault_extras/tiles.4bpp.fastSmol");
+
+const u16 gTilesetPalettes_VaultExtras[][16] =
+{
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/00.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/01.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/02.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/03.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/04.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/05.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/06.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/07.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/08.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/09.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/10.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/11.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/12.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/13.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/14.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_extras/palettes/15.gbapal"),
+};
+
+const u32 gTilesetTiles_VaultIndustrial[] = INCBIN_U32("data/tilesets/secondary/vault_industrial/tiles.4bpp.fastSmol");
+
+const u16 gTilesetPalettes_VaultIndustrial[][16] =
+{
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/00.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/01.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/02.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/03.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/04.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/05.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/06.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/07.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/08.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/09.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/10.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/11.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/12.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/13.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/14.gbapal"),
+    INCBIN_U16("data/tilesets/secondary/vault_industrial/palettes/15.gbapal"),
+};
+
 #if IS_FRLG
 
 const u32 gTilesetTiles_Building_Frlg[] = INCBIN_U32("data/tilesets/primary/building_frlg/tiles.4bpp.smol");
