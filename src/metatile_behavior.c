@@ -513,6 +513,14 @@ bool8 MetatileBehavior_IsPC(u8 metatileBehavior)
         return FALSE;
 }
 
+bool8 MetatileBehavior_IsTerminal(u8 metatileBehavior)
+{
+    if (metatileBehavior == MB_TERMINAL)
+        return TRUE;
+    else
+        return FALSE;
+}
+
 bool8 MetatileBehavior_IsCableBoxResults1(u8 metatileBehavior)
 {
     if (metatileBehavior == MB_CABLE_BOX_RESULTS_1)

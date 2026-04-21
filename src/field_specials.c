@@ -1215,6 +1215,83 @@ static void PCTurnOffEffect(void)
     DrawWholeMapView();
 }
 
+// Fallout Evolution — terminal boot/shutdown animation.
+// Mirrors vanilla PC flicker (5 metatile swaps, 6 frames apart) but auto-
+// detects the current "off" metatile so any desk variant works without
+// per-terminal script plumbing. The original off-metatile is cached in
+// EWRAM so DoTerminalTurnOffEffect can restore it at shutdown time.
+
+static EWRAM_DATA u16 sTerminalOffMetatile = 0;
+
+static void Task_TerminalTurnOnEffect(u8);
+static void TerminalTurnOnEffect(struct Task *);
+
+static bool8 IsPlayerInFrontOfTerminal(void)
+{
+    s16 x, y;
+    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    return MetatileBehavior_IsTerminal(MapGridGetMetatileBehaviorAt(x, y));
+}
+
+void DoTerminalTurnOnEffect(void)
+{
+    if (FuncIsActiveTask(Task_TerminalTurnOnEffect) != TRUE && IsPlayerInFrontOfTerminal() == TRUE)
+    {
+        s16 x, y;
+        u8 taskId;
+
+        GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+        sTerminalOffMetatile = MapGridGetMetatileIdAt(x, y);
+
+        taskId = CreateTask(Task_TerminalTurnOnEffect, 8);
+        gTasks[taskId].tPaused = FALSE;
+        gTasks[taskId].tTaskId = taskId;
+        gTasks[taskId].tFlickerCount = 0;
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tIsScreenOn = FALSE;
+    }
+}
+
+static void Task_TerminalTurnOnEffect(u8 taskId)
+{
+    struct Task *task = &gTasks[taskId];
+    if (!task->tPaused)
+        TerminalTurnOnEffect(task);
+}
+
+static void TerminalTurnOnEffect(struct Task *task)
+{
+    s16 x, y;
+    u16 metatileId;
+
+    if (task->tTimer == 6)
+    {
+        task->tTimer = 0;
+
+        GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+        metatileId = task->tIsScreenOn ? sTerminalOffMetatile : METATILE_VaultIndustrial_TerminalOn;
+        MapGridSetMetatileIdAt(x, y, metatileId | MAPGRID_IMPASSABLE);
+        DrawWholeMapView();
+
+        task->tIsScreenOn ^= 1;
+        if (++task->tFlickerCount == 5)
+            DestroyTask(task->tTaskId);
+    }
+    task->tTimer++;
+}
+
+void DoTerminalTurnOffEffect(void)
+{
+    s16 x, y;
+
+    if (IsPlayerInFrontOfTerminal() == FALSE)
+        return;
+
+    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    MapGridSetMetatileIdAt(x, y, sTerminalOffMetatile | MAPGRID_IMPASSABLE);
+    DrawWholeMapView();
+}
+
 void DoLotteryCornerComputerEffect(void)
 {
     if (FuncIsActiveTask(Task_LotteryCornerComputerEffect) != TRUE)

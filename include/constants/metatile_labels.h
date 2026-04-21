@@ -1015,6 +1015,9 @@
 #define METATILE_Underwater_FloorShadow  0x228
 #define METATILE_Underwater_RockWall     0x21E
 
+// gTileset_VaultIndustrial
+#define METATILE_VaultIndustrial_TerminalOn  0x323
+
 // gTileset_VermilionCity
 #define METATILE_VermilionCity_Door        0x29E
 #define METATILE_VermilionCity_SSAnneWarp  0x2E1

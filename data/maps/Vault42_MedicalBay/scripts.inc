@@ -18,20 +18,32 @@ Vault42_MedicalBay_EventScript_Intro::
 	waitmovement 0
 	applymovement LOCALID_PLAYER, Vault42_MedicalBay_Movement_PlayerFaceEast
 	waitmovement 0
-	msgbox Vault42_MedicalBay_Text_ToddFinally, MSGBOX_DEFAULT
+	message Vault42_MedicalBay_Text_ToddFinally
+	waitmessage
+	waitbuttonpress
+	playse SE_SELECT
 	closemessage
 	playse SE_PIN
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddBeatEmote
 	waitmovement 0
 	waitfieldeffect FLDEFF_ELLIPSIS_ICON
-	msgbox Vault42_MedicalBay_Text_ToddForCarrying, MSGBOX_DEFAULT
-	msgbox Vault42_MedicalBay_Text_ToddHeavyExam, MSGBOX_DEFAULT
+	message Vault42_MedicalBay_Text_ToddForCarrying
+	waitmessage
+	waitbuttonpress
+	playse SE_SELECT
+	message Vault42_MedicalBay_Text_ToddHeavyExam
+	waitmessage
+	waitbuttonpress
+	playse SE_SELECT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkSouth2
 	waitmovement 0
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddFaceNorth
 	waitmovement 0
-	msgbox Vault42_MedicalBay_Text_ToddWaitOutside, MSGBOX_DEFAULT
+	message Vault42_MedicalBay_Text_ToddWaitOutside
+	waitmessage
+	waitbuttonpress
+	playse SE_SELECT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkToExit
 	waitmovement 0

@@ -1017,7 +1017,6 @@ gStdScripts_End::
 	.include "data/maps/SixIsland_WaterPath_House2_Frlg/scripts.inc"
 	.include "data/maps/SevenIsland_SevaultCanyon_House_Frlg/scripts.inc"
 
-	.include "data/scripts/vault_tec_posters.inc"
 	.include "data/scripts/trainer_tower.inc"
 	.include "data/scripts/fame_checker_frlg.inc"
 	.include "data/text/fame_checker_frlg.inc"
@@ -1053,6 +1052,8 @@ gStdScripts_End::
 
 	.include "data/scripts/config.inc"
 	.include "data/scripts/debug.inc"
+	.include "data/scripts/vault_tec_posters.inc"
+	.include "data/scripts/terminals.inc"
 
 EventScript_WhiteOut::
 	call EverGrandeCity_HallOfFame_EventScript_ResetEliteFour
