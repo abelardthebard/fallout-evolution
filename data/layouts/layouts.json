@@ -9338,7 +9338,7 @@
       "id": "LAYOUT_VAULT42_2F_HALLWAY",
       "name": "Vault42_2F_Hallway_Layout",
       "width": 20,
-      "height": 20,
+      "height": 5,
       "primary_tileset": "gTileset_VaultGeneral",
       "secondary_tileset": "gTileset_VaultIndustrial",
       "border_filepath": "data/layouts/Vault42_2F_Hallway/border.bin",

@@ -20,11 +20,14 @@ Vault42_MedicalBay_EventScript_Intro::
 	waitmovement 0
 	msgbox Vault42_MedicalBay_Text_ToddFinally, MSGBOX_DEFAULT
 	closemessage
-	delay 30
+	playse SE_PIN
+	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddBeatEmote
+	waitmovement 0
+	waitfieldeffect FLDEFF_ELLIPSIS_ICON
 	msgbox Vault42_MedicalBay_Text_ToddForCarrying, MSGBOX_DEFAULT
 	msgbox Vault42_MedicalBay_Text_ToddHeavyExam, MSGBOX_DEFAULT
 	closemessage
-	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkSouth3
+	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkSouth2
 	waitmovement 0
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddFaceNorth
 	waitmovement 0
@@ -32,6 +35,7 @@ Vault42_MedicalBay_EventScript_Intro::
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkToExit
 	waitmovement 0
+	playse SE_EXIT
 	removeobject LOCALID_MEDBAY_TODD
 	setflag FLAG_HIDE_MEDBAY_TODD
 	setvar VAR_VAULT_INTRO_STATE, 1
@@ -46,8 +50,11 @@ Vault42_MedicalBay_Movement_PlayerFaceEast:
 	face_right
 	step_end
 
-Vault42_MedicalBay_Movement_ToddWalkSouth3:
-	walk_down
+Vault42_MedicalBay_Movement_ToddBeatEmote:
+	emote_ellipsis
+	step_end
+
+Vault42_MedicalBay_Movement_ToddWalkSouth2:
 	walk_down
 	walk_down
 	step_end
@@ -57,6 +64,7 @@ Vault42_MedicalBay_Movement_ToddFaceNorth:
 	step_end
 
 Vault42_MedicalBay_Movement_ToddWalkToExit:
+	walk_down
 	walk_down
 	step_end
 
@@ -97,3 +105,4 @@ Vault42_MedicalBay_Text_ToddHeavyExam:
 Vault42_MedicalBay_Text_ToddWaitOutside:
 	.string "I'll wait for you outside.\n"
 	.string "Watch the door on your way out.$"
+
