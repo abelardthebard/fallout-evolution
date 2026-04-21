@@ -1688,7 +1688,10 @@
 #define SPECIES_TATSUGIRI_STRETCHY_MEGA                 1571
 #define SPECIES_GLIMMORA_MEGA                           1572
 
-#define SPECIES_EGG                                     (SPECIES_GLIMMORA_MEGA + 1)
+// Fallout Evolution custom species
+#define SPECIES_NANNY                                   1573
+
+#define SPECIES_EGG                                     (SPECIES_NANNY + 1)
 
 #define NUM_SPECIES SPECIES_EGG
 

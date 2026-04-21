@@ -174,6 +174,70 @@ const struct SpeciesInfo gSpeciesInfo[] =
         .iconPalIndex = 1,
     },
 
+    [SPECIES_NANNY] =
+    {
+        .baseHP        = 250,
+        .baseAttack    = 5,
+        .baseDefense   = 5,
+        .baseSpeed     = 50,
+        .baseSpAttack  = 35,
+        .baseSpDefense = 105,
+        .types = MON_TYPES(TYPE_STEEL, TYPE_FAIRY),
+        .catchRate = 30,
+        .expYield = 255,
+        .evYield_HP = 2,
+        .genderRatio = PERCENT_FEMALE(50),
+        .eggCycles = 40,
+        .friendship = 140,
+        .growthRate = GROWTH_FAST,
+        .eggGroups = MON_EGG_GROUPS(EGG_GROUP_MINERAL),
+        .abilities = { ABILITY_LEVITATE, ABILITY_ANALYTIC },
+        .bodyColor = BODY_COLOR_PINK,
+        .speciesName = _("Nanny"),
+        .cryId = CRY_PORYGON,
+        .natDexNum = NATIONAL_DEX_NONE,
+        .categoryName = _("Caretaker"),
+        .height = 12,
+        .weight = 700,
+        .description = COMPOUND_STRING(
+            "A pre-War robotic caretaker built by\n"
+            "General Atomics International. Programmed\n"
+            "for child care and gentle instruction.\n"
+            "Hovers on a single ducted thruster."),
+        .pokemonScale = 256,
+        .pokemonOffset = 0,
+        .trainerScale = 256,
+        .trainerOffset = 0,
+        .frontPic = gMonFrontPic_Nanny,
+        .frontPicSize = MON_COORDS_SIZE(64, 64),
+        .frontPicYOffset = 0,
+        .frontAnimFrames = sAnims_TwoFramePlaceHolder,
+        .frontAnimId = ANIM_V_SQUISH_AND_BOUNCE_SLOW,
+        .backPic = gMonBackPic_CircledQuestionMark,
+        .backPicSize = MON_COORDS_SIZE(64, 64),
+        .backPicYOffset = 7,
+        .backAnimId = BACK_ANIM_NONE,
+        .palette = gMonPalette_Nanny,
+        .shinyPalette = gMonShinyPalette_Nanny,
+        .iconSprite = gMonIcon_QuestionMark,
+        .iconPalIndex = 0,
+        FOOTPRINT(QuestionMark)
+    #if OW_POKEMON_OBJECT_EVENTS
+        OVERWORLD(
+            sPicTable_Nanny,
+            SIZE_32x32,
+            SHADOW_SIZE_M,
+            TRACKS_FOOT,
+            sAnimTable_Following,
+            gOverworldPalette_Nanny,
+            gShinyOverworldPalette_Nanny
+        )
+    #endif
+        .levelUpLearnset = sNoneLevelUpLearnset,
+        .teachableLearnset = sNoneTeachableLearnset,
+        .eggMoveLearnset = sNoneEggMoveLearnset,
+    },
+
     /* You may add any custom species below this point based on the following structure: */
 
     /*

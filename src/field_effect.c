@@ -268,9 +268,9 @@ static u8 sActiveList[32];
 extern u8 *gFieldEffectScriptPointers[];
 extern const struct SpriteTemplate *const gFieldEffectObjectTemplatePointers[];
 
-static const u32 sNewGameBirch_Gfx[] = INCBIN_U32("graphics/birch_speech/birch.4bpp");
+static const u32 sNewGameBirch_Gfx[] = INCBIN_U32("graphics/pokemon/nanny/anim_front.4bpp");
 static const u32 sUnusedBirchBeauty[] = INCBIN_U32("graphics/birch_speech/unused_beauty.4bpp");
-static const u16 sNewGameBirch_Pal[16] = INCBIN_U16("graphics/birch_speech/birch.gbapal");
+static const u16 sNewGameBirch_Pal[16] = INCBIN_U16("graphics/pokemon/nanny/normal.gbapal");
 
 static const u32 sPokeballGlow_Gfx[] = INCBIN_U32("graphics/field_effects/pics/pokeball_glow.4bpp");
 static const u16 sPokeballGlow_Pal[16] = INCBIN_U16("graphics/field_effects/palettes/pokeball_glow.gbapal");
@@ -356,7 +356,8 @@ static const struct OamData sOam_16x16 =
 
 static const struct SpriteFrameImage sPicTable_NewGameBirch[] =
 {
-    obj_frame_tiles(sNewGameBirch_Gfx)
+    overworld_frame(sNewGameBirch_Gfx, 8, 8, 0),
+    overworld_frame(sNewGameBirch_Gfx, 8, 8, 1),
 };
 
 static const struct SpritePalette sSpritePalette_NewGameBirch =

@@ -27503,6 +27503,18 @@ const u32 gObjectEventPic_Substitute[] = INCBIN_COMP("graphics/pokemon/question_
 #endif //OW_POKEMON_OBJECT_EVENTS
 #endif //P_FAMILY_PECHARUNT
 
+// Miss Nanny (Fallout Evolution custom species)
+const u32 gMonFrontPic_Nanny[] = INCBIN_U32("graphics/pokemon/nanny/anim_front.4bpp.smol");
+const u16 gMonPalette_Nanny[] = INCBIN_U16("graphics/pokemon/nanny/normal.gbapal");
+const u16 gMonShinyPalette_Nanny[] = INCBIN_U16("graphics/pokemon/nanny/shiny.gbapal");
+#if OW_POKEMON_OBJECT_EVENTS
+const u32 gObjectEventPic_Nanny[] = INCBIN_COMP("graphics/pokemon/nanny/overworld.4bpp");
+#if OW_PKMN_OBJECTS_SHARE_PALETTES == FALSE
+const u16 gOverworldPalette_Nanny[] = INCBIN_U16("graphics/pokemon/nanny/overworld_normal.gbapal");
+const u16 gShinyOverworldPalette_Nanny[] = INCBIN_U16("graphics/pokemon/nanny/overworld_shiny.gbapal");
+#endif //OW_PKMN_OBJECTS_SHARE_PALETTES
+#endif //OW_POKEMON_OBJECT_EVENTS
+
     const u32 gMonFrontPic_Egg[] = INCBIN_U32("graphics/pokemon/egg/anim_front.4bpp.smol");
     const u16 gMonPalette_Egg[] = INCBIN_U16("graphics/pokemon/egg/normal.gbapal");
     const u8 gMonIcon_Egg[] = INCBIN_U8("graphics/pokemon/egg/icon.4bpp");

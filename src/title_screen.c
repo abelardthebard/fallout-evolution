@@ -726,6 +726,7 @@ static void Task_TitleScreenPhase2(u8 taskId)
     {
         gTasks[taskId].tSkipToNext = TRUE;
         gTasks[taskId].tCounter = 0;
+        gTasks[taskId].tBg2Y = -8;
     }
 
     if (gTasks[taskId].tCounter != 0)
