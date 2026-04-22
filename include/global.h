@@ -1198,6 +1198,9 @@ struct SaveBlock1
     /*0x3???*/ struct TrainerHillSave trainerHill;
 #endif //FREE_TRAINER_HILL
     /*0x3???*/ struct WaldaPhrase waldaPhrase;
+    // Emerald-only placement: sits at struct end in our build; would shift the
+    // FRLG-conditional block below in FRLG builds (not our target).
+    /*0x3???*/ u8 terminalWordBurned[64];
 #if FREE_TRAINER_TOWER == FALSE && IS_FRLG
     u32 towerChallengeId;
     struct TrainerTower trainerTower[NUM_TOWER_CHALLENGE_TYPES];

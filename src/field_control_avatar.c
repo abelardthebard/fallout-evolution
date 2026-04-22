@@ -31,6 +31,7 @@
 #include "secret_base.h"
 #include "sound.h"
 #include "start_menu.h"
+#include "terminal_hack.h"
 #include "trainer_see.h"
 #include "trainer_hill.h"
 #include "vs_seeker.h"
@@ -692,6 +693,7 @@ static bool8 TryStartStepBasedScript(struct MapPosition *position, u16 metatileB
         return TRUE;
     if (!(gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_FORCED_MOVE) && !MetatileBehavior_IsForcedMovementTile(metatileBehavior) && UpdateRepelCounter() == TRUE)
         return TRUE;
+    UpdateTerminalLockoutCounter();
     if (OnStep_DexNavSearch())
         return TRUE;
     return FALSE;

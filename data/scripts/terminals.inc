@@ -1,26 +1,16 @@
-@ Fallout Evolution terminal system.
-@
-@ Architecture:
-@   - Each terminal tile has MB_TERMINAL metatile behavior.
-@   - Each terminal ALSO has a bg_script_event at its tile position, pointing
-@     at a per-terminal EventScript_Terminal_<Name> script.
-@   - BG events fire before metatile dispatch, so tiles with both work via
-@     the BG script. Tiles with MB_TERMINAL but no BG event fall through to
-@     EventScript_TerminalOffline as a helpful misconfiguration fallback.
-@
 @ Adding a new terminal:
-@   1. Reserve a flag in include/constants/flags.h: FLAG_TERMINAL_<Name>
-@   2. Add EventScript_Terminal_<Name> and Terminal_Content_<Name> below,
-@      using one of the two macros.
+@   1. Reserve FLAG_TERMINAL_<Name> in include/constants/flags.h
+@   2. Add EventScript_Terminal_<Name> + Terminal_Content_<Name> below,
+@      using the `terminal` macro.
 @   3. In porymap, place the MB_TERMINAL tile + a Sign Event pointing at
 @      EventScript_Terminal_<Name>.
+@
+@ MB_TERMINAL tiles without a bg_script_event fall through to
+@ EventScript_TerminalOffline.
 
-
-@ -------- Macros --------
-
-@ Terminal with no password — boot, announce "access granted" on first visit
-@ (silently on subsequent visits), run content, shut down.
-.macro terminal_no_password flag:req, contentscript:req
+@ Usage: terminal <flag>, <contentscript>, <tier>
+@   tier = TERMINAL_TIER_0 (no password) or TERMINAL_TIER_1..3 (hack).
+.macro terminal flag:req, contentscript:req, tier:req
 	lockall
 	special DoTerminalTurnOnEffect
 	playse SE_PC_ON
@@ -28,42 +18,34 @@
 	waitmessage
 	waitbuttonpress
 	playse SE_SELECT
-	@ If already accessed, skip "access granted" and jump to content.
 	goto_if_set \flag, \contentscript
-	@ First access ceremony.
+.if \tier == TERMINAL_TIER_0
 	message Terminal_Text_AccessGranted
 	waitmessage
 	waitbuttonpress
 	playse SE_SELECT
-	setflag \flag
-	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
-	goto \contentscript
-.endm
-
-@ Terminal with password — if unlocked (flag set), show content.
-@ If still locked, show "password protected" warning and shut down.
-@ Phase 3/4 will replace the "shut down" branch with the hacking minigame.
-.macro terminal_password_protected flag:req, contentscript:req
-	lockall
-	special DoTerminalTurnOnEffect
-	playse SE_PC_ON
-	message Terminal_Text_BootUp
-	waitmessage
-	waitbuttonpress
-	playse SE_SELECT
-	@ If already unlocked, skip warning and jump to content.
-	goto_if_set \flag, \contentscript
-	@ Still locked — warn and exit. Minigame hook goes here later.
+.else
+	setvar VAR_0x8000, \flag
+	specialvar VAR_RESULT, IsTerminalLockedOut
+	goto_if_eq VAR_RESULT, 1, Terminal_ShowLockedOut
 	message Terminal_Text_PasswordProtected
 	waitmessage
 	waitbuttonpress
 	playse SE_SELECT
 	closemessage
+	setvar VAR_0x8000, \tier
+	setvar VAR_0x8001, \flag
+	special StartTerminalHack
+	waitstate
+	goto_if_eq VAR_RESULT, 1, Terminal_HackSuccess_\@
 	goto Terminal_Shutdown
+Terminal_HackSuccess_\@:
+.endif
+	setflag \flag
+	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
+	goto \contentscript
 .endm
 
-
-@ -------- Shared shutdown --------
 
 Terminal_Shutdown::
 	playse SE_PC_OFF
@@ -72,10 +54,17 @@ Terminal_Shutdown::
 	end
 
 
-@ -------- Shared text --------
+Terminal_ShowLockedOut::
+	message Terminal_Text_LockedOut
+	waitmessage
+	waitbuttonpress
+	playse SE_SELECT
+	closemessage
+	goto Terminal_Shutdown
+
 
 Terminal_Text_BootUp:
-	.string "{PLAYER} booting the\n"
+	.string "{PLAYER} booted the\n"
 	.string "Vault-Tec Terminal...$"
 
 Terminal_Text_AccessGranted:
@@ -85,12 +74,15 @@ Terminal_Text_PasswordProtected:
 	.string "This machine is\n"
 	.string "password protected.$"
 
+Terminal_Text_LockedOut:
+	.string "Security system engaged.\p"
+	.string "Walk it off and try\n"
+	.string "again later.$"
+
 Terminal_Text_Offline:
 	.string "TERMINAL OFFLINE.\p"
 	.string "Please contact Vault-Tec support.$"
 
-
-@ -------- Fallback for MB_TERMINAL tiles with no bg_script_event --------
 
 EventScript_TerminalOffline::
 	lockall
@@ -103,10 +95,9 @@ EventScript_TerminalOffline::
 	end
 
 
-@ -------- Test terminal (no password) --------
-
+@ TODO: swap to TERMINAL_TIER_0 (or remove) once real terminals ship.
 EventScript_Terminal_Test::
-	terminal_no_password FLAG_TERMINAL_TEST, Terminal_Content_Test
+	terminal FLAG_TERMINAL_TEST, Terminal_Content_Test, TERMINAL_TIER_1
 	end
 
 Terminal_Content_Test::
