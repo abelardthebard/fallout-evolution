@@ -1,18 +1,13 @@
 #ifndef GUARD_TERMINAL_UI_H
 #define GUARD_TERMINAL_UI_H
 
-#include "bg.h"
-#include "window.h"
-
 // BG / window slot assignments shared by all terminal screens.
 #define T_BG_TEXT            0   // top-priority BG: text windows
 #define T_BG_IMAGE           1   // background BG: decorative chrome
 #define T_WIN_TEXT           0
 
-// Shared resource declarations. Terminal screens reference these rather
-// than declaring their own BG / window templates.
-extern const struct BgTemplate gTerminalBgTemplates[2];
-extern const struct WindowTemplate gTerminalWindowTemplates[2];
+// BG / window templates are private to terminal_ui.c; terminal screens
+// drive initialization through TerminalUI_InitBgsAndWindows below.
 extern const u8 gTerminalTextColors[];          // { transparent bg, theme fg, theme shadow }
 extern const u8 gTerminalTextColors_Inverted[]; // for highlighted cells
 

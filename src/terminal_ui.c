@@ -24,7 +24,7 @@
 // 0x06008000..0x06010000. BG 1's map sits at tile-index 960 within that
 // range; if background.4bpp ever grew past 960 tiles, it would read the
 // map as tile data. Static-asserted below.
-const struct BgTemplate gTerminalBgTemplates[2] =
+static const struct BgTemplate sTerminalBgTemplates[2] =
 {
     {
         .bg            = T_BG_TEXT,
@@ -46,7 +46,7 @@ const struct BgTemplate gTerminalBgTemplates[2] =
     },
 };
 
-const struct WindowTemplate gTerminalWindowTemplates[2] =
+static const struct WindowTemplate sTerminalWindowTemplates[2] =
 {
     {
         .bg          = T_BG_TEXT,
@@ -77,7 +77,7 @@ STATIC_ASSERT(sizeof(sBgImageTiles) / 32 < 960, terminalBgImage_tilesetOverlapsM
 void TerminalUI_InitBgsAndWindows(void)
 {
     ResetBgsAndClearDma3BusyFlags(0);
-    InitBgsFromTemplates(0, gTerminalBgTemplates, ARRAY_COUNT(gTerminalBgTemplates));
+    InitBgsFromTemplates(0, sTerminalBgTemplates, ARRAY_COUNT(sTerminalBgTemplates));
     // Zero the hardware scroll registers -- neither InitBgsFromTemplates nor
     // ShowBg touch them, so they retain whatever the previous screen left
     // behind (overworld map scrolling) and the BG image would render from
@@ -86,7 +86,7 @@ void TerminalUI_InitBgsAndWindows(void)
     SetGpuReg(REG_OFFSET_BG0VOFS, 0);
     SetGpuReg(REG_OFFSET_BG1HOFS, 0);
     SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-    InitWindows(gTerminalWindowTemplates);
+    InitWindows(sTerminalWindowTemplates);
     DeactivateAllTextPrinters();
     FillBgTilemapBufferRect_Palette0(T_BG_TEXT, 0, 0, 0, 32, 32);
     CopyBgTilemapBufferToVram(T_BG_TEXT);

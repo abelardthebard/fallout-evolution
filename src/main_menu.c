@@ -636,6 +636,20 @@ static const struct MenuAction sMenuActions_Skin[] = {
 #define SKIN_GRID_COLUMNS 2
 #define SKIN_GRID_ROWS 3
 
+const u8 *GetPlayerHairColorName(u8 idx)
+{
+    if (idx >= ARRAY_COUNT(sMenuActions_Hair))
+        return NULL;
+    return sMenuActions_Hair[idx].text;
+}
+
+const u8 *GetPlayerSkinToneName(u8 idx)
+{
+    if (idx >= ARRAY_COUNT(sMenuActions_Skin))
+        return NULL;
+    return sMenuActions_Skin[idx].text;
+}
+
 
 static const u8 *const sMalePresetNames[] = {
     COMPOUND_STRING("Cary"),

@@ -1,16 +1,21 @@
 @ Adding a new terminal:
 @   1. Reserve FLAG_TERMINAL_<Name> in include/constants/flags.h
-@   2. Add EventScript_Terminal_<Name> + Terminal_Content_<Name> below,
-@      using the `terminal` macro.
+@   2. Add EventScript_Terminal_<Name> below using the `terminal` macro.
 @   3. In porymap, place the MB_TERMINAL tile + a Sign Event pointing at
 @      EventScript_Terminal_<Name>.
 @
 @ MB_TERMINAL tiles without a bg_script_event fall through to
 @ EventScript_TerminalOffline.
 
-@ Usage: terminal <flag>, <contentscript>, <tier>
+@ Usage: terminal <flag>, <TERMINAL_CONTENT_* id>, <tier>
 @   tier = TERMINAL_TIER_0 (no password) or TERMINAL_TIER_1..3 (hack).
-.macro terminal flag:req, contentscript:req, tier:req
+@
+@ First visit with hack: boot -> password prompt -> hack -> (on success
+@ the hack chains straight into the content viewer without re-entering the
+@ overworld CB, so there's no flash of the map between them). Script
+@ resumes after the content viewer exits.
+@ Repeat visits (flag set): boot -> content viewer -> shutdown.
+.macro terminal flag:req, contentId:req, tier:req
 	lockall
 	special DoTerminalTurnOnEffect
 	playse SE_PC_ON
@@ -18,12 +23,16 @@
 	waitmessage
 	waitbuttonpress
 	playse SE_SELECT
-	goto_if_set \flag, \contentscript
+	goto_if_set \flag, Terminal_SkipToContent_\@
 .if \tier == TERMINAL_TIER_0
 	message Terminal_Text_AccessGranted
 	waitmessage
 	waitbuttonpress
 	playse SE_SELECT
+	closemessage
+	setflag \flag
+	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
+	goto Terminal_SkipToContent_\@
 .else
 	setvar VAR_0x8000, \flag
 	specialvar VAR_RESULT, IsTerminalLockedOut
@@ -35,15 +44,21 @@
 	closemessage
 	setvar VAR_0x8000, \tier
 	setvar VAR_0x8001, \flag
+	setvar VAR_0x8002, \contentId
 	special StartTerminalHack
 	waitstate
 	goto_if_eq VAR_RESULT, 1, Terminal_HackSuccess_\@
 	goto Terminal_Shutdown
 Terminal_HackSuccess_\@:
-.endif
 	setflag \flag
 	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
-	goto \contentscript
+	goto Terminal_Shutdown
+.endif
+Terminal_SkipToContent_\@:
+	setvar VAR_0x8000, \contentId
+	special ShowTerminalContent
+	waitstate
+	goto Terminal_Shutdown
 .endm
 
 
@@ -92,18 +107,6 @@ EventScript_TerminalOffline::
 	releaseall
 	end
 
-EventScript_Terminal_Test::
-	terminal FLAG_TERMINAL_TEST, Terminal_Content_Test, TERMINAL_TIER_1
+EventScript_Terminal_MedicalRecords::
+	terminal FLAG_TERMINAL_MEDICAL_RECORDS, TERMINAL_CONTENT_MEDICAL_RECORDS, TERMINAL_TIER_1
 	end
-
-Terminal_Content_Test::
-	message Terminal_Text_TestContent
-	waitmessage
-	waitbuttonpress
-	playse SE_SELECT
-	closemessage
-	goto Terminal_Shutdown
-	end
-
-Terminal_Text_TestContent:
-	.string "TEST TRANSMISSION$"

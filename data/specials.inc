@@ -238,6 +238,7 @@ gSpecials::
 	def_special DoTerminalTurnOffEffect
 	def_special StartTerminalHack
 	def_special IsTerminalLockedOut
+	def_special ShowTerminalContent
 	def_special SetDeptStoreFloor
 	def_special DoLotteryCornerComputerEffect
 	def_special EndLotteryCornerComputerEffect

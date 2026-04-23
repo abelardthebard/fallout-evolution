@@ -19,6 +19,7 @@
 #include "window.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "terminal_content.h"
 #include "terminal_hack.h"
 #include "terminal_layout.h"
 #include "terminal_ui.h"
@@ -98,6 +99,7 @@ struct TerminalHack
 {
     MainCallback exitCb;
     u16 flagId;
+    u16 chainContentId;         // TERMINAL_CONTENT_* to chain to on success
     u8 tier;
     u8 wordLen;
     u8 wordCount;
@@ -164,15 +166,20 @@ void UpdateTerminalLockoutCounter(void)
         VarSet(VAR_TERMINAL_LOCKED_ID, 0);
 }
 
-// Script contract: VAR_0x8000 = tier, VAR_0x8001 = flag_id.
+// Script contract: VAR_0x8000 = tier, VAR_0x8001 = flag_id,
+// VAR_0x8002 = TERMINAL_CONTENT_* to show on success (chained internally so
+// the hack -> content transition stays black; the overworld CB is never
+// re-entered between them).
 void StartTerminalHack(void)
 {
     sHack = AllocZeroed(sizeof(*sHack));
-    sHack->tier   = gSpecialVar_0x8000;
-    sHack->flagId = gSpecialVar_0x8001;
-    sHack->exitCb = CB2_ReturnToFieldContinueScript;
+    sHack->tier           = gSpecialVar_0x8000;
+    sHack->flagId         = gSpecialVar_0x8001;
+    sHack->chainContentId = gSpecialVar_0x8002;
+    sHack->exitCb         = CB2_ReturnToFieldContinueScript;
 
     AGB_ASSERT(sHack->tier >= TERMINAL_TIER_1 && sHack->tier < NUM_TERMINAL_TIERS);
+    AGB_ASSERT(sHack->chainContentId < NUM_TERMINAL_CONTENTS);
 
     gSpecialVar_Result = 0;
 
@@ -1126,6 +1133,20 @@ static void Task_TerminalHackFadeOut(u8 taskId)
 {
     if (gPaletteFade.active)
         return;
+
+    // On success, chain directly into the content viewer. Teardown the hack
+    // state first so its EWRAM is freed; ShowTerminalContent will allocate
+    // its own. Skipping CB2_ReturnToFieldContinueScript here is what keeps
+    // the overworld from fading back in between the two screens.
+    if (sHack->endResult == TERMINAL_WON)
+    {
+        u16 contentId = sHack->chainContentId;
+        TerminalHack_Teardown();
+        DestroyTask(taskId);
+        gSpecialVar_0x8000 = contentId;
+        ShowTerminalContent();
+        return;
+    }
 
     SetMainCallback2(sHack->exitCb);
     TerminalHack_Teardown();

@@ -68,6 +68,7 @@
 #include "constants/trainers.h"
 #include "constants/trainer_card.h"
 #include "constants/terminal_hack.h"
+#include "constants/terminal_content.h"
 #include "constants/tv.h"
 #include "constants/union_room.h"
 #include "constants/vars.h"
