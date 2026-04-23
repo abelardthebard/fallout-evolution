@@ -55,6 +55,7 @@ Terminal_Shutdown::
 
 
 Terminal_ShowLockedOut::
+	buffernumberstring STR_VAR_1, VAR_TERMINAL_LOCKOUT_STEPS
 	message Terminal_Text_LockedOut
 	waitmessage
 	waitbuttonpress
@@ -64,24 +65,21 @@ Terminal_ShowLockedOut::
 
 
 Terminal_Text_BootUp:
-	.string "{PLAYER} booted the\n"
-	.string "Vault-Tec Terminal...$"
+	.string "{PLAYER} booted up the terminal.$"
 
 Terminal_Text_AccessGranted:
 	.string "Access granted!$"
 
 Terminal_Text_PasswordProtected:
-	.string "This machine is\n"
-	.string "password protected.$"
+	.string "This machine is password protected.$"
 
 Terminal_Text_LockedOut:
-	.string "Security system engaged.\p"
-	.string "Walk it off and try\n"
-	.string "again later.$"
+	.string "Terminal temporarily locked.\n"
+	.string "Cooldown {STR_VAR_1}.$"
 
 Terminal_Text_Offline:
 	.string "TERMINAL OFFLINE.\p"
-	.string "Please contact Vault-Tec support.$"
+	.string "Please contact support.$"
 
 
 EventScript_TerminalOffline::
@@ -94,8 +92,6 @@ EventScript_TerminalOffline::
 	releaseall
 	end
 
-
-@ TODO: swap to TERMINAL_TIER_0 (or remove) once real terminals ship.
 EventScript_Terminal_Test::
 	terminal FLAG_TERMINAL_TEST, Terminal_Content_Test, TERMINAL_TIER_1
 	end
