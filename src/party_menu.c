@@ -66,6 +66,7 @@
 #include "task.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "trade.h"
 #include "union_room.h"
 #include "window.h"

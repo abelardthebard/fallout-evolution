@@ -2,6 +2,7 @@
 #include "constants/rgb.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "window.h"
 #include "palette.h"
 #include "bg.h"
@@ -10,20 +11,9 @@
 
 static const u16 sStdTextWindow_Gfx[]  = INCBIN_U16("graphics/text_window/std.4bpp");
 
-// All themes share the same tile art; only palettes differ
+// All themes share the same tile art; per-theme frame palettes live in
+// pipboy_theme.c paired with this gfx via sWindowFrames[].
 const u8 gTextWindowFrame1_Gfx[] = INCBIN_U8("graphics/text_window/1.4bpp");
-
-// Per-theme frame border palettes
-const u16 gTextWindowFrame1_Pal[]     = INCBIN_U16("graphics/text_window/pip0.gbapal");
-static const u16 sThemeFramePal1[]    = INCBIN_U16("graphics/text_window/pip1.gbapal");
-static const u16 sThemeFramePal2[]    = INCBIN_U16("graphics/text_window/pip2.gbapal");
-static const u16 sThemeFramePal3[]    = INCBIN_U16("graphics/text_window/pip3.gbapal");
-
-// Per-theme text window palettes
-static const u16 sThemeTextPal0[]     = INCBIN_U16("graphics/text_window/piptext_pal0.gbapal");
-static const u16 sThemeTextPal1[]     = INCBIN_U16("graphics/text_window/piptext_pal1.gbapal");
-static const u16 sThemeTextPal2[]     = INCBIN_U16("graphics/text_window/piptext_pal2.gbapal");
-static const u16 sThemeTextPal3[]     = INCBIN_U16("graphics/text_window/piptext_pal3.gbapal");
 
 // Vanilla text palettes (used by signpost, naming screen, etc.)
 static const u16 sTextWindowPalettes[][16] =
@@ -34,102 +24,6 @@ static const u16 sTextWindowPalettes[][16] =
     INCBIN_U16("graphics/text_window/text_pal3.gbapal"),
     INCBIN_U16("graphics/text_window/text_pal4.gbapal")
 };
-
-// Theme table — indexed by optionsWindowFrameType (0-3)
-const struct PipTheme gPipThemes[THEME_COUNT] =
-{
-    [THEME_GREEN] = {
-        .framePal     = gTextWindowFrame1_Pal,
-        .textPal      = sThemeTextPal0,
-        .mainMenuFg   = RGB(9, 25, 4),
-        .mainMenuShadow = RGB(1, 8, 1),
-    },
-    [THEME_BLUE] = {
-        .framePal     = sThemeFramePal1,
-        .textPal      = sThemeTextPal1,
-        .mainMenuFg   = RGB(9, 19, 28),
-        .mainMenuShadow = RGB(3, 5, 10),
-    },
-    [THEME_RED] = {
-        .framePal     = sThemeFramePal2,
-        .textPal      = sThemeTextPal2,
-        .mainMenuFg   = RGB(29, 8, 6),
-        .mainMenuShadow = RGB(10, 2, 1),
-    },
-    [THEME_YELLOW] = {
-        .framePal     = sThemeFramePal3,
-        .textPal      = sThemeTextPal3,
-        .mainMenuFg   = RGB(27, 25, 5),
-        .mainMenuShadow = RGB(7, 6, 0),
-    },
-};
-
-// PipBoy theme color ramps — 8 shades bright→dark per theme
-// Green ramp is the base; palettes on disk use these values
-const u16 gPipBoyGreenRamp[PIPBOY_RAMP_SIZE] = {
-    RGB(24, 31, 15), // #C0F878
-    RGB(19, 29, 12), // #98E860
-    RGB(14, 27,  8), // #70D840
-    RGB( 9, 25,  4), // #48C820
-    RGB( 5, 21,  2), // #28A810
-    RGB( 3, 16,  2), // #188010
-    RGB( 2, 12,  1), // #106008
-    RGB( 1,  8,  1), // #084008
-};
-
-const u16 gPipBoyThemeRamps[THEME_COUNT][PIPBOY_RAMP_SIZE] = {
-    [THEME_GREEN] = {
-        RGB(24, 31, 15), RGB(19, 29, 12), RGB(14, 27,  8), RGB( 9, 25,  4),
-        RGB( 5, 21,  2), RGB( 3, 16,  2), RGB( 2, 12,  1), RGB( 1,  8,  1),
-    },
-    [THEME_BLUE] = {
-        RGB(19, 29, 31), RGB(15, 26, 31), RGB(11, 23, 29), RGB( 9, 19, 28),
-        RGB( 7, 15, 24), RGB( 6, 11, 19), RGB( 4,  8, 15), RGB( 3,  5, 10),
-    },
-    [THEME_RED] = {
-        RGB(30, 16, 15), RGB(29, 12, 12), RGB(29, 10,  9), RGB(29,  8,  6),
-        RGB(24,  6,  4), RGB(19,  4,  3), RGB(15,  3,  2), RGB(10,  2,  1),
-    },
-    [THEME_YELLOW] = {
-        RGB(29, 28, 11), RGB(27, 25,  5), RGB(25, 21,  3), RGB(22, 18,  2),
-        RGB(18, 15,  1), RGB(14, 12,  0), RGB(10,  9,  0), RGB( 7,  6,  0),
-    },
-};
-
-void PipBoy_ApplyThemeToPalettes(u16 bgStart, u16 bgCount, u16 objStart, u16 objCount)
-{
-    u8 theme = GetActiveTheme();
-    u16 i, j;
-
-    if (theme == THEME_GREEN)
-        return;
-
-    for (i = bgStart; i < bgStart + bgCount; i++)
-    {
-        for (j = 0; j < PIPBOY_RAMP_SIZE; j++)
-        {
-            if (gPlttBufferUnfaded[i] == gPipBoyGreenRamp[j])
-            {
-                gPlttBufferUnfaded[i] = gPipBoyThemeRamps[theme][j];
-                gPlttBufferFaded[i] = gPipBoyThemeRamps[theme][j];
-                break;
-            }
-        }
-    }
-
-    for (i = objStart; i < objStart + objCount; i++)
-    {
-        for (j = 0; j < PIPBOY_RAMP_SIZE; j++)
-        {
-            if (gPlttBufferUnfaded[i] == gPipBoyGreenRamp[j])
-            {
-                gPlttBufferUnfaded[i] = gPipBoyThemeRamps[theme][j];
-                gPlttBufferFaded[i] = gPipBoyThemeRamps[theme][j];
-                break;
-            }
-        }
-    }
-}
 
 // Player appearance palettes — shared across intro, naming screen, and overworld
 const u16 gHairPalettes[][3] = {
@@ -171,26 +65,10 @@ void ApplyPlayerAppearancePalette(u8 paletteSlot)
     LoadPalette(gSkinPalettes[skin], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_START, PLTT_SIZEOF(3));
 }
 
-// Frame table — all entries share tile art, palette varies per theme
-static const struct TilesPal sWindowFrames[WINDOW_FRAMES_COUNT] =
-{
-    {gTextWindowFrame1_Gfx, gTextWindowFrame1_Pal},
-    {gTextWindowFrame1_Gfx, sThemeFramePal1},
-    {gTextWindowFrame1_Gfx, sThemeFramePal2},
-    {gTextWindowFrame1_Gfx, sThemeFramePal3},
-};
-
+// DexNav frame uses its own (non-themed) palette. The Pip-Boy themed
+// frames live in pipboy_theme.c; access them via GetWindowFrameTilesPal().
 static const u16 sTextWindowDexNavFrame[] = INCBIN_U16("graphics/text_window/dexnav_pal.gbapal");
 static const struct TilesPal sDexNavWindowFrame = {gTextWindowFrame1_Gfx, sTextWindowDexNavFrame};
-
-// code
-const struct TilesPal *GetWindowFrameTilesPal(u8 id)
-{
-    if (id >= WINDOW_FRAMES_COUNT)
-        return &sWindowFrames[0];
-    else
-        return &sWindowFrames[id];
-}
 
 void LoadMessageBoxGfx(u8 windowId, u16 destOffset, u8 palOffset)
 {
@@ -217,8 +95,9 @@ void LoadUserWindowBorderGfx_(u8 windowId, u16 destOffset, u8 palOffset)
 
 void LoadWindowGfx(u8 windowId, u8 frameId, u16 destOffset, u8 palOffset)
 {
-    LoadBgTiles(GetWindowAttribute(windowId, WINDOW_BG), sWindowFrames[frameId].tiles, 0x120, destOffset);
-    LoadPalette(sWindowFrames[frameId].pal, palOffset, PLTT_SIZE_4BPP);
+    const struct TilesPal *frame = GetWindowFrameTilesPal(frameId);
+    LoadBgTiles(GetWindowAttribute(windowId, WINDOW_BG), frame->tiles, 0x120, destOffset);
+    LoadPalette(frame->pal, palOffset, PLTT_SIZE_4BPP);
 }
 
 void LoadUserWindowBorderGfx(u8 windowId, u16 destOffset, u8 palOffset)
@@ -298,27 +177,6 @@ const u16 *GetTextWindowPalette(u8 id)
     return (const u16 *)(sTextWindowPalettes) + id;
 }
 
-u8 GetActiveTheme(void)
-{
-    u8 theme = gSaveBlock2Ptr->optionsWindowFrameType;
-    if (theme >= THEME_COUNT)
-        theme = THEME_GREEN;
-    return theme;
-}
-
-const u16 *GetActiveThemeTextPal(void)
-{
-    return gPipThemes[GetActiveTheme()].textPal;
-}
-
-const u16 *GetActiveThemeFramePal(void)
-{
-    u8 theme = gSaveBlock2Ptr->optionsWindowFrameType;
-    if (theme >= THEME_COUNT)
-        theme = THEME_GREEN;
-    return gPipThemes[theme].framePal;
-}
-
 const u16 *GetOverworldTextboxPalettePtr(void)
 {
     return GetActiveThemeTextPal();
@@ -327,8 +185,9 @@ const u16 *GetOverworldTextboxPalettePtr(void)
 // Effectively LoadUserWindowBorderGfx but specifying the bg directly instead of a window from that bg
 void LoadUserWindowBorderGfxOnBg(u8 bg, u16 destOffset, u8 palOffset)
 {
-    LoadBgTiles(bg, sWindowFrames[GetActiveTheme()].tiles, 0x120, destOffset);
-    LoadPalette(GetWindowFrameTilesPal(GetActiveTheme())->pal, palOffset, PLTT_SIZE_4BPP);
+    const struct TilesPal *frame = GetWindowFrameTilesPal(GetActiveTheme());
+    LoadBgTiles(bg, frame->tiles, 0x120, destOffset);
+    LoadPalette(frame->pal, palOffset, PLTT_SIZE_4BPP);
 }
 
 void LoadDexNavWindowGfx(u8 windowId, u16 destOffset, u8 palOffset)

@@ -5,6 +5,7 @@
 #include "palette.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "window.h"
 #include "terminal_layout.h"
 #include "terminal_ui.h"

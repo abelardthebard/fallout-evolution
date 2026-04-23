@@ -21,6 +21,7 @@
 #include "strings.h"
 #include "task.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "window.h"
 #include "constants/items.h"
 #include "constants/songs.h"

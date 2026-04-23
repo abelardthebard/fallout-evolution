@@ -6,6 +6,7 @@
 #include "pokemon.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "malloc.h"
 #include "gpu_regs.h"
 #include "graphics.h"

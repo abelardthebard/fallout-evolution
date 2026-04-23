@@ -22,6 +22,7 @@
 #include "task.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "union_room_chat.h"
 #include "window.h"
 #include "constants/rgb.h"

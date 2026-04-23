@@ -14,6 +14,7 @@
 #include "starter_choose.h"
 #include "gba/flash_internal.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "constants/rgb.h"
 
 #define MSG_WIN_TOP 12
@@ -225,7 +226,7 @@ static void CB2_SaveFailedScreen(void)
         ResetPaletteFade();
         LoadPalette(gBirchBagGrass_Pal, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
         LoadPalette(sSaveFailedClockPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
-        LoadPalette(gTextWindowFrame1_Pal, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
+        LoadPalette(gPipBoyFramePalGreen, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
         LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
         DrawStdFrameWithCustomTileAndPalette(sWindowIds[TEXT_WIN_ID], FALSE, 0x214, 0xE);
         DrawStdFrameWithCustomTileAndPalette(sWindowIds[CLOCK_WIN_ID], FALSE, 0x214, 0xE);
@@ -444,7 +445,7 @@ void CB2_FlashNotDetectedScreen(void)
     DeactivateAllTextPrinters();
     ResetTasks();
     ResetPaletteFade();
-    LoadPalette(gTextWindowFrame1_Pal, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
+    LoadPalette(gPipBoyFramePalGreen, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
     LoadPalette(gStandardMenuPalette, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
     InitWindows(textWin);
     DrawStdFrameWithCustomTileAndPalette(0, TRUE, 0x214, 0xE);

@@ -38,6 +38,7 @@
 #include "task.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "trainer_card.h"
 #include "trade.h"
 #include "union_room.h"

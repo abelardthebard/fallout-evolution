@@ -11,6 +11,7 @@
 #include "window.h"
 #include "string_util.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "text.h"
 #include "overworld.h"
 #include "menu.h"

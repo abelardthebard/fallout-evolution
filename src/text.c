@@ -14,6 +14,7 @@
 #include "sprite.h"
 #include "string_util.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "text.h"
 #include "window.h"
 #include "constants/songs.h"

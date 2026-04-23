@@ -19,6 +19,7 @@
 #include "menu.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "strings.h"
 #include "constants/songs.h"
 #include "sound.h"

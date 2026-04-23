@@ -12,6 +12,7 @@
 #include "task.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "window.h"
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
@@ -539,7 +540,7 @@ static u8 FrameType_ProcessInput(u8 selection)
 {
     if (JOY_NEW(DPAD_RIGHT))
     {
-        if (selection < WINDOW_FRAMES_COUNT - 1)
+        if (selection < THEME_COUNT - 1)
             selection++;
         else
             selection = 0;
@@ -553,7 +554,7 @@ static u8 FrameType_ProcessInput(u8 selection)
         if (selection != 0)
             selection--;
         else
-            selection = WINDOW_FRAMES_COUNT - 1;
+            selection = THEME_COUNT - 1;
 
         LoadBgTiles(1, GetWindowFrameTilesPal(selection)->tiles, 0x120, 0x1A2);
         LoadPalette(GetWindowFrameTilesPal(selection)->pal, BG_PLTT_ID(7), PLTT_SIZE_4BPP);

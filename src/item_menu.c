@@ -43,6 +43,7 @@
 #include "string_util.h"
 #include "task.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "menu_helpers.h"
 #include "window.h"
 #include "apprentice.h"

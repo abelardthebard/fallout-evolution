@@ -24,6 +24,7 @@
 #include "party_menu.h"
 #include "task.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "scanline_effect.h"
 #include "script.h"
 #include "sound.h"

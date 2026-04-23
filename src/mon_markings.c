@@ -9,6 +9,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 
 #define ANIM_CURSOR (NUM_MON_MARKINGS * 2)
 #define ANIM_TEXT   (ANIM_CURSOR + 1)

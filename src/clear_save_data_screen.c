@@ -9,6 +9,7 @@
 #include "gpu_regs.h"
 #include "bg.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
 

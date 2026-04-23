@@ -24,6 +24,7 @@
 #include "string_util.h"
 #include "text.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "trig.h"
 #include "window.h"
 #include "constants/battle_move_effects.h"

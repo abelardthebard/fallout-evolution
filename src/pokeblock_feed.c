@@ -22,6 +22,7 @@
 #include "sound.h"
 #include "task.h"
 #include "text_window.h"
+#include "pipboy_theme.h"
 #include "trig.h"
 #include "util.h"
 #include "constants/rgb.h"
