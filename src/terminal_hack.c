@@ -2,6 +2,7 @@
 #include "bg.h"
 #include "event_data.h"
 #include "gpu_regs.h"
+#include "international_string_util.h"
 #include "main.h"
 #include "malloc.h"
 #include "menu.h"
@@ -55,29 +56,51 @@ STATIC_ASSERT(sizeof(((struct SaveBlock1 *)0)->terminalWordBurned) * 8 == TERMIN
 #define TERMINAL_WON          1
 #define TERMINAL_LOST         2
 
-#define TERMINAL_BG        0
+#define TERMINAL_BG        0   // text window (top layer)
+#define TERMINAL_BG_IMAGE  1   // decorative background image (behind text)
 #define TERMINAL_WIN       0
 
-#define P2_HEADER_X        32
-#define P2_HEADER_Y        5
-#define P2_BOARD_X         16
-#define P2_BOARD_Y0        24
-#define P2_ROW_HEIGHT      15  // Match FONT_NORMAL/NARROW glyph tile height so cells don't overlap.
-#define CELL_W             6   // Fixed cell width; forces monospace grid over FONT_NARROW's variable glyphs.
+#define P2_ROW_HEIGHT        15  // Match FONT_NORMAL/NARROW glyph tile height so cells don't overlap.
+#define CELL_W               6   // Fixed cell width; forces monospace grid over FONT_NARROW's variable glyphs.
 
-#define P2_LOG_PAD_X          8
-#define P2_LOG_X              (P2_BOARD_X + BOARD_COLS * CELL_W + P2_LOG_PAD_X)
-#define P2_LOG_Y0             P2_BOARD_Y0
-#define P2_LOG_ENTRY_HEIGHT   (2 * P2_ROW_HEIGHT)
+// ---- Content block dimensions --------------------------------------------
+// The ATTEMPTS line + internal gap + board form a unit. The log attaches to
+// the right of the board at the same top/bottom. All positions derive from
+// these primitives so the block stays centered if any of them change.
+#define P2_HEADER_H          15  // FONT_NORMAL glyph tile height
+#define P2_HEADER_GAP        4   // blank rows between ATTEMPTS bottom and board top
+#define P2_LOG_PAD_X         8   // horizontal gap between board and log
+#define P2_LOG_RESERVED_W    72  // horizontal space set aside for log text (worst case ~66 px)
+
+#define P2_BOARD_W           (BOARD_COLS * CELL_W)
+#define P2_BOARD_H           (BOARD_ROWS * P2_ROW_HEIGHT)
+#define P2_CONTENT_W         (P2_BOARD_W + P2_LOG_PAD_X + P2_LOG_RESERVED_W)
+#define P2_CONTENT_H         (P2_HEADER_H + P2_HEADER_GAP + P2_BOARD_H)
+
+// ---- Centering -----------------------------------------------------------
+// Content block is centered on the GBA screen. Integer division truncates,
+// which drops the odd-pixel leftover into the bottom margin -- shifting the
+// block one pixel up relative to true center.
+#define P2_MARGIN_X          ((DISPLAY_WIDTH  - P2_CONTENT_W) / 2)
+#define P2_MARGIN_Y          ((DISPLAY_HEIGHT - P2_CONTENT_H) / 2)
+
+// ---- Derived positions ---------------------------------------------------
+// Header X is computed at render time so each string (ATTEMPTS, ACCESS
+// GRANTED, ACCESS DENIED) centers itself on the full content block.
+#define P2_HEADER_Y          P2_MARGIN_Y
+#define P2_BOARD_X           P2_MARGIN_X
+#define P2_BOARD_Y0          (P2_MARGIN_Y + P2_HEADER_H + P2_HEADER_GAP)
+#define P2_LOG_X             (P2_BOARD_X + P2_BOARD_W + P2_LOG_PAD_X)
+#define P2_LOG_Y0            P2_BOARD_Y0
+#define P2_LOG_ENTRY_HEIGHT  (2 * P2_ROW_HEIGHT)
 // Anchor the log to the board's vertical extent so both share top and
 // bottom margins, and every log text line sits on a board row. With an
 // even BOARD_ROWS the fit is exact; with an odd BOARD_ROWS the log
 // truncates one row short of the board (integer division).
-#define MAX_LOG_ENTRIES \
-    ((BOARD_ROWS * P2_ROW_HEIGHT) / P2_LOG_ENTRY_HEIGHT)
+#define MAX_LOG_ENTRIES      (P2_BOARD_H / P2_LOG_ENTRY_HEIGHT)
 // Longest line is "LIKENESS=NN" (9 prefix + 2 digits) or ">WORD" (1 + word).
 // Both fit in LOG_WORD_BUF_SIZE + 1 (+EOS); +2 gives slack.
-#define LOG_LINE_BUF_SIZE     (LOG_WORD_BUF_SIZE + 2)
+#define LOG_LINE_BUF_SIZE    (LOG_WORD_BUF_SIZE + 2)
 
 struct Candidate
 {
@@ -126,15 +149,38 @@ struct TerminalHack
 
 static EWRAM_DATA struct TerminalHack *sHack = NULL;
 
+// VRAM layout for this screen (GBA BG VRAM = 64 KB, 0x06000000..0x06010000):
+//
+//   char base 0  0x06000000..0x06004000  BG 0 window tile data starts here
+//   char base 1  0x06004000..0x06008000  BG 0 window spills in (600 tiles * 32B)
+//   char base 2  0x06008000..0x0600C000  BG 1 image tiles live here
+//   char base 3  0x0600C000..0x06010000  (free; BG 1 addressable range extends here)
+//   map base 30  0x0600F000..0x0600F800  BG 0 tilemap (outside BG 0's tile range)
+//   map base 31  0x0600F800..0x06010000  BG 1 tilemap
+//
+// Each BG addresses 1024 tiles = 32 KB = 2 consecutive char bases from its
+// charBaseIndex. So BG 1 (charBase=2) can read tiles 0..1023 from
+// 0x06008000..0x06010000. BG 1's map sits at tile-index 960 within that
+// range; if background.4bpp ever grew past 960 tiles, it would read the
+// map as tile data. Static-asserted below.
 static const struct BgTemplate sBgTemplates[] =
 {
     {
-        .bg            = TERMINAL_BG,
+        .bg            = TERMINAL_BG,         // text on top
         .charBaseIndex = 0,
         .mapBaseIndex  = 30,
         .screenSize    = 0,
         .paletteMode   = 0,
         .priority      = 0,
+        .baseTile      = 0,
+    },
+    {
+        .bg            = TERMINAL_BG_IMAGE,   // decorative layer behind
+        .charBaseIndex = 2,
+        .mapBaseIndex  = 31,
+        .screenSize    = 0,
+        .paletteMode   = 0,
+        .priority      = 1,
         .baseTile      = 0,
     },
 };
@@ -153,11 +199,19 @@ static const struct WindowTemplate sWindowTemplates[] =
     DUMMY_WIN_TEMPLATE,
 };
 
-static const u8 sTextColors_Green[]         = { 1, 2, 3 };
+// bg = 0 (transparent) so the decorative BG layer shows between glyph strokes.
+static const u8 sTextColors_Green[]         = { 0, 2, 3 };
 // Inverted: shadow = bg so the outline merges into the bright-green cell,
 // leaving a crisp black silhouette instead of a dark-green halo.
 static const u8 sTextColors_GreenInverted[] = { 2, 1, 2 };
-static const u16 sBackdropBlack[] = { RGB_BLACK };
+
+static const u32 sBgImageTiles[] = INCBIN_U32("graphics/terminal/background.4bpp");
+static const u32 sBgImageMap[]   = INCBIN_U32("graphics/terminal/background.bin");
+static const u16 sBgImagePal[]   = INCBIN_U16("graphics/terminal/background.gbapal");
+
+// BG 1's tilemap sits at tile-index 960 in its addressable range. The
+// tileset must stay below that or it would overlap the map in VRAM.
+STATIC_ASSERT(sizeof(sBgImageTiles) / 32 < 960, terminalBgImage_tilesetOverlapsMap);
 
 extern const u8 gFontNormalLatinGlyphWidths[];
 extern const u8 gFontNarrowLatinGlyphWidths[];
@@ -270,7 +324,7 @@ static void CB2_TerminalHackSetup(void)
         SetVBlankCallback(TerminalHack_VBlank);
         EnableInterrupts(INTR_FLAG_VBLANK);
         ShowBg(TERMINAL_BG);
-        HideBg(1);
+        ShowBg(TERMINAL_BG_IMAGE);
         HideBg(2);
         HideBg(3);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
@@ -287,6 +341,15 @@ static void TerminalHack_InitBgWindow(void)
 {
     ResetBgsAndClearDma3BusyFlags(0);
     InitBgsFromTemplates(0, sBgTemplates, ARRAY_COUNT(sBgTemplates));
+    // Zero the hardware scroll registers -- neither InitBgsFromTemplates nor
+    // ShowBg touch them, so they retain whatever the previous screen left
+    // behind (overworld map scrolling) and the BG 1 image would render from
+    // a non-zero offset, wrapping the 32-tile tilemap. Matches the pattern
+    // used by title_screen and main_menu on their setup paths.
+    SetGpuReg(REG_OFFSET_BG0HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1VOFS, 0);
     InitWindows(sWindowTemplates);
     DeactivateAllTextPrinters();
     FillBgTilemapBufferRect_Palette0(TERMINAL_BG, 0, 0, 0, 32, 32);
@@ -295,8 +358,21 @@ static void TerminalHack_InitBgWindow(void)
 
 static void TerminalHack_LoadPalette(void)
 {
-    LoadPalette(gPipThemes[THEME_GREEN].textPal, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
-    LoadPalette(sBackdropBlack, 0, PLTT_SIZEOF(1));
+    // Text palette follows the active Pip-Boy theme directly -- each theme
+    // has its own piptext_pal*.gbapal on disk with matching fg/bg/shadow
+    // slots 1-3 pre-tuned for that theme.
+    LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    // BG image palette: load the green-authored version, then remap any
+    // entries that match the standard Pip-Boy green ramp to the active
+    // theme's equivalent shade. Non-ramp colors (black, magenta padding,
+    // near-black texture) are left alone by the remap. Same pattern
+    // naming_screen uses.
+    LoadPalette(sBgImagePal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+    PipBoy_ApplyThemeToPalettes(BG_PLTT_ID(0), 16, 0, 0);
+    LoadBgTiles(TERMINAL_BG_IMAGE, sBgImageTiles, sizeof(sBgImageTiles), 0);
+    // LoadBgTilemap writes directly to VRAM at the BG's mapBase; this avoids
+    // needing a software tilemap buffer allocated via SetBgTilemapBuffer.
+    LoadBgTilemap(TERMINAL_BG_IMAGE, sBgImageMap, sizeof(sBgImageMap), 0);
 }
 
 static void ShuffleU8(u8 *arr, u8 count)
@@ -972,30 +1048,47 @@ static void BuildAttemptsHeader(u8 *out)
         dst = StringCopy(dst, (i < sHack->attemptsRemaining) ? sText_AttemptMark : sText_AttemptGone);
 }
 
+// Center a header string on the full content block (board + log + gap).
+// Each header string has a different width, so we measure and center at
+// render time rather than hardcoding an X.
+static void DrawCenteredHeader(const u8 *text)
+{
+    u16 x = P2_MARGIN_X + GetStringCenterAlignXOffset(FONT_NORMAL, text, P2_CONTENT_W);
+    AddTextPrinterParameterized3(TERMINAL_WIN, FONT_NORMAL, x, P2_HEADER_Y,
+        sTextColors_Green, TEXT_SKIP_DRAW, text);
+}
+
 static void RenderHeader(void)
 {
     if (sHack->endResult == TERMINAL_WON)
     {
-        AddTextPrinterParameterized3(TERMINAL_WIN, FONT_NORMAL, P2_HEADER_X, P2_HEADER_Y,
-            sTextColors_Green, TEXT_SKIP_DRAW, sText_AccessGranted);
+        DrawCenteredHeader(sText_AccessGranted);
     }
     else if (sHack->endResult == TERMINAL_LOST)
     {
-        AddTextPrinterParameterized3(TERMINAL_WIN, FONT_NORMAL, P2_HEADER_X, P2_HEADER_Y,
-            sTextColors_Green, TEXT_SKIP_DRAW, sText_AccessDenied);
+        DrawCenteredHeader(sText_AccessDenied);
     }
     else
     {
         u8 buf[24];
         BuildAttemptsHeader(buf);
-        AddTextPrinterParameterized3(TERMINAL_WIN, FONT_NORMAL, P2_HEADER_X, P2_HEADER_Y,
-            sTextColors_Green, TEXT_SKIP_DRAW, buf);
+        DrawCenteredHeader(buf);
     }
 }
 
 static void RenderLogPanel(void)
 {
     u8 i;
+    // Empty log: show a bare ">" prompt at the bottom slot as a visual cue
+    // that this area will hold guesses. Gets overwritten once the first
+    // guess lands at that same slot.
+    if (sHack->logCount == 0)
+    {
+        u16 yTop = P2_LOG_Y0 + (MAX_LOG_ENTRIES - 1) * P2_LOG_ENTRY_HEIGHT;
+        AddTextPrinterParameterized3(TERMINAL_WIN, FONT_NARROW, P2_LOG_X, yTop,
+            sTextColors_Green, TEXT_SKIP_DRAW, sText_LogPrompt);
+        return;
+    }
     // Newest entry anchors to the bottom slot; older entries stack above.
     // When the buffer isn't full, the top slots are left empty. When full,
     // the logHead position is the oldest-visible; iterating forward from
@@ -1029,7 +1122,7 @@ static void TerminalHack_RenderBoard(void)
     u8 row, col;
     u8 hlStart, hlEnd;
 
-    FillWindowPixelBuffer(TERMINAL_WIN, PIXEL_FILL(1));
+    FillWindowPixelBuffer(TERMINAL_WIN, PIXEL_FILL(0));
 
     RenderHeader();
 
@@ -1145,10 +1238,10 @@ static void Task_TerminalHackMainInput(u8 taskId)
     if (gPaletteFade.active)
         return;
 
-    if (JOY_REPEAT(DPAD_LEFT))       MoveCursor(-1,  0);
-    else if (JOY_REPEAT(DPAD_RIGHT)) MoveCursor( 1,  0);
-    else if (JOY_REPEAT(DPAD_UP))    MoveCursor( 0, -1);
-    else if (JOY_REPEAT(DPAD_DOWN))  MoveCursor( 0,  1);
+    if (JOY_REPEAT(DPAD_LEFT))       { PlaySE(SE_SELECT); MoveCursor(-1,  0); }
+    else if (JOY_REPEAT(DPAD_RIGHT)) { PlaySE(SE_SELECT); MoveCursor( 1,  0); }
+    else if (JOY_REPEAT(DPAD_UP))    { PlaySE(SE_SELECT); MoveCursor( 0, -1); }
+    else if (JOY_REPEAT(DPAD_DOWN))  { PlaySE(SE_SELECT); MoveCursor( 0,  1); }
 
     if (JOY_NEW(A_BUTTON))
         ActivateAtCursor(taskId);
