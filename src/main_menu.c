@@ -507,9 +507,6 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
     DUMMY_WIN_TEMPLATE
 };
 
-static const u16 sMainMenuBgPal[] = INCBIN_U16("graphics/interface/main_menu_bg.gbapal");
-static const u16 sMainMenuTextPal[] = INCBIN_U16("graphics/text_window/piptext_pal1.gbapal");
-
 static const u8 sTextColor_Headers[] = {TEXT_DYNAMIC_COLOR_1, TEXT_DYNAMIC_COLOR_2, TEXT_DYNAMIC_COLOR_3};
 static const u8 sTextColor_MenuInfo[] = {TEXT_DYNAMIC_COLOR_1, TEXT_COLOR_WHITE, TEXT_DYNAMIC_COLOR_3};
 
@@ -723,7 +720,6 @@ static u32 InitMainMenu(bool8 returningFromOptionsMenu)
     DmaFill16(3, 0, (void *)(PLTT + 2), PLTT_SIZE - 2);
 
     ResetPaletteFade();
-    LoadPalette(sMainMenuBgPal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
     LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
     ScanlineEffect_Stop();
     ResetTasks();
@@ -907,10 +903,10 @@ static void Task_DisplayMainMenu(u8 taskId)
         palette = RGB_BLACK;
         LoadPalette(&palette, BG_PLTT_ID(15) + 10, PLTT_SIZEOF(1));
 
-        palette = gPipThemes[gSaveBlock2Ptr->optionsWindowFrameType < THEME_COUNT ? gSaveBlock2Ptr->optionsWindowFrameType : 0].mainMenuFg;
+        palette = gPipThemes[GetActiveTheme()].mainMenuFg;
         LoadPalette(&palette, BG_PLTT_ID(15) + 11, PLTT_SIZEOF(1));
 
-        palette = gPipThemes[gSaveBlock2Ptr->optionsWindowFrameType < THEME_COUNT ? gSaveBlock2Ptr->optionsWindowFrameType : 0].mainMenuShadow;
+        palette = gPipThemes[GetActiveTheme()].mainMenuShadow;
         LoadPalette(&palette, BG_PLTT_ID(15) + 12, PLTT_SIZEOF(1));
 
         // Window background — black for PipBoy theme
@@ -2783,8 +2779,8 @@ static void MainMenu_FormatSavegameBadges(void)
 
 static void LoadMainMenuWindowFrameTiles(u8 bgId, u16 tileOffset)
 {
-    LoadBgTiles(bgId, GetWindowFrameTilesPal(gSaveBlock2Ptr->optionsWindowFrameType)->tiles, 0x120, tileOffset);
-    LoadPalette(GetWindowFrameTilesPal(gSaveBlock2Ptr->optionsWindowFrameType)->pal, BG_PLTT_ID(2), PLTT_SIZE_4BPP);
+    LoadBgTiles(bgId, GetWindowFrameTilesPal(GetActiveTheme())->tiles, 0x120, tileOffset);
+    LoadPalette(GetWindowFrameTilesPal(GetActiveTheme())->pal, BG_PLTT_ID(2), PLTT_SIZE_4BPP);
 }
 
 static void DrawMainMenuWindowBorder(const struct WindowTemplate *template, u16 baseTileNum)
