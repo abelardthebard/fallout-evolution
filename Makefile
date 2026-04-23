@@ -267,7 +267,7 @@ MAKEFLAGS += --no-print-directory
 # Delete files that weren't built properly
 .DELETE_ON_ERROR:
 
-RULES_NO_SCAN += libagbsyscall clean clean-assets tidy tidymodern tidycheck tidyrelease generated clean-generated clean-teachables clean-teachables_intermediates
+RULES_NO_SCAN += libagbsyscall clean clean-assets tidy tidymodern tidycheck tidyrelease generated clean-generated clean-teachables clean-teachables_intermediates sync-porytiles-csvs
 .PHONY: all rom agbcc modern compare check debug release
 .PHONY: $(RULES_NO_SCAN)
 
@@ -406,6 +406,36 @@ else # Manually remove the release files on clean/tidy
 	rm -f $(FILE_NAME)-release.gba $(FILE_NAME)-release.elf $(FILE_NAME)-release.map
 endif
 	rm -rf $(OBJ_DIR_NAME_RELEASE)
+
+# Regenerate porytiles/*/attributes.csv from the current metatile_attributes.bin.
+# Porymap edits the bin; porytiles compiles from the csv. Run this after porymap
+# behavior changes so the csv stays the source of truth for the next porytiles
+# run. See memory/reference_porytiles.md.
+PORYTILES ?= porytiles
+PORYTILES_DECOMP_TMP := .porytiles-decomp
+
+sync-porytiles-csvs:
+	@rm -rf $(PORYTILES_DECOMP_TMP)
+	@mkdir -p $(PORYTILES_DECOMP_TMP)/vault_general $(PORYTILES_DECOMP_TMP)/vault_industrial $(PORYTILES_DECOMP_TMP)/vault_extras
+	@echo "Decompiling primary/vault_general..."
+	@$(PORYTILES) decompile-primary -o $(PORYTILES_DECOMP_TMP)/vault_general \
+	    data/tilesets/primary/vault_general \
+	    include/constants/metatile_behaviors.h
+	@echo "Decompiling secondary/vault_industrial..."
+	@$(PORYTILES) decompile-secondary -o $(PORYTILES_DECOMP_TMP)/vault_industrial \
+	    data/tilesets/secondary/vault_industrial \
+	    data/tilesets/primary/vault_general \
+	    include/constants/metatile_behaviors.h
+	@echo "Decompiling secondary/vault_extras..."
+	@$(PORYTILES) decompile-secondary -o $(PORYTILES_DECOMP_TMP)/vault_extras \
+	    data/tilesets/secondary/vault_extras \
+	    data/tilesets/primary/vault_general \
+	    include/constants/metatile_behaviors.h
+	@cp $(PORYTILES_DECOMP_TMP)/vault_general/attributes.csv porytiles/vault-general/attributes.csv
+	@cp $(PORYTILES_DECOMP_TMP)/vault_industrial/attributes.csv porytiles/vault-industrial/attributes.csv
+	@cp $(PORYTILES_DECOMP_TMP)/vault_extras/attributes.csv porytiles/vault-extras/attributes.csv
+	@rm -rf $(PORYTILES_DECOMP_TMP)
+	@echo "Synced: porytiles/{vault-general,vault-industrial,vault-extras}/attributes.csv"
 
 # Other rules
 include graphics_file_rules.mk
