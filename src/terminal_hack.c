@@ -32,9 +32,7 @@
      ARRAY_COUNT(sTerminalWordsLen5)  + \
      ARRAY_COUNT(sTerminalWordsLen6)  + \
      ARRAY_COUNT(sTerminalWordsLen7)  + \
-     ARRAY_COUNT(sTerminalWordsLen8)  + \
-     ARRAY_COUNT(sTerminalWordsLen9)  + \
-     ARRAY_COUNT(sTerminalWordsLen10))
+     ARRAY_COUNT(sTerminalWordsLen8))
 
 STATIC_ASSERT(TERMINAL_TOTAL_WORDS <= TERMINAL_MAX_WORD_IDS,
               terminalWordPool_exceedsBitfieldCapacity);
@@ -47,7 +45,7 @@ STATIC_ASSERT(sizeof(((struct SaveBlock1 *)0)->terminalWordBurned) * 8 == TERMIN
 #define BOARD_ROWS          T_BODY_ROWS
 #define BOARD_COLS          T_BODY_COLS
 
-#define MAX_CANDIDATES      TERMINAL_WORD_COUNT
+#define MAX_CANDIDATES      TERMINAL_MAX_WORD_COUNT
 #define MAX_BRACKETS        8
 // Total cells from opener to closer inclusive. Matches Fallout's visual
 // tightness (brackets ~3-5 wide regardless of password length).
@@ -55,8 +53,8 @@ STATIC_ASSERT(sizeof(((struct SaveBlock1 *)0)->terminalWordBurned) * 8 == TERMIN
 // +1 for EOS terminator when copying guess text for the log.
 #define LOG_WORD_BUF_SIZE   (TERMINAL_MAX_WORD_LENGTH + 1)
 
-#define BRACKET_EFFECT_DUD_REMOVE      0
-#define BRACKET_EFFECT_ALLOWANCE_RESET 1
+// Required empty cells between any two words on the same row.
+#define WORD_MIN_GAP        2
 
 #define TERMINAL_IN_PROGRESS  0
 #define TERMINAL_WON          1
@@ -85,7 +83,6 @@ struct BracketPair
     u8 openerCol;
     u8 closerCol;
     u8 type;
-    u8 effect;
     bool8 consumed;
 };
 
@@ -333,90 +330,69 @@ static bool8 WordCollidesWithPriorPlacements(u8 row, u8 col, u8 numPlaced, u8 pa
     return FALSE;
 }
 
-// Ceiling of wordCount / BOARD_ROWS -- the smallest per-row cap that still
-// admits placing every word. Derived, not tuned: for any (wordCount,
-// BOARD_ROWS) it's the threshold above which a row is "clumped" relative
-// to the uniform average.
-static u8 MaxWordsPerRow(void)
-{
-    return (sHack->wordCount + BOARD_ROWS - 1) / BOARD_ROWS;
-}
-
-static u8 CountWordsInRow(u8 row, u8 numPlaced)
-{
-    u8 count = 0;
-    u8 j;
-    for (j = 0; j < numPlaced; j++)
-        if (sHack->candidates[j].row == row)
-            count++;
-    return count;
-}
-
-static u16 CountValidWordPositions(u8 numPlaced, u8 padding)
-{
-    u8 maxCol = BOARD_COLS - sHack->wordLen;
-    u8 cap = MaxWordsPerRow();
-    u16 count = 0;
-    u8 row, col;
-    for (row = 0; row < BOARD_ROWS; row++)
-    {
-        if (CountWordsInRow(row, numPlaced) >= cap)
-            continue;
-        for (col = 0; col <= maxCol; col++)
-            if (!WordCollidesWithPriorPlacements(row, col, numPlaced, padding))
-                count++;
-    }
-    return count;
-}
-
-static void PlaceWordAtRank(u8 candidateIdx, u16 rank, u8 padding)
-{
-    u8 maxCol = BOARD_COLS - sHack->wordLen;
-    u8 cap = MaxWordsPerRow();
-    u8 row, col;
-    for (row = 0; row < BOARD_ROWS; row++)
-    {
-        if (CountWordsInRow(row, candidateIdx) >= cap)
-            continue;
-        for (col = 0; col <= maxCol; col++)
-        {
-            if (WordCollidesWithPriorPlacements(row, col, candidateIdx, padding))
-                continue;
-            if (rank == 0)
-            {
-                sHack->candidates[candidateIdx].row = row;
-                sHack->candidates[candidateIdx].col = col;
-                return;
-            }
-            rank--;
-        }
-    }
-}
-
-// Uniform random placement over the whole board, with two filters:
-// (1) a per-row cap at ceil(wordCount/BOARD_ROWS) so no single row can
-//     hold more than the natural average ceiling (blocks clumping without
-//     forcing a fixed distribution shape -- empty rows still occur);
-// (2) a preferred 1-cell buffer between words, falling back to zero buffer
-//     when row geometry can't accommodate it (Tier 3 edge case).
-// AGB_ASSERT catches broken tier definitions rather than silently stacking
-// words on (0, 0).
+// Row-assignment plan:
+//   floor  = wordCount / BOARD_ROWS
+//   extras = wordCount % BOARD_ROWS
+// Every row receives `floor` words; a random sample of `extras` rows gets
+// a +1 bump, so each row's quota is either floor or floor+1. For the
+// shipping tiers floor >= 1, so every row hosts at least one word.
+//
+// Columns within a row are picked uniformly at random among positions
+// that maintain a mandatory WORD_MIN_GAP gap from any prior placement on
+// that row. No fallback: tier parameters are sized so the gap always
+// fits; AGB_ASSERT catches broken tier definitions.
 static void AssignWordSlots(void)
 {
-    u8 i;
+    u8 assignedRows[MAX_CANDIDATES];
+    u8 rowOrder[BOARD_ROWS];
+    u8 floor  = sHack->wordCount / BOARD_ROWS;
+    u8 extras = sHack->wordCount % BOARD_ROWS;
+    u8 writeIdx = 0;
+    u8 maxCol = BOARD_COLS - sHack->wordLen;
+    u8 r, k, i;
+
+    for (r = 0; r < BOARD_ROWS; r++)
+        rowOrder[r] = r;
+    ShuffleU8(rowOrder, BOARD_ROWS);
+
+    for (r = 0; r < BOARD_ROWS; r++)
+    {
+        u8 quota = floor + (r < extras ? 1 : 0);
+        for (k = 0; k < quota; k++)
+            assignedRows[writeIdx++] = rowOrder[r];
+    }
+    // Shuffle so candidate-index -> row isn't predictable from the quota
+    // plan (the row-distribution shape is fixed, the mapping is not).
+    ShuffleU8(assignedRows, sHack->wordCount);
+
     for (i = 0; i < sHack->wordCount; i++)
     {
-        u8 padding = 1;
-        u16 validCount = CountValidWordPositions(i, padding);
-        if (validCount == 0)
-        {
-            padding = 0;
-            validCount = CountValidWordPositions(i, padding);
-        }
+        u8 row = assignedRows[i];
+        u16 validCount = 0;
+        u16 rank;
+        u8 col;
+
+        for (col = 0; col <= maxCol; col++)
+            if (!WordCollidesWithPriorPlacements(row, col, i, WORD_MIN_GAP))
+                validCount++;
+
         AGB_ASSERT(validCount > 0);
         if (validCount == 0)
             continue;
-        PlaceWordAtRank(i, Random() % validCount, padding);
+
+        sHack->candidates[i].row = row;
+        rank = Random() % validCount;
+        for (col = 0; col <= maxCol; col++)
+        {
+            if (WordCollidesWithPriorPlacements(row, col, i, WORD_MIN_GAP))
+                continue;
+            if (rank == 0)
+            {
+                sHack->candidates[i].col = col;
+                break;
+            }
+            rank--;
+        }
     }
 }
 
@@ -555,7 +531,6 @@ static bool8 TryPlaceBracketOnRow(u8 row, u8 type)
                 bp->openerCol = openerCol;
                 bp->closerCol = closerCol;
                 bp->type      = type;
-                bp->effect    = BRACKET_EFFECT_DUD_REMOVE;
                 bp->consumed  = FALSE;
                 sHack->board[row * BOARD_COLS + openerCol] = sTerminalBracketOpeners[type];
                 sHack->board[row * BOARD_COLS + closerCol] = sTerminalBracketClosers[type];
@@ -596,18 +571,11 @@ static void PlaceBracketPairs(u8 numPairs)
         if (!placed)
             break;
     }
-
-    if (sHack->bracketCount > 0)
-    {
-        u8 resetIdx = Random() % sHack->bracketCount;
-        sHack->brackets[resetIdx].effect = BRACKET_EFFECT_ALLOWANCE_RESET;
-    }
 }
 
 static void TerminalHack_GenerateBoard(void)
 {
     const struct TerminalDifficulty *tier = &sTerminalDifficulty[sHack->tier];
-    u8 bracketRoll;
 
     sHack->wordLen     = tier->wordLenMin + (Random() % (tier->wordLenMax - tier->wordLenMin + 1));
     sHack->wordCount   = tier->wordCount;
@@ -620,8 +588,7 @@ static void TerminalHack_GenerateBoard(void)
     AssignWordSlots();
     WriteWordsToBoard();
 
-    bracketRoll = tier->bracketPairsMin + (Random() % (tier->bracketPairsMax - tier->bracketPairsMin + 1));
-    PlaceBracketPairs(bracketRoll);
+    PlaceBracketPairs(tier->bracketPairs);
 }
 
 static const u8 sText_AttemptsPrefix[] = _("ATTEMPTS: ");
@@ -807,25 +774,6 @@ static void ApplyDudRemovalEffect(void)
     DudCandidate(eligible[Random() % eligibleCount]);
 }
 
-// Restore attempts to max. No-op (wasted) if already at max.
-static void ApplyAllowanceResetEffect(void)
-{
-    sHack->attemptsRemaining = TERMINAL_MAX_ATTEMPTS;
-}
-
-static void ApplyBracketEffect(u8 bracketIdx)
-{
-    switch (sHack->brackets[bracketIdx].effect)
-    {
-    case BRACKET_EFFECT_DUD_REMOVE:
-        ApplyDudRemovalEffect();
-        break;
-    case BRACKET_EFFECT_ALLOWANCE_RESET:
-        ApplyAllowanceResetEffect();
-        break;
-    }
-}
-
 // Ring-buffer append. When full, logHead is the next write slot AND the
 // oldest entry (which we overwrite). logCount saturates at MAX_LOG_ENTRIES.
 static void AddLogEntry(const struct Candidate *guess, u8 likeness)
@@ -882,7 +830,7 @@ static void TryGuessWordAtCursor(u8 taskId, u8 guessIdx)
 
 static void TryActivateBracketAtCursor(u8 bracketIdx)
 {
-    ApplyBracketEffect(bracketIdx);
+    ApplyDudRemovalEffect();
     ConsumeBracket(bracketIdx);
     PlaySE(SE_SUCCESS);
     TerminalHack_RenderBoard();

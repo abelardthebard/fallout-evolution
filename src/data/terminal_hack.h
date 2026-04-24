@@ -9,15 +9,19 @@ struct TerminalDifficulty
     u8 wordLenMax;
     u8 wordCount;
     u8 lockoutSteps;
-    u8 bracketPairsMin;
-    u8 bracketPairsMax;
+    u8 bracketPairs;
 };
 
+// Tier difficulty inverts word length with word count: higher tiers use
+// shorter words but more of them. Shorter words give weaker per-guess
+// likeness signal (fewer positions to share), and a denser board spreads
+// the same 4 dud-removals across more candidates, so the player's info
+// gain per bracket shrinks as tier climbs.
 static const struct TerminalDifficulty sTerminalDifficulty[NUM_TERMINAL_TIERS] =
 {
-    [TERMINAL_TIER_1] = { .wordLenMin =  4, .wordLenMax =  5, .wordCount = 10, .lockoutSteps =  50, .bracketPairsMin = 3, .bracketPairsMax = 4 },
-    [TERMINAL_TIER_2] = { .wordLenMin =  6, .wordLenMax =  8, .wordCount = 10, .lockoutSteps =  75, .bracketPairsMin = 5, .bracketPairsMax = 6 },
-    [TERMINAL_TIER_3] = { .wordLenMin =  9, .wordLenMax = 10, .wordCount = 10, .lockoutSteps = 100, .bracketPairsMin = 7, .bracketPairsMax = 8 },
+    [TERMINAL_TIER_1] = { .wordLenMin = 7, .wordLenMax = 8, .wordCount = 10, .lockoutSteps =  50, .bracketPairs = 4 },
+    [TERMINAL_TIER_2] = { .wordLenMin = 5, .wordLenMax = 7, .wordCount = 12, .lockoutSteps =  75, .bracketPairs = 4 },
+    [TERMINAL_TIER_3] = { .wordLenMin = 4, .wordLenMax = 5, .wordCount = 14, .lockoutSteps = 100, .bracketPairs = 4 },
 };
 
 // Only chars available in pokeemerald's charmap. `[` `]` `{` `}` `@` `#` `^`
@@ -48,6 +52,42 @@ static const u8 sTerminalWordsLen4[][5] = {
     _("STAR"), _("RANK"), _("MEDS"), _("PIPS"),
     _("CHEM"), _("JUNK"), _("WAVE"), _("TOWN"),
     _("HOLE"), _("FOIL"), _("FLAG"), _("KILN"),
+    _("THAT"), _("WITH"), _("THIS"), _("HAVE"),
+    _("FROM"), _("YOUR"), _("THEY"), _("WILL"),
+    _("JUST"), _("LIKE"), _("WHAT"), _("WHEN"),
+    _("MORE"), _("WERE"), _("TIME"), _("BEEN"),
+    _("SOME"), _("ALSO"), _("THEM"), _("THAN"),
+    _("GOOD"), _("ONLY"), _("INTO"), _("KNOW"),
+    _("MAKE"), _("OVER"), _("THEN"), _("BACK"),
+    _("WANT"), _("WELL"), _("SAID"), _("MOST"),
+    _("MUCH"), _("VERY"), _("EVEN"), _("HERE"),
+    _("NEED"), _("WORK"), _("YEAR"), _("MADE"),
+    _("TAKE"), _("MANY"), _("LIFE"), _("DOWN"),
+    _("LAST"), _("BEST"), _("SUCH"), _("LOVE"),
+    _("HOME"), _("LONG"), _("LOOK"), _("SAME"),
+    _("USED"), _("BOTH"), _("COME"), _("PART"),
+    _("FIND"), _("HELP"), _("HIGH"), _("DOES"),
+    _("GIVE"), _("NEXT"), _("EACH"), _("MUST"),
+    _("SHOW"), _("FEEL"), _("SURE"), _("TEAM"),
+    _("EVER"), _("KEEP"), _("FREE"), _("AWAY"),
+    _("LEFT"), _("CITY"), _("JUNE"), _("JULY"),
+    _("DAYS"), _("NAME"), _("PLAY"), _("REAL"),
+    _("DONE"), _("CARE"), _("WEEK"), _("CASE"),
+    _("FULL"), _("LIVE"), _("READ"), _("TOLD"),
+    _("FOUR"), _("HARD"), _("MEAN"), _("ONCE"),
+    _("TELL"), _("SEEN"), _("STOP"), _("CALL"),
+    _("HEAD"), _("TOOK"), _("CAME"), _("SIDE"),
+    _("WENT"), _("LESS"), _("LINE"), _("SAYS"),
+    _("AREA"), _("FACE"), _("FIVE"), _("KIND"),
+    _("HOPE"), _("ABLE"), _("BOOK"), _("POST"),
+    _("TALK"), _("FACT"), _("GUYS"), _("HALF"),
+    _("HAND"), _("MIND"), _("BODY"), _("TRUE"),
+    _("LOST"), _("ROOM"), _("ELSE"), _("GIRL"),
+    _("NICE"), _("YEAH"), _("IDEA"), _("PAST"),
+    _("MOVE"), _("WAIT"), _("DATA"), _("LATE"),
+    _("STAY"), _("DEAL"), _("SOON"), _("TURN"),
+    _("FORM"), _("EASY"), _("NEAR"), _("PLAN"),
+    _("WEST"), _("KIDS"),
 };
 
 static const u8 sTerminalWordsLen5[][6] = {
@@ -66,6 +106,42 @@ static const u8 sTerminalWordsLen5[][6] = {
     _("METAL"), _("ARROW"), _("GAUGE"), _("RELAY"),
     _("SERUM"), _("STORM"), _("PROBE"), _("VALOR"),
     _("MEDAL"), _("CADET"), _("CHURN"), _("CIVIC"),
+    _("ABOUT"), _("THEIR"), _("THERE"), _("WHICH"),
+    _("WOULD"), _("OTHER"), _("AFTER"), _("FIRST"),
+    _("THINK"), _("COULD"), _("THESE"), _("WHERE"),
+    _("RIGHT"), _("YEARS"), _("BEING"), _("GOING"),
+    _("STILL"), _("NEVER"), _("THOSE"), _("WORLD"),
+    _("GREAT"), _("WHILE"), _("EVERY"), _("STATE"),
+    _("THREE"), _("SINCE"), _("UNDER"), _("THING"),
+    _("HOUSE"), _("PLACE"), _("AGAIN"), _("FOUND"),
+    _("MIGHT"), _("MONEY"), _("NIGHT"), _("UNTIL"),
+    _("DOING"), _("GROUP"), _("WOMEN"), _("START"),
+    _("TODAY"), _("POINT"), _("MUSIC"), _("BASED"),
+    _("SMALL"), _("WHITE"), _("LATER"), _("ORDER"),
+    _("PARTY"), _("THANK"), _("USING"), _("BLACK"),
+    _("WHOLE"), _("MAYBE"), _("STORY"), _("GAMES"),
+    _("LEAST"), _("MEANS"), _("EARLY"), _("LOCAL"),
+    _("VIDEO"), _("YOUNG"), _("COURT"), _("GIVEN"),
+    _("LEVEL"), _("OFTEN"), _("DEATH"), _("HOURS"),
+    _("SOUTH"), _("KNOWN"), _("LARGE"), _("WRONG"),
+    _("ALONG"), _("MARCH"), _("APRIL"), _("WITCH"),
+    _("NEEDS"), _("CLASS"), _("CLOSE"), _("COMES"),
+    _("LOOKS"), _("CAUSE"), _("HAPPY"), _("WOMAN"),
+    _("LEAVE"), _("NORTH"), _("WATCH"), _("LIGHT"),
+    _("SHORT"), _("TAKEN"), _("THIRD"), _("AMONG"),
+    _("CHECK"), _("HEART"), _("ASKED"), _("CHILD"),
+    _("MAJOR"), _("QUITE"), _("FINAL"), _("FRONT"),
+    _("READY"), _("BRING"), _("HEARD"), _("STUDY"),
+    _("CLEAR"), _("MONTH"), _("WORDS"), _("BOARD"),
+    _("FIELD"), _("SEEMS"), _("FIGHT"), _("FORCE"),
+    _("ISSUE"), _("SHOWS"), _("SPACE"), _("TOTAL"),
+    _("ABOVE"), _("SHARE"), _("SENSE"), _("WEEKS"),
+    _("BREAK"), _("EVENT"), _("SORRY"), _("GIRLS"),
+    _("GUESS"), _("LEARN"), _("ADDED"), _("ALONE"),
+    _("HANDS"), _("MOVIE"), _("PRESS"), _("TRIED"),
+    _("WORTH"), _("AREAS"), _("BOOKS"), _("SOUND"),
+    _("VALUE"), _("LIVES"), _("ROUND"), _("STAND"),
+    _("STUFF"), _("DRIVE"), _("PHONE"),
 };
 
 static const u8 sTerminalWordsLen6[][7] = {
@@ -82,6 +158,44 @@ static const u8 sTerminalWordsLen6[][7] = {
     _("CAVERN"), _("ALCOVE"), _("COMBAT"), _("SNACKS"),
     _("FREEZE"), _("TOASTY"), _("DOCTOR"), _("PARLOR"),
     _("SALOON"),
+    _("PEOPLE"), _("SHOULD"), _("REALLY"), _("BEFORE"),
+    _("AROUND"), _("ALWAYS"), _("BETTER"), _("LITTLE"),
+    _("THINGS"), _("DURING"), _("SCHOOL"), _("FAMILY"),
+    _("PLEASE"), _("SECOND"), _("NUMBER"), _("CALLED"),
+    _("HAVING"), _("PUBLIC"), _("SYSTEM"), _("PERSON"),
+    _("CHANGE"), _("ENOUGH"), _("MAKING"), _("STATES"),
+    _("THOUGH"), _("SEASON"), _("TRYING"), _("UNITED"),
+    _("COURSE"), _("HEALTH"), _("WITHIN"), _("THANKS"),
+    _("SOCIAL"), _("SINGLE"), _("BECOME"), _("COMING"),
+    _("OFFICE"), _("ALMOST"), _("TAKING"), _("ANYONE"),
+    _("MATTER"), _("PRETTY"), _("FRIEND"), _("SAYING"),
+    _("MONTHS"), _("SERIES"), _("EITHER"), _("POLICE"),
+    _("RATHER"), _("REASON"), _("REPORT"), _("MYSELF"),
+    _("LIVING"), _("BEHIND"), _("MARKET"), _("FORMER"),
+    _("STREET"), _("CHANCE"), _("FATHER"), _("ACROSS"),
+    _("ACTION"), _("MOMENT"), _("MOTHER"), _("PLAYED"),
+    _("POINTS"), _("SUMMER"), _("KILLED"), _("STRONG"),
+    _("PERIOD"), _("RECORD"), _("COMMON"), _("LIKELY"),
+    _("AUGUST"), _("MAYDAY"), _("MARVEL"), _("BATTLE"),
+    _("WINTER"), _("AUTUMN"), _("SPRING"),
+    _("CENTER"), _("COUNTY"), _("COUPLE"), _("HAPPEN"),
+    _("INSIDE"), _("ISSUES"), _("PLAYER"), _("RETURN"),
+    _("HIGHER"), _("MEMBER"), _("MIDDLE"), _("RESULT"),
+    _("ANSWER"), _("DESIGN"), _("POLICY"), _("CHURCH"),
+    _("LONGER"), _("BECAME"), _("GIVING"), _("SOURCE"),
+    _("FOLLOW"), _("AMOUNT"), _("LEAGUE"), _("GROUPS"),
+    _("REVIEW"), _("CANNOT"), _("ITSELF"), _("ATTACK"),
+    _("ENTIRE"), _("TURNED"), _("CHOICE"), _("EVENTS"),
+    _("SIMPLE"), _("SIMPLY"), _("CAREER"), _("FIGURE"),
+    _("MODERN"), _("FORGET"), _("LISTEN"), _("ACCESS"),
+    _("RECENT"), _("SEEING"), _("GROWTH"), _("CHARGE"),
+    _("CREATE"), _("EFFECT"), _("EXCEPT"), _("MOVING"),
+    _("WEIGHT"), _("DOUBLE"), _("EXPECT"), _("ISLAND"),
+    _("CREDIT"), _("FEMALE"), _("NEARLY"), _("REGION"),
+    _("TRAVEL"), _("BEYOND"), _("FORCES"), _("MINUTE"),
+    _("NATURE"), _("UNLESS"), _("INCOME"), _("LEVELS"),
+    _("POSTED"), _("SAFETY"), _("SOUNDS"), _("ASKING"),
+    _("SEARCH"), _("AUTHOR"), _("GLOBAL"), _("SILENT"),
 };
 
 static const u8 sTerminalWordsLen7[][8] = {
@@ -98,6 +212,44 @@ static const u8 sTerminalWordsLen7[][8] = {
     _("NEUTRON"), _("NEWSMAN"), _("OUTPOST"), _("PACKAGE"),
     _("PATRIOT"), _("PENCILS"), _("PHARAOH"), _("PHOENIX"),
     _("PHYSICS"), _("PLASTIC"), _("PRAYERS"),
+    _("BECAUSE"), _("THROUGH"), _("BETWEEN"), _("ANOTHER"),
+    _("WITHOUT"), _("AGAINST"), _("SOMEONE"), _("THOUGHT"),
+    _("HOWEVER"), _("GETTING"), _("LOOKING"), _("ALREADY"),
+    _("NOTHING"), _("SUPPORT"), _("BELIEVE"), _("SERVICE"),
+    _("COUNTRY"), _("GENERAL"), _("WORKING"), _("FRIENDS"),
+    _("CONTROL"), _("PROBLEM"), _("HISTORY"), _("SEVERAL"),
+    _("STARTED"), _("PLAYING"), _("MEMBERS"), _("SPECIAL"),
+    _("MILLION"), _("MORNING"), _("WHETHER"), _("FURTHER"),
+    _("MINUTES"), _("PLAYERS"), _("TALKING"), _("COLLEGE"),
+    _("CURRENT"), _("EXAMPLE"), _("PROCESS"), _("HIMSELF"),
+    _("OUTSIDE"), _("INSTEAD"), _("RESULTS"), _("RUNNING"),
+    _("ACCOUNT"), _("INCLUDE"), _("PARENTS"), _("SIMILAR"),
+    _("PERFECT"), _("ENGLISH"), _("PRIVATE"), _("PRESENT"),
+    _("FINALLY"), _("SOCIETY"), _("AVERAGE"), _("BROUGHT"),
+    _("CERTAIN"), _("MEDICAL"), _("EXACTLY"), _("MEETING"),
+    _("PROVIDE"), _("USUALLY"), _("READING"), _("FEDERAL"),
+    _("FEELING"), _("PICTURE"), _("CENTRAL"), _("CHANGES"),
+    _("FORWARD"), _("JANUARY"), _("OCTOBER"), _("TRAINER"),
+    _("EDUCATE"),
+    _("SCIENCE"), _("VARIOUS"), _("BROTHER"), _("NATURAL"),
+    _("QUALITY"), _("AMAZING"), _("RELATED"), _("SERIOUS"),
+    _("ARTICLE"), _("DECIDED"), _("PERHAPS"), _("RELEASE"),
+    _("WRITTEN"), _("COUNCIL"), _("FOREIGN"), _("CHANGED"),
+    _("POPULAR"), _("SYSTEMS"), _("VERSION"), _("WRITING"),
+    _("SUCCESS"), _("TOWARDS"), _("WAITING"), _("CREATED"),
+    _("MISSING"), _("PERCENT"), _("ALLOWED"), _("CULTURE"),
+    _("MARRIED"), _("OFFICER"), _("RESPECT"), _("TONIGHT"),
+    _("CENTURY"), _("LIMITED"), _("NETWORK"), _("STUDENT"),
+    _("CAPITAL"), _("STATION"), _("WESTERN"), _("CONTENT"),
+    _("DESPITE"), _("HUSBAND"), _("LEADING"), _("MESSAGE"),
+    _("QUICKLY"), _("SECTION"), _("CONTACT"), _("WELCOME"),
+    _("EARLIER"), _("LEAVING"), _("STUDIES"), _("WINNING"),
+    _("EPISODE"), _("JUSTICE"), _("MANAGER"), _("ABILITY"),
+    _("CALLING"), _("HAPPENS"), _("SUBJECT"), _("PRODUCT"),
+    _("REGULAR"), _("STORIES"), _("WORKERS"), _("ANYMORE"),
+    _("GROWING"), _("OPENING"), _("OPINION"), _("BIGGEST"),
+    _("DEFENSE"), _("REASONS"), _("WEEKEND"), _("AWESOME"),
+    _("CLEARLY"), _("IMAGINE"), _("PROTECT"), _("TELLING"),
 };
 
 static const u8 sTerminalWordsLen8[][9] = {
@@ -112,35 +264,45 @@ static const u8 sTerminalWordsLen8[][9] = {
     _("NATIONAL"), _("NEIGHBOR"), _("NEWSREEL"), _("OPERATOR"),
     _("PAGEANTS"), _("PAMPHLET"), _("PATRIOTS"), _("PILGRIMS"),
     _("POLITICS"), _("POSTCARD"), _("PRESERVE"), _("PROTOCOL"),
-};
-
-static const u8 sTerminalWordsLen9[][10] = {
-    _("WASTELAND"), _("DEMOCRACY"), _("RADIATION"), _("BOTTLECAP"),
-    _("PLUTONIUM"), _("MILKSHAKE"), _("BREAKFAST"), _("BLUEPRINT"),
-    _("MAINFRAME"), _("SANCTUARY"), _("PATRIOTIC"), _("CHEMISTRY"),
-    _("OVERSEERS"), _("HEIRLOOMS"), _("OPERATORS"), _("CONTAINER"),
-    _("CONTRACTS"), _("DEMOCRATS"), _("DIPLOMACY"), _("DISTILLED"),
-    _("DRUMSTICK"), _("ELECTIONS"), _("ELEVATORS"), _("EMERGENCE"),
-    _("EMPLOYEES"), _("ENDURANCE"), _("EVERGREEN"), _("EXECUTIVE"),
-    _("EXPLOSION"), _("FESTIVITY"), _("FIREFIGHT"), _("FLAGPOLES"),
-    _("FLASHCARD"), _("FORTITUDE"), _("FRONTIERS"), _("GALVANIZE"),
-    _("GENERATOR"), _("GEOGRAPHY"), _("GOVERNORS"), _("GRADUATES"),
-    _("GUARDIANS"), _("GUNPOWDER"), _("HEADLINES"), _("HEIRESSES"),
-    _("HISTORIES"), _("HOMEFRONT"), _("HOMESTEAD"), _("SYNTHESIS"),
-};
-
-static const u8 sTerminalWordsLen10[][11] = {
-    _("CAPITALISM"), _("FEDERATION"), _("EXPERIENCE"), _("APOCALYPSE"),
-    _("DETONATION"), _("SUBVERSIVE"), _("TELEVISION"), _("TECHNOLOGY"),
-    _("GENERATION"), _("ENCRYPTION"), _("BOBBLEHEAD"),
-    _("GOVERNMENT"), _("PROPAGANDA"), _("LABORATORY"), _("MILITARIST"),
-    _("NEGOTIATOR"), _("NEIGHBORLY"), _("NEWSCASTER"), _("OBLIGATION"),
-    _("OPERATIONS"), _("ORCHESTRAL"), _("PARAMEDICS"), _("PERMISSION"),
-    _("PHARMACIST"), _("PHONOGRAPH"), _("PILGRIMAGE"), _("POPULATION"),
-    _("PRESIDENTS"), _("PRESERVING"), _("PROFESSORS"), _("PROHIBITED"),
-    _("PROJECTILE"), _("PROSPERING"), _("PROTECTION"), _("PROVIDENCE"),
-    _("RADIOLOGIC"), _("RAILROADED"), _("REGIMENTAL"), _("REPRESSION"),
-    _("RESERVISTS"), _("RESPIRATOR"), _("SCIENTISTS"), _("SEISMOLOGY"),
+    _("BUSINESS"), _("ANYTHING"), _("ACTUALLY"), _("AMERICAN"),
+    _("CHILDREN"), _("EVERYONE"), _("TOGETHER"), _("RESEARCH"),
+    _("REMEMBER"), _("PROBABLY"), _("POSSIBLE"), _("QUESTION"),
+    _("SERVICES"), _("YOURSELF"), _("ALTHOUGH"), _("BUILDING"),
+    _("STUDENTS"), _("THINKING"), _("POSITION"), _("HAPPENED"),
+    _("PERSONAL"), _("PROBLEMS"), _("TRAINING"), _("INTEREST"),
+    _("ORIGINAL"), _("RECEIVED"), _("DIRECTOR"), _("EVIDENCE"),
+    _("OFFICIAL"), _("WHATEVER"), _("PROPERTY"), _("COMPLETE"),
+    _("ECONOMIC"), _("INVOLVED"), _("LANGUAGE"), _("NOVEMBER"),
+    _("DECISION"), _("CONTINUE"), _("ELECTION"), _("INCREASE"),
+    _("DAUGHTER"), _("DECEMBER"), _("HOSPITAL"), _("STARTING"),
+    _("PRACTICE"), _("FOLLOWED"), _("RELEASED"), _("DISTRICT"),
+    _("MINISTER"), _("PRODUCTS"), _("STRAIGHT"), _("FEBRUARY"),
+    _("INCLUDED"), _("RESPONSE"), _("SPECIFIC"), _("STANDARD"),
+    _("PROVIDED"), _("RECENTLY"), _("REQUIRED"), _("TOMORROW"),
+    _("WATCHING"), _("ADDITION"), _("PRESSURE"), _("CAMPAIGN"),
+    _("PREVIOUS"), _("REPORTED"), _("CONSIDER"), _("POSITIVE"),
+    _("FAVORITE"), _("MOVEMENT"), _("DESIGNED"), _("EXPECTED"),
+    _("INCLUDES"), _("MATERIAL"), _("CONTRACT"), _("FAMILIES"),
+    _("FEATURES"), _("FINISHED"), _("MAJORITY"), _("PHYSICAL"),
+    _("APPROACH"), _("COMPARED"), _("LEARNING"), _("MULTIPLE"),
+    _("PICTURES"), _("ANALYSIS"), _("MARRIAGE"), _("PATIENTS"),
+    _("SPEAKING"), _("SUPPOSED"), _("CONGRESS"), _("DIRECTLY"),
+    _("PLANNING"), _("PROGRAMS"), _("COMMENTS"), _("OFFICERS"),
+    _("PRODUCED"), _("ACTIVITY"), _("DIVISION"), _("LOCATION"),
+    _("STANDING"), _("DISTANCE"), _("EXCHANGE"), _("NORTHERN"),
+    _("POWERFUL"), _("BENEFITS"), _("SOLUTION"), _("SOUTHERN"),
+    _("APPEARED"), _("CRITICAL"), _("SEPARATE"), _("RETURNED"),
+    _("BECOMING"), _("PROJECTS"), _("CHAIRMAN"), _("PROVIDES"),
+    _("SOMEBODY"), _("STRENGTH"), _("GREATEST"), _("NEGATIVE"),
+    _("FUNCTION"), _("PROGRESS"), _("SHOOTING"), _("POSSIBLY"),
+    _("BIRTHDAY"), _("CHANGING"), _("BELIEVED"), _("CRIMINAL"),
+    _("CULTURAL"), _("EXISTING"), _("SLIGHTLY"), _("SURPRISE"),
+    _("VIOLENCE"), _("BREAKING"), _("MAGAZINE"), _("PREPARED"),
+    _("RELIGION"), _("STRATEGY"), _("TEACHERS"), _("ACCOUNTS"),
+    _("AUDIENCE"), _("MEDICINE"), _("PRESENCE"), _("REACTION"),
+    _("CITIZENS"), _("ENTIRELY"), _("FESTIVAL"), _("REGIONAL"),
+    _("TEACHING"), _("TRANSFER"), _("ACCIDENT"), _("ADVANCED"),
+    _("ANYWHERE"), _("ARTICLES"), _("BRINGING"), _("CAPACITY"),
 };
 
 struct TerminalWordPool
@@ -155,15 +317,19 @@ struct TerminalWordPool
 #define TERMINAL_WORD_BUCKET(arr, len, base) \
     { .words = (const u8 *)(arr), .count = ARRAY_COUNT(arr), .globalIdBase = (base), .wordLen = (len), .stride = (len) + 1 }
 
+// globalIdBase allocations are each bucket's size summed. Reserve a flat
+// region per bucket so BurnTerminalWord can address any word uniquely.
+// On appending new words to a bucket: the bucket's size grows and every
+// subsequent bucket's base shifts up by the same amount, which invalidates
+// burn-flag state in existing saves for the shifted buckets. Acceptable
+// mid-development; plan a save migration if you bump word counts post-ship.
 static const struct TerminalWordPool sTerminalWordPools[TERMINAL_NUM_LENGTH_BUCKETS] =
 {
     [0] = TERMINAL_WORD_BUCKET(sTerminalWordsLen4,   4,   0),
-    [1] = TERMINAL_WORD_BUCKET(sTerminalWordsLen5,   5,  58),
-    [2] = TERMINAL_WORD_BUCKET(sTerminalWordsLen6,   6, 115),
-    [3] = TERMINAL_WORD_BUCKET(sTerminalWordsLen7,   7, 164),
-    [4] = TERMINAL_WORD_BUCKET(sTerminalWordsLen8,   8, 215),
-    [5] = TERMINAL_WORD_BUCKET(sTerminalWordsLen9,   9, 259),
-    [6] = TERMINAL_WORD_BUCKET(sTerminalWordsLen10, 10, 307),
+    [1] = TERMINAL_WORD_BUCKET(sTerminalWordsLen5,   5, 200),
+    [2] = TERMINAL_WORD_BUCKET(sTerminalWordsLen6,   6, 400),
+    [3] = TERMINAL_WORD_BUCKET(sTerminalWordsLen7,   7, 600),
+    [4] = TERMINAL_WORD_BUCKET(sTerminalWordsLen8,   8, 800),
 };
 
 #endif // GUARD_DATA_TERMINAL_HACK_H
