@@ -1436,9 +1436,9 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (void *)(BG_SCREEN_ADDR(7)));
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
-        LoadPalette(&gPipBoyGradients[theme][8], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&gPipBoyGradients[theme][8], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
     ScanlineEffect_Stop();
     ResetSpriteData();
@@ -2194,9 +2194,9 @@ static void CB2_ReturnFromRivalNaming(void)
     ResetPaletteFade();
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
-        LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
     DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
@@ -2410,9 +2410,9 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
-        LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
     ResetTasks();
     taskId = CreateTask(Task_NewGameBirchSpeech_ReturnFromNamingScreenShowTextbox, 0);
@@ -2628,7 +2628,7 @@ static void Task_NewGameBirchSpeech_FadePlatformIn(u8 taskId)
     {
         gTasks[taskId].tDelayTimer = gTasks[taskId].tDelay;
         gTasks[taskId].tPalIndex++;
-        LoadPalette(&gPipBoyGradients[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&gPipBoyGradients[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
 }
 
@@ -2662,7 +2662,7 @@ static void Task_NewGameBirchSpeech_FadePlatformOut(u8 taskId)
     {
         gTasks[taskId].tDelayTimer = gTasks[taskId].tDelay;
         gTasks[taskId].tPalIndex--;
-        LoadPalette(&gPipBoyGradients[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(0) + 1, PLTT_SIZEOF(8));
+        LoadPalette(&gPipBoyGradients[GetActiveTheme()][gTasks[taskId].tPalIndex], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
 }
 

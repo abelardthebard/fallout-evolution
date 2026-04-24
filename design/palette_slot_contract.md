@@ -112,25 +112,29 @@ slots as first-come-first-served per screen.
  15 ── message-box frame/text                 (DLG_WINDOW_PALETTE_NUM, themed)
 ```
 
-### Slot 3: the Pip-Boy theme gradient
+### Slot 3: the theme backdrop palette
 
-**Reserved for the 8-color Pip-Boy ramp (positions 1–8 within slot 3).** Any
-feature that needs a continuous gradient of themed shades (the Birch spotlight,
-terminal accent bars, scanline effects, progress meters, etc.) loads the
-active theme's ramp into this slot and references `palette = 3` in its
-tilemap entries.
+**Reserved for the active screen's 16-color theme backdrop palette.** Every
+screen that renders themed backdrop artwork (Birch intro's spotlight +
+bg0 region, terminal's content-page chrome, future themed splash screens,
+etc.) loads its own authored per-theme 16-color palette into slot 3 and
+references `palette = 3` in the tilemap entries that render themed content.
 
-Position 0 is left transparent as usual. Positions 9–15 are available for
-slot-3-local incidental colors if a feature needs them, though by convention
-most gradient features won't use those positions — keeps slot 3 "purely
-thematic" and interchangeable across features.
+**Shared invariant across every feature:** positions 1–8 hold the 8-shade
+Pip-Boy gradient (`gPipBoyGradients[theme]`). This is the spine — any tile
+whose pixels use color indices 1–8 will render with themed gradient shades
+regardless of which screen it appears on. `PipBoy_LoadThemeGradient(BG_PLTT_ID(3))`
+loads this 8-color block by itself for features that don't need the full
+16-color slot.
 
-Why a dedicated slot instead of sharing slot 0 the way the Birch intro does:
-the Birch intro can afford to squeeze into slot 0 positions 1–8 because its
-`bg0` artwork only uses the remaining positions. Other screens (like the
-terminal) have chrome palettes that already occupy all 16 positions of slot
-0, so they need the gradient elsewhere. A dedicated slot means any feature
-can add the gradient without re-authoring its existing chrome.
+**Feature-specific positions:** 0 (usually transparent) and 9–15 are the
+screen's own accent colors — an outline shade, a highlight, a local chrome
+color. Each screen's `bg0_*.gbapal`-equivalent file authors these alongside
+the gradient. The two are loaded in one call: `LoadPalette(screenThemePal[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP)`.
+
+Only one screen is on at a time, so features don't conflict even though
+they "share" slot 3. On screen entry, each feature repopulates slot 3 with
+its own palette; on exit, the next screen's setup re-populates it.
 
 ### Boot-time application
 
