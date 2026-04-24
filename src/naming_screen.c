@@ -24,6 +24,7 @@
 #include "strings.h"
 #include "menu.h"
 #include "text_window.h"
+#include "player_appearance.h"
 #include "pipboy_theme.h"
 #include "overworld.h"
 #include "walda_phrase.h"

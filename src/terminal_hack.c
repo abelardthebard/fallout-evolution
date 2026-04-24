@@ -239,7 +239,7 @@ static void CB2_TerminalHackSetup(void)
         EnableInterrupts(INTR_FLAG_VBLANK);
         ShowBg(T_BG_TEXT);
         ShowBg(T_BG_IMAGE);
-        HideBg(2);
+        HideBg(T_BG_SPOTLIGHT);   // hack doesn't use the spotlight
         HideBg(3);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
         gMain.state++;

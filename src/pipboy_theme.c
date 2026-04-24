@@ -1,6 +1,7 @@
 #include "global.h"
 #include "constants/rgb.h"
 #include "bg.h"
+#include "decompress.h"
 #include "palette.h"
 #include "text_window.h"   // for gTextWindowFrame1_Gfx (window-frame tile art)
 #include "pipboy_theme.h"
@@ -110,6 +111,43 @@ const u16 *const gPipBoyGradients[THEME_COUNT] = {
     [THEME_RED]    = sPipBoyGradientRed,
     [THEME_YELLOW] = sPipBoyGradientYellow,
 };
+
+// -------------------------------------------------------------------------
+// Shared spotlight assets: tile art + tilemap + per-theme 16-color backdrop
+// palettes. Originally authored for the Birch intro; now consumed by any
+// themed screen that wants the "player stands on a glowing disc" look
+// (terminal content viewer, future screens). Loaded into a caller-chosen
+// BG via PipBoy_LoadSpotlight().
+//
+// The backdrop palettes carry the gradient at positions 1-8 (matching
+// gPipBoyGradients) plus feature-independent accent colors at 0 and 9-15
+// (dark frame, shadow, pin highlights). PipBoy_LoadSpotlight overlays the
+// live gradient after loading the backdrop so the gradient always matches
+// whatever animation offset the caller wants.
+// -------------------------------------------------------------------------
+
+static const u16 sPipBoyBackdropGreen[]  = INCBIN_U16("graphics/birch_speech/bg0.gbapal");
+static const u16 sPipBoyBackdropBlue[]   = INCBIN_U16("graphics/birch_speech/bg0_blue.gbapal");
+static const u16 sPipBoyBackdropRed[]    = INCBIN_U16("graphics/birch_speech/bg0_red.gbapal");
+static const u16 sPipBoyBackdropYellow[] = INCBIN_U16("graphics/birch_speech/bg0_yellow.gbapal");
+
+static const u16 *const sPipBoyBackdropPals[THEME_COUNT] = {
+    [THEME_GREEN]  = sPipBoyBackdropGreen,
+    [THEME_BLUE]   = sPipBoyBackdropBlue,
+    [THEME_RED]    = sPipBoyBackdropRed,
+    [THEME_YELLOW] = sPipBoyBackdropYellow,
+};
+
+static const u32 sPipBoySpotlightGfx[] = INCBIN_U32("graphics/birch_speech/shadow.4bpp.smol");
+static const u32 sPipBoySpotlightMap[] = INCBIN_U32("graphics/birch_speech/map.bin.smolTM");
+
+void PipBoy_LoadSpotlight(u8 charBase, u8 mapBase)
+{
+    DecompressDataWithHeaderVram(sPipBoySpotlightGfx, (void *)BG_CHAR_ADDR(charBase));
+    DecompressDataWithHeaderVram(sPipBoySpotlightMap, (void *)BG_SCREEN_ADDR(mapBase));
+    LoadPalette(sPipBoyBackdropPals[GetActiveTheme()], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
+    PipBoy_LoadThemeGradient(BG_PLTT_ID(3));
+}
 
 // -------------------------------------------------------------------------
 // Theme-indexed window-frame table. Tile art is shared across all themes;

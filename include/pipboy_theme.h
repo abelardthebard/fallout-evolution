@@ -67,4 +67,11 @@ void PipBoy_ApplyThemeToPalettes(u16 bgStart, u16 bgCount, u16 objStart, u16 obj
 // Callers ensure the tilemap for the feature references palette slot 3.
 void PipBoy_LoadThemeGradient(u16 destPalBase);
 
+// Load the shared spotlight graphic (tile art + tilemap + theme backdrop
+// palette at slot 3) onto the BG whose charBase / mapBase are supplied.
+// The caller is responsible for configuring that BG's template to match,
+// showing the BG layer, and picking a charBase / mapBase that doesn't
+// collide with other BGs in use on the same screen.
+void PipBoy_LoadSpotlight(u8 charBase, u8 mapBase);
+
 #endif // GUARD_PIPBOY_THEME_H

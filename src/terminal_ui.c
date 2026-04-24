@@ -14,17 +14,21 @@
 //
 //   char base 0  0x06000000..0x06004000  BG 0 window tile data starts here
 //   char base 1  0x06004000..0x06008000  BG 0 window spills in (600 tiles * 32B)
-//   char base 2  0x06008000..0x0600C000  BG 1 image tiles live here
-//   char base 3  0x0600C000..0x06010000  (free; BG 1 addressable range extends here)
+//   char base 2  0x06008000..0x0600C000  BG 2 (T_BG_IMAGE) chrome tiles live here
+//   char base 3  0x0600C000..0x06010000  BG 1 (T_BG_SPOTLIGHT) spotlight tiles
+//   map base 28  0x0600E000..0x0600E800  BG 1 spotlight tilemap
 //   map base 30  0x0600F000..0x0600F800  BG 0 tilemap (outside BG 0's tile range)
-//   map base 31  0x0600F800..0x06010000  BG 1 tilemap
+//   map base 31  0x0600F800..0x06010000  BG 2 chrome tilemap
 //
-// Each BG addresses 1024 tiles = 32 KB = 2 consecutive char bases from its
-// charBaseIndex. So BG 1 (charBase=2) can read tiles 0..1023 from
-// 0x06008000..0x06010000. BG 1's map sits at tile-index 960 within that
-// range; if background.4bpp ever grew past 960 tiles, it would read the
-// map as tile data. Static-asserted below.
-static const struct BgTemplate sTerminalBgTemplates[2] =
+// BG 1 spotlight: shadow.4bpp.smol (48 tiles) decompresses into low half of
+// char base 3 (< tile 320, so it doesn't collide with map base 28 at
+// tile-index 320 within char base 3). Chrome stays below tile 960 in char
+// base 2 (same invariant as before; static_asserted).
+//
+// Priority ordering (front -> back): BG 0 text, BG 1 spotlight, BG 2 chrome.
+// Chrome sits behind the spotlight so the glow renders on top of chrome,
+// but still behind the text.
+static const struct BgTemplate sTerminalBgTemplates[3] =
 {
     {
         .bg            = T_BG_TEXT,
@@ -36,12 +40,21 @@ static const struct BgTemplate sTerminalBgTemplates[2] =
         .baseTile      = 0,
     },
     {
+        .bg            = T_BG_SPOTLIGHT,
+        .charBaseIndex = 3,
+        .mapBaseIndex  = 28,
+        .screenSize    = 0,
+        .paletteMode   = 0,
+        .priority      = 1,
+        .baseTile      = 0,
+    },
+    {
         .bg            = T_BG_IMAGE,
         .charBaseIndex = 2,
         .mapBaseIndex  = 31,
         .screenSize    = 0,
         .paletteMode   = 0,
-        .priority      = 1,
+        .priority      = 2,
         .baseTile      = 0,
     },
 };
@@ -78,14 +91,17 @@ void TerminalUI_InitBgsAndWindows(void)
 {
     ResetBgsAndClearDma3BusyFlags(0);
     InitBgsFromTemplates(0, sTerminalBgTemplates, ARRAY_COUNT(sTerminalBgTemplates));
-    // Zero the hardware scroll registers -- neither InitBgsFromTemplates nor
-    // ShowBg touch them, so they retain whatever the previous screen left
-    // behind (overworld map scrolling) and the BG image would render from
-    // a non-zero offset, wrapping the 32-tile tilemap.
+    // Zero the hardware scroll registers for every BG we use -- neither
+    // InitBgsFromTemplates nor ShowBg touch them, so they retain whatever
+    // the previous screen left behind (overworld map scrolling) and the
+    // BG tilemaps would render from a non-zero offset, wrapping/clipping
+    // the 32-tile backing store.
     SetGpuReg(REG_OFFSET_BG0HOFS, 0);
     SetGpuReg(REG_OFFSET_BG0VOFS, 0);
     SetGpuReg(REG_OFFSET_BG1HOFS, 0);
     SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG2HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG2VOFS, 0);
     InitWindows(sTerminalWindowTemplates);
     DeactivateAllTextPrinters();
     FillBgTilemapBufferRect_Palette0(T_BG_TEXT, 0, 0, 0, 32, 32);
@@ -112,6 +128,45 @@ void TerminalUI_LoadBgImage(void)
     // LoadBgTilemap writes directly to VRAM at the BG's mapBase; this avoids
     // needing a software tilemap buffer allocated via SetBgTilemapBuffer.
     LoadBgTilemap(T_BG_IMAGE, sBgImageMap, sizeof(sBgImageMap), 0);
+}
+
+void TerminalUI_LoadSpotlight(void)
+{
+    // Spotlight tile art decompresses to char base 3 (BG 1's charBase),
+    // tilemap to map base 28 (BG 1's mapBase), theme backdrop palette to
+    // slot 3 per the palette-slot contract.
+    PipBoy_LoadSpotlight(3, 28);
+}
+
+void TerminalUI_ShowSpotlight(const struct SpotlightLayout *layout)
+{
+    // Hardware WIN0 clips BG 1 to the supplied rectangle. The rest of
+    // the screen suppresses BG 1 so chrome (BG 2) renders through. OBJ
+    // is enabled in both regions so the sprite is never clipped by
+    // the window.
+    SetGpuReg(REG_OFFSET_WIN0H,
+              WIN_RANGE(layout->clipLeft, layout->clipLeft + layout->clipWidth));
+    SetGpuReg(REG_OFFSET_WIN0V,
+              WIN_RANGE(layout->clipTop,  layout->clipTop  + layout->clipHeight));
+    SetGpuReg(REG_OFFSET_WININ,
+              WININ_WIN0_BG0 | WININ_WIN0_BG1 | WININ_WIN0_BG2 | WININ_WIN0_OBJ);
+    SetGpuReg(REG_OFFSET_WINOUT,
+              WINOUT_WIN01_BG0 | WINOUT_WIN01_BG2 | WINOUT_WIN01_OBJ);
+    SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON);
+
+    SetGpuReg(REG_OFFSET_BG1HOFS, layout->scrollX);
+    SetGpuReg(REG_OFFSET_BG1VOFS, layout->scrollY);
+}
+
+void TerminalUI_HideSpotlight(void)
+{
+    ClearGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON);
+    SetGpuReg(REG_OFFSET_WIN0H,  0);
+    SetGpuReg(REG_OFFSET_WIN0V,  0);
+    SetGpuReg(REG_OFFSET_WININ,  0);
+    SetGpuReg(REG_OFFSET_WINOUT, 0);
+    SetGpuReg(REG_OFFSET_BG1HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1VOFS, 0);
 }
 
 void TerminalUI_DrawCenteredHeader(u8 winId, const u8 *text)

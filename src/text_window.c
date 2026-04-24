@@ -25,45 +25,8 @@ static const u16 sTextWindowPalettes[][16] =
     INCBIN_U16("graphics/text_window/text_pal4.gbapal")
 };
 
-// Player appearance palettes — shared across intro, naming screen, and overworld
-const u16 gHairPalettes[][3] = {
-    { RGB(29, 27, 18), RGB(25, 22, 13), RGB(16, 13,  7) }, // Blond
-    { RGB(25, 22, 13), RGB(16, 13,  7), RGB(11,  9,  4) }, // Sandy
-    { RGB(14, 12, 11), RGB(10,  8,  7), RGB( 7,  6,  5) }, // Brown
-    { RGB(10,  8,  7), RGB( 7,  6,  5), RGB( 5,  3,  3) }, // Umber
-    { RGB(27, 19, 12), RGB(22, 14,  7), RGB(16,  9,  4) }, // Ginger
-    { RGB(22, 14,  7), RGB(16,  9,  4), RGB( 9,  5,  2) }, // Red
-    { RGB( 8,  9, 11), RGB( 5,  6,  8), RGB( 3,  4,  6) }, // Black
-    { RGB( 5,  6,  8), RGB( 3,  4,  6), RGB( 2,  3,  5) }, // Raven
-    { RGB(31, 31, 31), RGB(19, 19, 19), RGB(12, 12, 12) }, // White
-    { RGB(25, 25, 25), RGB(12, 12, 12), RGB( 7,  7,  7) }, // Ash
-};
-
-const u16 gSkinPalettes[][3] = {
-    { RGB(30, 26, 24), RGB(27, 22, 20), RGB(20, 15, 13) }, // Fair
-    { RGB(27, 22, 20), RGB(24, 18, 16), RGB(16, 12, 10) }, // Light
-    { RGB(24, 18, 16), RGB(20, 15, 13), RGB(12,  9,  7) }, // Mid
-    { RGB(20, 15, 13), RGB(16, 12, 10), RGB( 9,  7,  5) }, // Tan
-    { RGB(16, 12, 10), RGB(12,  9,  7), RGB( 5,  3,  3) }, // Dark
-    { RGB(12,  9,  7), RGB( 9,  7,  5), RGB( 5,  3,  3) }, // Deep
-};
-
-#define HAIR_PALETTE_START 4  // OBJ palette indices 4-6
-#define SKIN_PALETTE_START 1  // OBJ palette indices 1-3
-
-void ApplyPlayerAppearancePalette(u8 paletteSlot)
-{
-    u8 hair = gSaveBlock2Ptr->hairColor;
-    u8 skin = gSaveBlock2Ptr->skinTone;
-
-    if (hair >= ARRAY_COUNT(gHairPalettes))
-        hair = 0;
-    if (skin >= ARRAY_COUNT(gSkinPalettes))
-        skin = 0;
-
-    LoadPalette(gHairPalettes[hair], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_START, PLTT_SIZEOF(3));
-    LoadPalette(gSkinPalettes[skin], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_START, PLTT_SIZEOF(3));
-}
+// Player appearance data (hair + skin palettes + display names) and the
+// ApplyPlayerAppearancePalette helper live in player_appearance.c now.
 
 // DexNav frame uses its own (non-themed) palette. The Pip-Boy themed
 // frames live in pipboy_theme.c; access them via GetWindowFrameTilesPal().

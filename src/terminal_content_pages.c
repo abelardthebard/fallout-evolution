@@ -1,7 +1,9 @@
 #include "global.h"
-#include "main_menu.h"
+#include "player_appearance.h"
 #include "string_util.h"
 #include "terminal_content.h"
+#include "terminal_layout.h"
+#include "terminal_ui.h"
 #include "constants/characters.h"
 
 // -------------------------------------------------------------------------
@@ -54,7 +56,7 @@ static void BuildFieldRow(u8 *out, u8 cap, const u8 *label, const u8 *value)
 
 static const u8 sText_TerminalMedicalRecords_Header[]    = _("VAULT 42 PATIENT RECORDS");
 static const u8 sText_TerminalMedicalRecords_Home[]      = _("HOME: Unit 315");
-static const u8 sText_TerminalMedicalRecords_CogScore[]  = _("COGNITIVE SCORE:");
+static const u8 sText_TerminalMedicalRecords_Eval[]      = _("EVAL:");
 static const u8 sText_TerminalMedicalRecords_Exit[]      = _("EXIT");
 
 static const u8 sText_TerminalMedicalRecords_NameLbl[]   = _("NAME: ");
@@ -109,17 +111,84 @@ static const struct TerminalItem sTerminalMedicalRecords_Items[] =
     { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow,     .action = TERMINAL_ACTION_NONE },
     { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_HairRow,       .action = TERMINAL_ACTION_NONE },
     { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_SkinRow,       .action = TERMINAL_ACTION_NONE },
-    { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_CogScore, .action = TERMINAL_ACTION_NONE },
+    { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Eval,     .action = TERMINAL_ACTION_NONE },
     { .type = TERMINAL_ITEM_BLANK },
     { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Exit,     .action = TERMINAL_ACTION_EXIT },
 };
 
+// Sprite position: centered in the terminal's log column (right-side
+// region of the safe area). Math derives entirely from layout constants.
+#define MEDICAL_RECORDS_SPRITE_X   (T_LOG_X + T_LOG_RESERVED_W / 2)  // 148 + 36 = 184
+#define MEDICAL_RECORDS_SPRITE_Y   (T_LOG_Y + T_BODY_H / 2)          // 29 + 60 = 89
+
+// Extend the WIN0 clip left of the log-column edge so the spotlight has
+// more breathing room. Up to T_LOG_PAD_X (8) pixels uses only the gap
+// between the text and log columns with no impact on text rendering;
+// beyond that, the spotlight starts rendering behind the text rows (BG 0
+// text stays on top since its priority is lower than BG 1 spotlight).
+#define MEDICAL_RECORDS_WIN_EXTEND_LEFT   8
+
+// Birch tilemap anchor points -- measured values derived from inspecting
+// map.bin + shadow.4bpp.
+//
+// BIRCH_SPRITE_X/Y: the Birch-intro sprite position used during appearance
+// selection (src/main_menu.c:2216/2222, CreateTrainerSprite(..., 120, 60, ...)),
+// which is the only phase where the sprite is visibly standing on the disc.
+// (Later in the intro the sprite moves to x=180 AND the platform fades out,
+// so that position is unrelated to the tilemap's disc location.)
+//
+// BIRCH_DISC_CENTER_X/Y: the disc's actual pixel-center in the Birch
+// tilemap -- measured by classifying each tile's pixels as gradient vs.
+// bg-art and taking the bounding-box center of the disc cells. The disc
+// is centered horizontally under the sprite (same X) and vertically offset
+// by +28 from the sprite center (so the sprite's feet at y+32 sit 4 px
+// below disc center, the standard "standing on a floor" layout).
+#define BIRCH_SPRITE_X             120
+#define BIRCH_SPRITE_Y             60
+#define BIRCH_DISC_CENTER_X        120
+#define BIRCH_DISC_CENTER_Y        88
+
+// BG 1 scroll that translates Birch's sprite anchor to the terminal's
+// sprite position. By preserving this delta the sprite/disc relationship
+// from Birch carries over intact: the disc sits under the sprite at the
+// same offset, the sprite's feet land on the disc's floor at the same
+// 4-pixel offset below disc center. BG scroll semantics: positive
+// HOFS/VOFS scrolls the view right/down in BG space, shifting content
+// left/up on screen -- so the register value is (Birch coord - terminal
+// coord), with negatives wrapping via the u16 cast.
+#define MEDICAL_RECORDS_BG1_HOFS   ((u16)(BIRCH_SPRITE_X - MEDICAL_RECORDS_SPRITE_X))
+#define MEDICAL_RECORDS_BG1_VOFS   ((u16)(BIRCH_SPRITE_Y - MEDICAL_RECORDS_SPRITE_Y))
+
+// Spotlight placement for this page. All fields derive from the layout
+// constants + Birch's native sprite coords so nothing here is a magic
+// number except MEDICAL_RECORDS_WIN_EXTEND_LEFT (empirical breathing-room
+// extension into T_LOG_PAD_X) and the +26 sprite-X bias (empirical --
+// Birch's disc visual center is offset from its sprite center by that
+// amount in the tile art we inherit).
+static const struct SpotlightLayout sMedicalRecords_Spotlight =
+{
+    .clipLeft   = T_LOG_X - MEDICAL_RECORDS_WIN_EXTEND_LEFT,
+    .clipTop    = T_LOG_Y,
+    .clipWidth  = T_LOG_RESERVED_W + MEDICAL_RECORDS_WIN_EXTEND_LEFT,
+    .clipHeight = T_BODY_H,
+    .scrollX    = MEDICAL_RECORDS_BG1_HOFS,
+    .scrollY    = MEDICAL_RECORDS_BG1_VOFS,
+};
+
+static void TerminalMedicalRecords_CreateSprites(void)
+{
+    TerminalUI_ShowSpotlight(&sMedicalRecords_Spotlight);
+    TerminalContent_CreatePlayerSprite(MEDICAL_RECORDS_SPRITE_X,
+                                       MEDICAL_RECORDS_SPRITE_Y);
+}
+
 static const struct TerminalPage sTerminalMedicalRecords_Page =
 {
-    .header    = sText_TerminalMedicalRecords_Header,
-    .items     = sTerminalMedicalRecords_Items,
-    .itemCount = ARRAY_COUNT(sTerminalMedicalRecords_Items),
-    .prepare   = TerminalMedicalRecords_Prepare,
+    .header        = sText_TerminalMedicalRecords_Header,
+    .items         = sTerminalMedicalRecords_Items,
+    .itemCount     = ARRAY_COUNT(sTerminalMedicalRecords_Items),
+    .prepare       = TerminalMedicalRecords_Prepare,
+    .createSprites = TerminalMedicalRecords_CreateSprites,
 };
 
 // -------------------------------------------------------------------------

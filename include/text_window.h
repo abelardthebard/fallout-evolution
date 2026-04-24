@@ -5,11 +5,8 @@
 // in pipboy_theme.c; the tile gfx is shared across every theme.
 extern const u8 gTextWindowFrame1_Gfx[];
 
-// Player-appearance palettes -- indexed by gSaveBlock2Ptr->hairColor /
-// ->skinTone, written into OBJ palette slots at rendering time.
-extern const u16 gHairPalettes[][3];
-extern const u16 gSkinPalettes[][3];
-void ApplyPlayerAppearancePalette(u8 paletteSlot);
+// Player-appearance palettes + ApplyPlayerAppearancePalette live in
+// player_appearance.c; include <player_appearance.h> to consume them.
 
 void LoadMessageBoxGfx(u8 windowId, u16 destOffset, u8 palOffset);
 void LoadStdWindowGfx(u8 windowId, u16 tileStart, u8 palette);

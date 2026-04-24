@@ -23,6 +23,7 @@
 #include "overworld.h"
 #include "palette.h"
 #include "pipboy_theme.h"
+#include "player_appearance.h"
 #include "pokeball.h"
 #include "pokedex.h"
 #include "pokemon.h"
@@ -274,31 +275,21 @@ static void MainMenu_FormatSavegameBadges(void);
 
 // .rodata
 
-// BG slot 0 palettes per theme
-static const u16 sBirchBg0_Green[] = INCBIN_U16("graphics/birch_speech/bg0.gbapal");
-static const u16 sBirchBg0_Blue[] = INCBIN_U16("graphics/birch_speech/bg0_blue.gbapal");
-static const u16 sBirchBg0_Red[] = INCBIN_U16("graphics/birch_speech/bg0_red.gbapal");
-static const u16 sBirchBg0_Yellow[] = INCBIN_U16("graphics/birch_speech/bg0_yellow.gbapal");
+// Spotlight tile art + tilemap + theme backdrop palette live in
+// pipboy_theme.c now (shared with the terminal content viewer and any
+// other themed screen that wants the "player stands on a glowing disc"
+// look). Call PipBoy_LoadSpotlight(charBase, mapBase) to set everything
+// up on a BG. Birch's per-theme *header* palette (bg1) is specific to
+// the intro screen and stays here.
 
-// BG slot 1 palettes per theme
 static const u16 sBirchBg1_Green[] = INCBIN_U16("graphics/birch_speech/bg1.gbapal");
 static const u16 sBirchBg1_Blue[] = INCBIN_U16("graphics/birch_speech/bg1_blue.gbapal");
 static const u16 sBirchBg1_Red[] = INCBIN_U16("graphics/birch_speech/bg1_red.gbapal");
 static const u16 sBirchBg1_Yellow[] = INCBIN_U16("graphics/birch_speech/bg1_yellow.gbapal");
 
-// Spotlight gradient palettes live in pipboy_theme.c (shared with other
-// themed features via gPipBoyGradients[]); Birch's fade animation indexes
-// into them below.
-
-static const u16 *const sBirchBg0Pals[THEME_COUNT] = {
-    sBirchBg0_Green, sBirchBg0_Blue, sBirchBg0_Red, sBirchBg0_Yellow,
-};
 static const u16 *const sBirchBg1Pals[THEME_COUNT] = {
     sBirchBg1_Green, sBirchBg1_Blue, sBirchBg1_Red, sBirchBg1_Yellow,
 };
-
-static const u32 sBirchSpeechShadowGfx[] = INCBIN_U32("graphics/birch_speech/shadow.4bpp.smol");
-static const u32 sBirchSpeechBgMap[] = INCBIN_U32("graphics/birch_speech/map.bin.smolTM");
 
 static const u8 gText_SaveFileCorrupted[] = _("The save file is corrupted. The\nprevious save file will be loaded.");
 static const u8 gText_SaveFileErased[] = _("The save file has been erased\ndue to corruption or damage.");
@@ -583,72 +574,24 @@ static const struct MenuAction sMenuActions_Year[] = {
     {sText_2297, {NULL}},
 };
 
-// Hair/skin palette data now in text_window.c (gHairPalettes, gSkinPalettes)
+// Hair/skin option tables + display names + accessors live in
+// player_appearance.c; include <player_appearance.h> to consume.
 
-static const u8 sText_Blonde[] = _("Blond");
-static const u8 sText_Sandy[] = _("Sandy");
-static const u8 sText_Brown[] = _("Brown");
-static const u8 sText_Umber[] = _("Umber");
-static const u8 sText_Ginger[] = _("Ginger");
-static const u8 sText_Red[] = _("Red");
-static const u8 sText_Black[] = _("Black");
-static const u8 sText_Raven[] = _("Raven");
-static const u8 sText_White[] = _("White");
-static const u8 sText_Ash[] = _("Ash");
-
-static const struct MenuAction sMenuActions_Hair[] = {
-    {sText_Blonde, {NULL}},
-    {sText_Sandy, {NULL}},
-    {sText_Brown, {NULL}},
-    {sText_Umber, {NULL}},
-    {sText_Ginger, {NULL}},
-    {sText_Red, {NULL}},
-    {sText_Black, {NULL}},
-    {sText_Raven, {NULL}},
-    {sText_White, {NULL}},
-    {sText_Ash, {NULL}},
-};
-
-static const u8 sHairActionIds[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
-#define HAIR_PALETTE_INDEX_START 4 // Indices 4-6 in OBJ palette
 #define HAIR_GRID_COLUMNS 2
-#define HAIR_GRID_ROWS 5
+#define HAIR_GRID_ROWS    5
 
-
-static const u8 sText_Fair[] = _("Fair");
-static const u8 sText_Light[] = _("Light");
-static const u8 sText_Mid[] = _("Mid");
-static const u8 sText_Tan[] = _("Tan");
-static const u8 sText_Dark[] = _("Dark");
-static const u8 sText_Deep[] = _("Deep");
-
-static const struct MenuAction sMenuActions_Skin[] = {
-    {sText_Fair, {NULL}},
-    {sText_Light, {NULL}},
-    {sText_Mid, {NULL}},
-    {sText_Tan, {NULL}},
-    {sText_Dark, {NULL}},
-    {sText_Deep, {NULL}},
-};
-
-#define SKIN_PALETTE_INDEX_START 1 // Indices 1-3 in OBJ palette
 #define SKIN_GRID_COLUMNS 2
-#define SKIN_GRID_ROWS 3
+#define SKIN_GRID_ROWS    3
 
-const u8 *GetPlayerHairColorName(u8 idx)
-{
-    if (idx >= ARRAY_COUNT(sMenuActions_Hair))
-        return NULL;
-    return sMenuActions_Hair[idx].text;
-}
-
-const u8 *GetPlayerSkinToneName(u8 idx)
-{
-    if (idx >= ARRAY_COUNT(sMenuActions_Skin))
-        return NULL;
-    return sMenuActions_Skin[idx].text;
-}
+// Grid capacity must match the authored option count so every option is
+// selectable from the character-creator menu. If a new hair/skin option
+// is added (PLAYER_*_OPTION_COUNT increases) without bumping the grid
+// dimensions, build fails here -- preventing the "silent extra options
+// unreachable from the UI" bug.
+STATIC_ASSERT(HAIR_GRID_COLUMNS * HAIR_GRID_ROWS == PLAYER_HAIR_OPTION_COUNT,
+              hairGrid_mustMatch_hairOptionCount);
+STATIC_ASSERT(SKIN_GRID_COLUMNS * SKIN_GRID_ROWS == PLAYER_SKIN_OPTION_COUNT,
+              skinGrid_mustMatch_skinOptionCount);
 
 
 static const u8 *const sMalePresetNames[] = {
@@ -1432,12 +1375,12 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     SetGpuReg(REG_OFFSET_BLDALPHA, 0);
     SetGpuReg(REG_OFFSET_BLDY, 0);
 
-    DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (void *)VRAM);
-    DecompressDataWithHeaderVram(sBirchSpeechBgMap, (void *)(BG_SCREEN_ADDR(7)));
+    PipBoy_LoadSpotlight(0, 7);
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        // Birch's fade-in starts mid-gradient (offset 8); overwrite the
+        // default gradient that PipBoy_LoadSpotlight just loaded.
         LoadPalette(&gPipBoyGradients[theme][8], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
     ScanlineEffect_Stop();
@@ -1791,13 +1734,30 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8 taskId)
 static void ApplyHairPalette(u8 taskId, u8 hairIndex)
 {
     u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(gHairPalettes[hairIndex], OBJ_PLTT_ID(paletteSlot) + HAIR_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+    PreviewPlayerHairPalette(paletteSlot, hairIndex);
 }
 
 static void ApplySkinPalette(u8 taskId, u8 skinIndex)
 {
     u8 paletteSlot = gSprites[gTasks[taskId].tPlayerSpriteId].oam.paletteNum;
-    LoadPalette(gSkinPalettes[skinIndex], OBJ_PLTT_ID(paletteSlot) + SKIN_PALETTE_INDEX_START, PLTT_SIZEOF(3));
+    PreviewPlayerSkinPalette(paletteSlot, skinIndex);
+}
+
+// Build a MenuAction[] on demand from a player-appearance option table so
+// PrintMenuGridTable (which requires MenuAction*) can render the grid
+// without us duplicating the display-name table. Cells past the option
+// count get a NULL label (renders as blank -- never happens with the
+// current fixed grids, but cheap to handle).
+static void BuildAppearanceMenuActions(struct MenuAction *dst, u8 cells,
+                                       const struct AppearanceOption *options,
+                                       u8 optionCount)
+{
+    u8 i;
+    for (i = 0; i < cells; i++)
+    {
+        dst[i].text = (i < optionCount) ? options[i].name : NULL;
+        dst[i].func.void_u8 = NULL;
+    }
 }
 
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8 taskId)
@@ -1863,7 +1823,12 @@ static void Task_NewGameBirchSpeech_WaitToShowHairMenu(u8 taskId)
     {
         DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[5], 0xF3);
         FillWindowPixelBuffer(5, PIXEL_FILL(1));
-        PrintMenuGridTable(5, 40, HAIR_GRID_COLUMNS, HAIR_GRID_ROWS, sMenuActions_Hair);
+        {
+            struct MenuAction hairActions[HAIR_GRID_COLUMNS * HAIR_GRID_ROWS];
+            BuildAppearanceMenuActions(hairActions, ARRAY_COUNT(hairActions),
+                                       gPlayerHairOptions, gPlayerHairOptionCount);
+            PrintMenuGridTable(5, 40, HAIR_GRID_COLUMNS, HAIR_GRID_ROWS, hairActions);
+        }
         InitMenuActionGrid(5, 40, HAIR_GRID_COLUMNS, HAIR_GRID_ROWS, gTasks[taskId].tHairSelection);
         PutWindowTilemap(5);
         CopyWindowToVram(5, COPYWIN_FULL);
@@ -1920,7 +1885,12 @@ static void Task_NewGameBirchSpeech_WaitToShowSkinMenu(u8 taskId)
     {
         DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[6], 0xF3);
         FillWindowPixelBuffer(6, PIXEL_FILL(1));
-        PrintMenuGridTable(6, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, sMenuActions_Skin);
+        {
+            struct MenuAction skinActions[SKIN_GRID_COLUMNS * SKIN_GRID_ROWS];
+            BuildAppearanceMenuActions(skinActions, ARRAY_COUNT(skinActions),
+                                       gPlayerSkinTones, gPlayerSkinToneCount);
+            PrintMenuGridTable(6, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, skinActions);
+        }
         InitMenuActionGrid(6, 40, SKIN_GRID_COLUMNS, SKIN_GRID_ROWS, gTasks[taskId].tSkinSelection);
         PutWindowTilemap(6);
         CopyWindowToVram(6, COPYWIN_FULL);
@@ -2192,14 +2162,14 @@ static void CB2_ReturnFromRivalNaming(void)
     DmaFill32(3, 0, OAM, OAM_SIZE);
     DmaFill16(3, 0, PLTT, PLTT_SIZE);
     ResetPaletteFade();
+    PipBoy_LoadSpotlight(0, 7);
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        // Birch's return-from-rival fade starts at gradient offset 1; overwrite
+        // the default gradient that PipBoy_LoadSpotlight just loaded.
         LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
-    DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
-    DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
     ResetTasks();
     {
         u8 taskId = CreateTask(Task_NewGameBirchSpeech_ShowToddResult, 0);
@@ -2406,12 +2376,12 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     DmaFill32(3, 0, OAM, OAM_SIZE);
     DmaFill16(3, 0, PLTT, PLTT_SIZE);
     ResetPaletteFade();
-    DecompressDataWithHeaderVram(sBirchSpeechShadowGfx, (u8 *)VRAM);
-    DecompressDataWithHeaderVram(sBirchSpeechBgMap, (u8 *)(BG_SCREEN_ADDR(7)));
+    PipBoy_LoadSpotlight(0, 7);
     {
         u8 theme = GetActiveTheme();
-        LoadPalette(sBirchBg0Pals[theme], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
         LoadPalette(sBirchBg1Pals[theme], BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+        // Birch's return-from-naming fade starts at gradient offset 1;
+        // overwrite the default gradient that PipBoy_LoadSpotlight just loaded.
         LoadPalette(&gPipBoyGradients[theme][1], BG_PLTT_ID(3) + 1, PLTT_SIZEOF(8));
     }
     ResetTasks();

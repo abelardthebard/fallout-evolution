@@ -120,6 +120,41 @@ bg0 region, terminal's content-page chrome, future themed splash screens,
 etc.) loads its own authored per-theme 16-color palette into slot 3 and
 references `palette = 3` in the tilemap entries that render themed content.
 
+### Sharing the spotlight tilemap across screens -- BG 1 + WIN0
+
+The spotlight tile art + tilemap (`graphics/birch_speech/shadow.4bpp`,
+`graphics/birch_speech/map.bin`) is shared between the Birch intro and the
+terminal content viewer via `PipBoy_LoadSpotlight(charBase, mapBase)`. Both
+screens render it on BG 1.
+
+**Birch** owns its whole screen, so it can show the 32x20 fullscreen
+tilemap without clipping.
+
+**Terminal content pages** have their own chrome (BG 2) and text (BG 0);
+the 32x20 fullscreen spotlight would opaque-cover the chrome if rendered
+as-is. Every zero tiles in Birch's tilemap are non-transparent (verified
+by pixel peek), so we can't rely on tile-0 transparency to reveal chrome
+around the disc.
+
+The contract for a terminal page that wants the spotlight:
+
+1. Author a `SpotlightLayout` that specifies the WIN0 clip rect (screen
+   pixels) and BG 1 scroll offsets (so the Birch disc's native coords
+   translate into the clip rect).
+2. Call `TerminalUI_ShowSpotlight(&layout)` from the page's
+   `createSprites` hook. The helper:
+   - Sets WIN0 to the rect.
+   - Configures `WININ` so BG 0/1/2/OBJ render inside WIN0.
+   - Configures `WINOUT` so BG 0/2/OBJ (no BG 1) render outside WIN0 --
+     chrome shows, spotlight is suppressed.
+   - Enables `DISPCNT_WIN0_ON`.
+   - Sets BG 1 scroll.
+3. Call `TerminalUI_HideSpotlight()` on teardown (already wired into
+   `TerminalContent_Teardown`, so pages get cleanup for free).
+
+Pages never poke `REG_OFFSET_WIN0H` / `WININ` / `WINOUT` / `DISPCNT`
+directly -- that's what `TerminalUI_ShowSpotlight` encapsulates.
+
 **Shared invariant across every feature:** positions 1–8 hold the 8-shade
 Pip-Boy gradient (`gPipBoyGradients[theme]`). This is the spine — any tile
 whose pixels use color indices 1–8 will render with themed gradient shades

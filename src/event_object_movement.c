@@ -37,6 +37,7 @@
 #include "sprite.h"
 #include "task.h"
 #include "text_window.h"
+#include "player_appearance.h"
 #include "trainer_see.h"
 #include "trainer_hill.h"
 #include "util.h"

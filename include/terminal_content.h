@@ -45,6 +45,11 @@ struct TerminalPage
     // -- not per render. Populates any dynamic row-text buffers referenced
     // by items[].text. NULL for static pages.
     void (*prepare)(void);
+    // Optional: called once after the CB2 setup state machine has reset
+    // sprite/palette state, so sprites created here survive. Use
+    // TerminalContent_CreatePlayerSprite() or a similar helper that
+    // registers the returned sprite for teardown.
+    void (*createSprites)(void);
 };
 
 // Lookup table: TERMINAL_CONTENT_* id -> page. Defined in
@@ -57,5 +62,11 @@ extern const struct TerminalPage *const gTerminalContents[NUM_TERMINAL_CONTENTS]
 //   waitstate
 // VAR_RESULT is not set; the viewer always returns to the overworld on EXIT.
 void ShowTerminalContent(void);
+
+// Create a player trainer sprite (gender + hair + skin from gSaveBlock2Ptr)
+// at the supplied screen coordinates and register it with the content
+// viewer so it's destroyed on EXIT. Intended to be called from a page's
+// createSprites hook.
+void TerminalContent_CreatePlayerSprite(u16 x, u16 y);
 
 #endif // GUARD_TERMINAL_CONTENT_H

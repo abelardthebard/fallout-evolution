@@ -1,6 +1,8 @@
 #include "global.h"
 #include "bg.h"
+#include "data.h"
 #include "event_data.h"
+#include "field_effect.h"
 #include "gpu_regs.h"
 #include "main.h"
 #include "malloc.h"
@@ -13,9 +15,12 @@
 #include "strings.h"
 #include "task.h"
 #include "text.h"
+#include "text_window.h"
+#include "player_appearance.h"
 #include "window.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "constants/trainers.h"
 #include "terminal_content.h"
 #include "terminal_layout.h"
 #include "terminal_ui.h"
@@ -116,18 +121,21 @@ static void CB2_TerminalContentSetup(void)
     case 2:
         TerminalUI_LoadPalettes();
         TerminalUI_LoadBgImage();
+        TerminalUI_LoadSpotlight();
         gMain.state++;
         break;
     case 3:
         TerminalContent_RenderPage();
+        if (sTC->page->createSprites != NULL)
+            sTC->page->createSprites();
         gMain.state++;
         break;
     case 4:
         SetVBlankCallback(TerminalContent_VBlank);
         EnableInterrupts(INTR_FLAG_VBLANK);
         ShowBg(T_BG_TEXT);
+        ShowBg(T_BG_SPOTLIGHT);
         ShowBg(T_BG_IMAGE);
-        HideBg(2);
         HideBg(3);
         CreateTask(Task_TerminalContentInput, 0);
         SetMainCallback2(CB2_TerminalContentMain);
@@ -356,6 +364,11 @@ static void Task_TerminalContentFadeOut(u8 taskId)
 
 static void TerminalContent_Teardown(void)
 {
+    // Unconditional hide. No-op if this page never called ShowSpotlight;
+    // otherwise it clears WIN0 + BG1 scroll so nothing leaks into the
+    // next screen's GPU state.
+    TerminalUI_HideSpotlight();
+
     FreeAllWindowBuffers();
     if (sTC != NULL)
     {
@@ -365,4 +378,26 @@ static void TerminalContent_Teardown(void)
         Free(sTC);
         sTC = NULL;
     }
+}
+
+// -------------------------------------------------------------------------
+// Public helpers for page createSprites hooks
+// -------------------------------------------------------------------------
+
+void TerminalContent_CreatePlayerSprite(u16 x, u16 y)
+{
+    u8 facilityClass = (gSaveBlock2Ptr->playerGender == MALE)
+                        ? FACILITY_CLASS_BRENDAN
+                        : FACILITY_CLASS_MAY;
+    u8 spriteId = CreateTrainerSprite(FacilityClassToPicIndex(facilityClass),
+                                      x, y, 0, NULL);
+    if (spriteId == MAX_SPRITES)
+        return;
+    if (sTC->spriteCount >= ARRAY_COUNT(sTC->spriteIds))
+    {
+        DestroySprite(&gSprites[spriteId]);
+        return;
+    }
+    ApplyPlayerAppearancePalette(gSprites[spriteId].oam.paletteNum);
+    sTC->spriteIds[sTC->spriteCount++] = spriteId;
 }
