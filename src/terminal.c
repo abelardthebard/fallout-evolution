@@ -32,10 +32,6 @@
 
 #include "data/terminal_hack.h"
 
-// ============================================================================
-// Shared geometry + BG/window layout
-// ============================================================================
-
 #define T_ROW_HEIGHT         15
 #define T_CELL_W             6
 
@@ -66,15 +62,6 @@
 #define T_BG_SPOTLIGHT       1
 #define T_BG_IMAGE           2
 #define T_WIN_TEXT           0
-
-// VRAM layout (BG VRAM = 64 KB):
-//   char base 0-1  BG 0 window tile data (~600 tiles)
-//   char base 2    BG 2 chrome tiles
-//   char base 3    BG 1 spotlight tiles
-//   map base 28    BG 1 spotlight tilemap
-//   map base 30    BG 0 tilemap
-//   map base 31    BG 2 chrome tilemap
-// Priority front->back: BG 0 (text) | BG 1 (spotlight) | BG 2 (chrome).
 
 static const struct BgTemplate sTerminalBgTemplates[3] =
 {
@@ -121,9 +108,7 @@ static const struct WindowTemplate sTerminalWindowTemplates[2] =
     DUMMY_WIN_TEMPLATE,
 };
 
-// bg = 0 (transparent) lets the chrome BG show between glyph strokes.
 static const u8 sTerminalTextColors[]          = { 0, 2, 3 };
-// Inverted: shadow == bg merges outline into the bright cell.
 static const u8 sTerminalTextColors_Inverted[] = { 2, 1, 2 };
 
 static const u32 sBgImageTiles[] = INCBIN_U32("graphics/terminal/background.4bpp");
@@ -147,8 +132,6 @@ static void TerminalUI_InitBgsAndWindows(void)
 {
     ResetBgsAndClearDma3BusyFlags(0);
     InitBgsFromTemplates(0, sTerminalBgTemplates, ARRAY_COUNT(sTerminalBgTemplates));
-    // Zero scrolls -- ShowBg doesn't touch them, so they retain whatever
-    // the previous screen left behind.
     SetGpuReg(REG_OFFSET_BG0HOFS, 0);
     SetGpuReg(REG_OFFSET_BG0VOFS, 0);
     SetGpuReg(REG_OFFSET_BG1HOFS, 0);
@@ -164,7 +147,6 @@ static void TerminalUI_InitBgsAndWindows(void)
 static void TerminalUI_LoadPalettes(void)
 {
     LoadPalette(GetActiveThemeTextPal(), BG_PLTT_ID(15), PLTT_SIZE_4BPP);
-    // Authored green; remap ramp colors to the active theme.
     LoadPalette(sBgImagePal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
     PipBoy_ApplyThemeToPalettes(BG_PLTT_ID(0), 16, 0, 0);
 }
@@ -182,7 +164,6 @@ static void TerminalUI_LoadSpotlight(void)
 
 static void TerminalUI_ShowSpotlight(const struct SpotlightLayout *layout)
 {
-    // WIN0 clips BG 1 to the rect; WININ/WINOUT allow OBJ in both regions.
     SetGpuReg(REG_OFFSET_WIN0H,
               WIN_RANGE(layout->clipLeft, layout->clipLeft + layout->clipWidth));
     SetGpuReg(REG_OFFSET_WIN0V,
@@ -215,9 +196,6 @@ static void TerminalUI_DrawCenteredHeader(u8 winId, const u8 *text)
         sTerminalTextColors, TEXT_SKIP_DRAW, text);
 }
 
-// ============================================================================
-// Hack minigame
-// ============================================================================
 
 #define TERMINAL_TOTAL_WORDS \
     (ARRAY_COUNT(sTerminalWordsLen4)  + \
@@ -236,10 +214,6 @@ STATIC_ASSERT(sizeof(((struct SaveBlock1 *)0)->terminalWordBurned) * 8 == TERMIN
 
 #define MAX_CANDIDATES      TERMINAL_MAX_WORD_COUNT
 #define MAX_BRACKETS        8
-// Bracket pair geometry. Span = closer - opener + 1 (cells inclusive).
-// MIN/MAX bound a single pair's width; MIN_BRACKET_GAP is the minimum
-// number of cells between distinct pairs on the same row. Spans must be
-// unique across the whole board (see IsBracketSpanUnique).
 #define MIN_BRACKET_SPAN    2
 #define MAX_BRACKET_SPAN    10
 #define MIN_BRACKET_GAP     4
@@ -247,11 +221,9 @@ STATIC_ASSERT(sizeof(((struct SaveBlock1 *)0)->terminalWordBurned) * 8 == TERMIN
 
 #define WORD_MIN_GAP        2
 
-// Geometric upper bound on per-row word count, derived for buffer sizing.
 #define MAX_WORDS_PER_ROW \
     (((BOARD_COLS) + (WORD_MIN_GAP)) / ((TERMINAL_MIN_WORD_LENGTH) + (WORD_MIN_GAP)))
 
-// Build-time proof that each tier's worst-case row fits in BOARD_COLS.
 #define TIER_MAX_QUOTA(WC)            (((WC) + (BOARD_ROWS) - 1) / (BOARD_ROWS))
 #define TIER_MAX_SPAN(WC, WLMAX)      (TIER_MAX_QUOTA(WC) * (WLMAX) + (TIER_MAX_QUOTA(WC) - 1) * (WORD_MIN_GAP))
 #define TIER_PLACEMENT_FEASIBLE(WC, WLMAX)  (TIER_MAX_SPAN(WC, WLMAX) <= (BOARD_COLS))
@@ -264,9 +236,7 @@ STATIC_ASSERT(TIER_PLACEMENT_FEASIBLE(TIER_3_WORD_COUNT, TIER_3_WORD_LEN_MAX), t
 #define TERMINAL_WON          1
 #define TERMINAL_LOST         2
 
-// Sized so an all-duds run (1 row each) fills the column without eviction.
 #define MAX_LOG_ENTRIES      T_BODY_ROWS
-// Fits worst case ">DUD REMOVED" + EOS = 13.
 #define LOG_LINE_BUF_SIZE    16
 
 struct Candidate
@@ -366,7 +336,6 @@ void UpdateTerminalLockoutCounter(void)
         VarSet(VAR_TERMINAL_LOCKED_ID, 0);
 }
 
-// Script: VAR_0x8000=tier, VAR_0x8001=flagId, VAR_0x8002=content_id (chained on win).
 void StartTerminalHack(void)
 {
     sHack = AllocZeroed(sizeof(*sHack));
@@ -385,9 +354,7 @@ void StartTerminalHack(void)
     gMain.state = 0;
 }
 
-// Called via `specialvar VAR_RESULT, IsTerminalLockedOut`, which writes the
-// return value into VAR_RESULT. Must return a value -- a void function would
-// leave undefined garbage in r0, breaking the goto_if_eq check downstream.
+// `specialvar` writes the return value to VAR_RESULT -- void leaves garbage in r0.
 bool8 IsTerminalLockedOut(void)
 {
     u16 terminalId = gSpecialVar_0x8000;
@@ -441,7 +408,6 @@ static void CB2_TerminalHackSetup(void)
         ShowBg(T_BG_IMAGE);
         HideBg(T_BG_SPOTLIGHT);
         HideBg(3);
-        // ShowBg flips per-BG bits only; OBJ has its own master enable.
         SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
         gMain.state++;
@@ -465,7 +431,6 @@ static void ShuffleU8(u8 *arr, u8 count)
     }
 }
 
-// Falls back to allowing burned words if filter leaves pool < wordCount.
 static void SampleCandidateWords(void)
 {
     const struct TerminalWordPool *pool = &sTerminalWordPools[sHack->wordLen - TERMINAL_MIN_WORD_LENGTH];
@@ -515,9 +480,7 @@ static void FillBoardWithGarbage(void)
         sHack->board[i] = sTerminalGarbageChars[Random() % TERMINAL_NUM_GARBAGE_CHARS];
 }
 
-// Distributes BOARD_COLS slack as a uniform random partition (stars-and-
-// bars) across count+1 gap slots: leading, internal (>= WORD_MIN_GAP),
-// trailing. Build-time STATIC_ASSERTs above prove minSpan <= BOARD_COLS.
+// Stars-and-bars random partition across count+1 gap slots.
 static void PlaceWordsOnRow(u8 row, u8 count, u8 *outCandIdx)
 {
     // {0} silences a spurious -Wmaybe-uninitialized when this inlines.
@@ -553,7 +516,6 @@ static void PlaceWordsOnRow(u8 row, u8 count, u8 *outCandIdx)
     *outCandIdx = candIdx + count;
 }
 
-// Floor + random `extras` bump per row, then row-by-row placement.
 static void AssignWordSlots(void)
 {
     u8 rowQuotas[BOARD_ROWS];
@@ -613,9 +575,7 @@ static bool8 IsGarbageCell(u8 row, u8 col)
     return TRUE;
 }
 
-// No overlap or nesting; AND at least MIN_BRACKET_GAP empty cells between
-// proposed and any existing pair on the row. `existing` is flat
-// [open1, close1, open2, close2, ...].
+// `existing` is flat [open1, close1, open2, close2, ...].
 static bool8 IsValidBracketPlacement(u8 openerCol, u8 closerCol, const u8 *existing, u8 numExisting)
 {
     u8 i;
@@ -635,7 +595,6 @@ static bool8 IsValidBracketPlacement(u8 openerCol, u8 closerCol, const u8 *exist
     return TRUE;
 }
 
-// Bracket span can't cover a word cell (avoids highlight ambiguity).
 static bool8 HasWordCellBetween(u8 row, u8 openerCol, u8 closerCol)
 {
     u8 c, w;
@@ -651,7 +610,6 @@ static bool8 HasWordCellBetween(u8 row, u8 openerCol, u8 closerCol)
     return FALSE;
 }
 
-// Span uniqueness is board-wide, not per-row.
 static bool8 IsBracketSpanUnique(u8 span)
 {
     u8 i;
@@ -743,7 +701,6 @@ static bool8 TryPlaceBracketOnRow(u8 row, u8 type)
     return FALSE;
 }
 
-// Degrades to fewer pairs if the board is too dense.
 static void PlaceBracketPairs(u8 numPairs)
 {
     u8 i;
@@ -838,8 +795,6 @@ static bool8 GetWordSpanAt(u8 row, u8 col, u8 *outStartCol, u8 *outEndCol)
     return TRUE;
 }
 
-// Empty pairs like `()` collapse to one click-through; non-empty fall
-// through to per-cell stepping.
 static bool8 GetEmptyBracketSpanAt(u8 row, u8 col, u8 *outStartCol, u8 *outEndCol)
 {
     s8 bidx = FindLiveBracketEndpointAt(row, col);
@@ -872,7 +827,6 @@ static bool8 GetBlankSpanAt(u8 row, u8 col, u8 *outStartCol, u8 *outEndCol)
     return TRUE;
 }
 
-// Word: whole word. Bracket endpoint: opener..closer span. Else: cell.
 static void ComputeHighlightSpan(u8 *outStartCol, u8 *outEndCol)
 {
     u8 col = sHack->cursorCol;
@@ -882,7 +836,6 @@ static void ComputeHighlightSpan(u8 *outStartCol, u8 *outEndCol)
     if (GetWordSpanAt(row, col, outStartCol, outEndCol))
         return;
 
-    // Match MoveCursor's single-jump treatment of blank runs.
     if (GetBlankSpanAt(row, col, outStartCol, outEndCol))
         return;
 
@@ -935,7 +888,6 @@ static void ConsumeBracket(u8 bracketIdx)
     EraseBoardCellsWithSpace(bp->row, bp->openerCol, bp->closerCol);
 }
 
-// Duds a random non-password, non-dudded candidate. No-op if none eligible.
 static void ApplyDudRemovalEffect(void)
 {
     u8 eligible[MAX_CANDIDATES];
@@ -955,7 +907,6 @@ static void ApplyDudRemovalEffect(void)
     AddDudRemovedLogEntry();
 }
 
-// When full, overwrites oldest. Caller fills kind-specific fields.
 static struct TerminalLogEntry *AcquireLogSlot(void)
 {
     struct TerminalLogEntry *entry = &sHack->logEntries[sHack->logHead];
@@ -1082,8 +1033,6 @@ static u8 LogEntryRowCount(const struct TerminalLogEntry *entry)
     return (entry->kind == LOG_KIND_GUESS) ? 2 : 1;
 }
 
-// Bottom-anchored. Newest entries fit first (variable heights); older
-// entries stay in the ring buffer but render off-screen until they age out.
 static void RenderLogPanel(void)
 {
     u8 firstIdx;
@@ -1166,15 +1115,11 @@ static void TerminalHack_RenderBoard(void)
             u8 ch = sHack->board[row * BOARD_COLS + col];
             u8 font, width, xOffset;
             const u8 *colors;
-            // Suppress highlight after end-state so the frozen cursor
-            // doesn't visually blink on no-longer-actionable cells.
             bool8 highlighted = (sHack->endResult == TERMINAL_IN_PROGRESS)
                              && (row == sHack->cursorRow && col >= hlStart && col <= hlEnd);
             u16 cellX = T_BODY_X + col * T_CELL_W;
             u16 cellY = T_BODY_Y + row * T_ROW_HEIGHT;
 
-            // Pre-fill: text printer only paints the glyph area, so with
-            // xOffset > 0 the cell's left padding would stay untouched.
             if (highlighted)
                 FillWindowPixelRect(T_WIN_TEXT, PIXEL_FILL(2), cellX, cellY, T_CELL_W, T_ROW_HEIGHT);
             colors = highlighted ? sTerminalTextColors_Inverted : sTerminalTextColors;
@@ -1211,8 +1156,6 @@ static void MoveCursor(s8 dx, s8 dy)
 
     if (dx != 0)
     {
-        // Word cells, blank runs, and empty `()` pairs collapse to a
-        // single-press jump; non-empty brackets fall through to per-cell.
         u8 spanStart, spanEnd;
         if (GetWordSpanAt(sHack->cursorRow, sHack->cursorCol, &spanStart, &spanEnd)
          || GetBlankSpanAt(sHack->cursorRow, sHack->cursorCol, &spanStart, &spanEnd)
@@ -1291,8 +1234,7 @@ static void Task_TerminalHackFadeOut(u8 taskId)
     if (gPaletteFade.active)
         return;
 
-    // Chain directly to the content viewer on win -- skipping the
-    // overworld CB2 keeps the screen black between hack and content.
+    // Skip overworld CB2 to keep screen black between hack and content.
     if (sHack->endResult == TERMINAL_WON)
     {
         u16 contentId = sHack->chainContentId;
@@ -1318,9 +1260,6 @@ static void TerminalHack_Teardown(void)
     }
 }
 
-// ============================================================================
-// Content viewer
-// ============================================================================
 
 #define TC_CURSOR_COL_W   8
 #define TC_MAX_SPRITES    8
@@ -1333,7 +1272,6 @@ enum TerminalItemType
     TERMINAL_ITEM_BLANK,
 };
 
-// NULL = inert SELECTABLE (cursor lands but A is a no-op).
 typedef void (*TerminalItemCallback)(void);
 
 struct TerminalSpriteItem
@@ -1425,8 +1363,7 @@ void ShowTerminalContent(void)
         sTC->cursorItemIdx = (idx < 0) ? 0 : (u8)idx;
     }
 
-    // Cancel the overworld's pending fade-in -- otherwise the field
-    // becomes visible for one frame before our state-0 black-out.
+    // Cancel pending fade-in to avoid one-frame field flash.
     SetGpuReg(REG_OFFSET_DISPCNT, 0);
     ResetPaletteFade();
     SetMainCallback2(CB2_TerminalContentSetup);
@@ -1473,7 +1410,6 @@ static void CB2_TerminalContentSetup(void)
         ShowBg(T_BG_SPOTLIGHT);
         ShowBg(T_BG_IMAGE);
         HideBg(3);
-        // ShowBg flips per-BG bits only; OBJ has its own master enable.
         SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
         sTC->taskId = CreateTask(Task_TerminalContentInput, 0);
         SetMainCallback2(CB2_TerminalContentMain);
@@ -1496,8 +1432,6 @@ static void TerminalContent_VBlank(void)
     TransferPlttBuffer();
 }
 
-// Row-major grid layout. For cols=1 the column term collapses and items
-// stack vertically as before. Mirrors vanilla PrintMenuGridTable indexing.
 static void TerminalContent_ItemPos(u8 itemIdx, u16 *outX, u16 *outY)
 {
     u8 cols = sTC->activeCols;
@@ -1508,7 +1442,6 @@ static void TerminalContent_ItemPos(u8 itemIdx, u16 *outX, u16 *outY)
     *outY = T_BODY_Y + row * T_ROW_HEIGHT;
 }
 
-// Skips TERMINAL_ITEM_SPRITE spawn so picker swaps don't duplicate sprites.
 static void TerminalContent_RenderBody(void)
 {
     const struct TerminalItem *items = sTC->activeItems;
@@ -1646,12 +1579,7 @@ static void TerminalContent_SetCursor(u8 newIdx)
         sTC->onCursorMove(newIdx);
 }
 
-// Wrap-around 2D motion matching vanilla ChangeMenuGridCursorPosition.
-// Horizontal walks stay within the current row; vertical walks stay within
-// the current column. cols=1 collapses to pure vertical -- the column
-// constraint becomes the whole array, so a single canonical path serves
-// both list and grid pages. Skip-walks past non-SELECTABLE cells along the
-// motion axis only, never crossing axes.
+// Mirrors vanilla ChangeMenuGridCursorPosition.
 static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
 {
     u8 cols  = sTC->activeCols;
@@ -1665,7 +1593,6 @@ static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
 
     if (dx != 0)
     {
-        // Last row may be partial -- shrink wrap range to the existing cells.
         u8 rowStart = row * cols;
         u8 rowWidth = (rowStart + cols > count) ? (count - rowStart) : cols;
         if (rowWidth <= 1)
@@ -1686,8 +1613,6 @@ static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
     }
     else if (dy != 0)
     {
-        // Walk row-by-row in the same column. Rows whose partial-end excludes
-        // this column are skipped (rowStart + col >= count).
         for (tried = 0; tried < rows; tried++)
         {
             s8 next = (s8)row + dy;
@@ -1751,7 +1676,6 @@ static void Task_TerminalContentInput(u8 taskId)
         }
         else
         {
-            // First B jumps cursor to EXIT, second B activates it.
             const struct TerminalItem *item = &sTC->activeItems[sTC->cursorItemIdx];
             if (item->type == TERMINAL_ITEM_SELECTABLE
                 && item->onActivate == TerminalContent_ExitCallback)
@@ -1828,8 +1752,6 @@ static void TerminalContent_RecreatePlayerSprite(u8 gender)
     TerminalContent_CreatePlayerSpriteAs(sTC->playerSpriteX, sTC->playerSpriteY, gender);
 }
 
-// Cursor seed: prefer initialCursorIdx if it lands on SELECTABLE, else first
-// SELECTABLE in the array. Shared by both active-items entry points.
 static void TerminalContent_SeedCursor(u8 initialCursorIdx)
 {
     if (initialCursorIdx < sTC->activeItemCount
@@ -1844,9 +1766,6 @@ static void TerminalContent_SeedCursor(u8 initialCursorIdx)
     }
 }
 
-// Picker entry point. Caller owns the items array + column count for the
-// duration of the picker. cols must be >= 1; pass 1 for a single-column
-// list, 2+ for a grid.
 static void TerminalContent_SetActiveItems(const struct TerminalItem *items,
                                            u8 itemCount,
                                            u8 cols,
@@ -1860,7 +1779,6 @@ static void TerminalContent_SetActiveItems(const struct TerminalItem *items,
     TerminalContent_RenderBody();
 }
 
-// Restores the page's authored items[] + cols. Used when a picker closes.
 static void TerminalContent_RestorePageItems(u8 initialCursorIdx)
 {
     sTC->activeItems     = sTC->page->items;
@@ -1879,12 +1797,6 @@ static void TerminalContent_SetCancelCallback(void (*cb)(void))
 {
     sTC->onCancel = cb;
 }
-
-// ============================================================================
-// Pages
-// ============================================================================
-
-// ---- Medical Records ----
 
 static void BuildFieldRow(u8 *out, u8 cap, const u8 *label, const u8 *value)
 {
@@ -1909,7 +1821,6 @@ static void BuildFieldRow(u8 *out, u8 cap, const u8 *label, const u8 *value)
     *p = EOS;
 }
 
-// Sized for "GENDER: " (8) + "Masculine" (9) + EOS.
 #define TERMINAL_MED_RECORDS_LABEL_MAX     8
 #define TERMINAL_MED_RECORDS_VALUE_MAX     9
 #define TERMINAL_MED_RECORDS_ROW_BUF_SIZE  (TERMINAL_MED_RECORDS_LABEL_MAX + TERMINAL_MED_RECORDS_VALUE_MAX + 1)
@@ -1964,8 +1875,6 @@ static void TerminalMedicalRecords_Prepare(void)
         (skin != NULL) ? skin : sText_TerminalMedicalRecords_Unknown);
 }
 
-// Row indices into sTerminalMedicalRecords_Items. Pickers restore the
-// cursor to their parent row on close.
 enum
 {
     MED_ROW_NAME,
@@ -1977,11 +1886,6 @@ enum
     MED_ROW_BLANK,
     MED_ROW_EXIT,
 };
-
-// ---- HAIR picker ----
-//
-// 2-col grid (5 rows x 2 cols = 10 hair options). Cancel is the B-button --
-// onCancel restores the original color, no explicit Cancel row.
 
 #define HAIR_PICKER_COLS  2
 
@@ -2044,11 +1948,6 @@ static void HairPicker_Open(void)
                                    HAIR_PICKER_COLS, sHairPicker_Original);
 }
 
-// ---- SKIN picker ----
-//
-// 2-col grid (3 rows x 2 cols = 6 skin tones). Same B-cancel pattern as
-// HAIR -- onCancel restores the original tone.
-
 #define SKIN_PICKER_COLS  2
 
 static EWRAM_DATA struct TerminalItem sSkinPickerItems[PLAYER_SKIN_OPTION_COUNT] = {0};
@@ -2109,12 +2008,6 @@ static void SkinPicker_Open(void)
     TerminalContent_SetActiveItems(sSkinPickerItems, PLAYER_SKIN_OPTION_COUNT,
                                    SKIN_PICKER_COLS, sSkinPicker_Original);
 }
-
-// ---- GENDER picker ----
-//
-// Two options (Masculine / Feminine) rendered as a single-column list.
-// Preview rebuilds the trainer sprite because gender swap changes the
-// underlying facility class, not just a palette. Cancel rebuilds back.
 
 #define GENDER_PICKER_COLS  1
 
@@ -2187,34 +2080,27 @@ static const struct TerminalItem sTerminalMedicalRecords_Items[] =
     [MED_ROW_EXIT]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Exit, .onActivate = TerminalContent_ExitCallback },
 };
 
-// Y_OFFSET nudges the sprite above the geometric body-area center.
-// clipTop tracks it so sprite + spotlight translate as one unit.
 #define MEDICAL_RECORDS_Y_OFFSET           (-6)
-#define MEDICAL_RECORDS_SPRITE_X           (T_LOG_X + T_LOG_RESERVED_W / 2)
+#define MEDICAL_RECORDS_WIN_EXTEND_LEFT    8
+#define MEDICAL_RECORDS_PLAY_X             (T_LOG_X - MEDICAL_RECORDS_WIN_EXTEND_LEFT)
+#define MEDICAL_RECORDS_PLAY_W             (T_LOG_RESERVED_W + MEDICAL_RECORDS_WIN_EXTEND_LEFT)
+#define MEDICAL_RECORDS_SPRITE_X           (MEDICAL_RECORDS_PLAY_X + MEDICAL_RECORDS_PLAY_W / 2)
 #define MEDICAL_RECORDS_SPRITE_Y           (T_LOG_Y + T_BODY_H / 2 + MEDICAL_RECORDS_Y_OFFSET)
 
-// Up to T_LOG_PAD_X uses the column-gutter; beyond that the glow extends
-// behind text rows (BG 0 priority keeps text on top).
-#define MEDICAL_RECORDS_WIN_EXTEND_LEFT    8
-
-// Glow center in the 10x4-tile spotlight canvas (glow is 76x22 px
-// centered within the top-left 80x32 px subregion).
 #define TERMINAL_SPOTLIGHT_CENTER_X        40
 #define TERMINAL_SPOTLIGHT_CENTER_Y        16
 
-// +28 places the disc 4 px above the sprite's feet line (Birch convention).
 #define MEDICAL_RECORDS_GLOW_VS_SPRITE_Y   28
 
-// BG scroll: register value = tilemap coord - screen coord. Negatives wrap via u16.
 #define MEDICAL_RECORDS_BG1_HOFS   ((u16)(TERMINAL_SPOTLIGHT_CENTER_X - MEDICAL_RECORDS_SPRITE_X))
 #define MEDICAL_RECORDS_BG1_VOFS   ((u16)(TERMINAL_SPOTLIGHT_CENTER_Y \
                                           - (MEDICAL_RECORDS_SPRITE_Y + MEDICAL_RECORDS_GLOW_VS_SPRITE_Y)))
 
 static const struct SpotlightLayout sMedicalRecords_Spotlight =
 {
-    .clipLeft   = T_LOG_X - MEDICAL_RECORDS_WIN_EXTEND_LEFT,
+    .clipLeft   = MEDICAL_RECORDS_PLAY_X,
     .clipTop    = T_LOG_Y + MEDICAL_RECORDS_Y_OFFSET,
-    .clipWidth  = T_LOG_RESERVED_W + MEDICAL_RECORDS_WIN_EXTEND_LEFT,
+    .clipWidth  = MEDICAL_RECORDS_PLAY_W,
     .clipHeight = T_BODY_H,
     .scrollX    = MEDICAL_RECORDS_BG1_HOFS,
     .scrollY    = MEDICAL_RECORDS_BG1_VOFS,
@@ -2236,8 +2122,6 @@ static const struct TerminalPage sTerminalMedicalRecords_Page =
     .prepare       = TerminalMedicalRecords_Prepare,
     .createSprites = TerminalMedicalRecords_CreateSprites,
 };
-
-// ---- Page dispatch table ----
 
 const struct TerminalPage *const gTerminalContents[NUM_TERMINAL_CONTENTS] =
 {

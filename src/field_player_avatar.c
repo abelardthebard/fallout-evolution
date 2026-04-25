@@ -1111,15 +1111,6 @@ void SetPlayerAvatarTransitionFlags(u16 transitionFlags)
     DoPlayerAvatarTransition();
 }
 
-// Re-syncs the live player avatar after a mid-game change to
-// gSaveBlock2Ptr->playerGender (e.g. terminal character editor). Refreshes
-// the object event's graphicsId under the avatar's CURRENT state -- so a
-// player on a bike or surfing keeps that state with the new gender's sprite
-// instead of being force-transitioned to on-foot. Reapplies hair + skin so
-// the appearance overlay survives the gender swap.
-//
-// Safe no-op if the avatar isn't currently spawned, so early-init paths
-// (NewGameInitData -> Birch) don't have to special-case the call.
 void RefreshPlayerAvatarGender(void)
 {
     struct ObjectEvent *playerObj;
@@ -1131,8 +1122,7 @@ void RefreshPlayerAvatarGender(void)
         return;
 
     gPlayerAvatar.gender = gSaveBlock2Ptr->playerGender;
-    ObjectEventSetGraphicsId(playerObj, GetPlayerAvatarGraphicsIdByCurrentState());
-    LoadPlayerObjectEventPalette(gSaveBlock2Ptr->playerGender);
+    playerObj->graphicsId = GetPlayerAvatarGraphicsIdByCurrentState();
 }
 
 static void DoPlayerAvatarTransition(void)

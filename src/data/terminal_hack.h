@@ -12,9 +12,7 @@ struct TerminalDifficulty
     u8 bracketPairs;
 };
 
-// #defines (not just initializers) so terminal_hack.c can use them in
-// STATIC_ASSERTs. Higher tiers = shorter words, more of them: weaker
-// likeness signal, less dud-removal leverage.
+// #defines (not initializers) so terminal_hack.c can use them in STATIC_ASSERTs.
 #define TIER_1_WORD_LEN_MIN     7
 #define TIER_1_WORD_LEN_MAX     8
 #define TIER_1_WORD_COUNT      10
@@ -58,8 +56,7 @@ static const struct TerminalDifficulty sTerminalDifficulty[NUM_TERMINAL_TIERS] =
     },
 };
 
-// Only chars available in pokeemerald's charmap. `[` `]` `{` `}` `@` `#` `^`
-// `*` `"` `|` `\` would require charmap + font edits to add.
+// Charmap-safe only. `[ ] { } @ # ^ * " | \` need charmap + font edits.
 static const u8 sTerminalGarbageChars[]    = _("!%&-+,.;:'?/·×");
 static const u8 sTerminalBracketOpeners[]  = _("(<");
 static const u8 sTerminalBracketClosers[]  = _(")>");
@@ -67,9 +64,7 @@ static const u8 sTerminalBracketClosers[]  = _(")>");
 #define TERMINAL_NUM_GARBAGE_CHARS  (sizeof(sTerminalGarbageChars)   - 1)
 #define TERMINAL_NUM_BRACKET_TYPES  (sizeof(sTerminalBracketOpeners) - 1)
 
-// APPEND-ONLY: inserting or reordering shifts every subsequent word's global
-// id, which silently corrupts burn-flag state in existing saves. New words
-// go at the end of their bucket; new buckets go after all existing ones.
+// APPEND-ONLY: inserting or reordering corrupts burn-flag state in existing saves.
 static const u8 sTerminalWordsLen4[][5] = {
     _("ROCK"), _("BARD"), _("FIRE"), _("HACK"),
     _("DARK"), _("NUKE"), _("BALL"), _("TECH"),
@@ -351,9 +346,7 @@ struct TerminalWordPool
 #define TERMINAL_WORD_BUCKET(arr, len, base) \
     { .words = (const u8 *)(arr), .count = ARRAY_COUNT(arr), .globalIdBase = (base), .wordLen = (len), .stride = (len) + 1 }
 
-// Bumping a bucket's count shifts every later bucket's globalIdBase,
-// which invalidates burn-flags in existing saves. Plan a save migration
-// if word counts change post-ship.
+// Bumping a bucket count shifts later globalIdBases -- invalidates save burn-flags.
 static const struct TerminalWordPool sTerminalWordPools[TERMINAL_NUM_LENGTH_BUCKETS] =
 {
     [0] = TERMINAL_WORD_BUCKET(sTerminalWordsLen4,   4,   0),

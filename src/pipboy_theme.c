@@ -3,31 +3,18 @@
 #include "bg.h"
 #include "decompress.h"
 #include "palette.h"
-#include "text_window.h"   // for gTextWindowFrame1_Gfx (window-frame tile art)
+#include "text_window.h"
 #include "pipboy_theme.h"
 
-// -------------------------------------------------------------------------
-// Per-theme frame palettes. Paired 1:1 with themes in sWindowFrames[].
-// Green is public extern (gPipBoyFramePalGreen) because save_failed_screen
-// hardcodes to green regardless of the player's chosen theme -- see
-// include/pipboy_theme.h for why.
-// -------------------------------------------------------------------------
-
-const u16 gPipBoyFramePalGreen[]       = INCBIN_U16("graphics/text_window/pip0.gbapal");
+const u16 gPipBoyFramePalGreen[]         = INCBIN_U16("graphics/text_window/pip0.gbapal");
 static const u16 sPipBoyFramePalBlue[]   = INCBIN_U16("graphics/text_window/pip1.gbapal");
 static const u16 sPipBoyFramePalRed[]    = INCBIN_U16("graphics/text_window/pip2.gbapal");
 static const u16 sPipBoyFramePalYellow[] = INCBIN_U16("graphics/text_window/pip3.gbapal");
 
-// Per-theme text-window palettes (slots 14 / 15). All file-static -- access
-// is via GetActiveThemeTextPal() / gPipBoyThemes[].textPal.
 static const u16 sPipBoyTextPalGreen[]  = INCBIN_U16("graphics/text_window/piptext_pal0.gbapal");
 static const u16 sPipBoyTextPalBlue[]   = INCBIN_U16("graphics/text_window/piptext_pal1.gbapal");
 static const u16 sPipBoyTextPalRed[]    = INCBIN_U16("graphics/text_window/piptext_pal2.gbapal");
 static const u16 sPipBoyTextPalYellow[] = INCBIN_U16("graphics/text_window/piptext_pal3.gbapal");
-
-// -------------------------------------------------------------------------
-// Public theme table -- indexed by THEME_*.
-// -------------------------------------------------------------------------
 
 const struct PipTheme gPipBoyThemes[THEME_COUNT] =
 {
@@ -57,22 +44,15 @@ const struct PipTheme gPipBoyThemes[THEME_COUNT] =
     },
 };
 
-// -------------------------------------------------------------------------
-// 8-shade Pip-Boy ramps, bright -> dark per theme. The "green ramp" is the
-// authored baseline; palette files on disk contain these exact values, so
-// PipBoy_ApplyThemeToPalettes can scan any loaded palette buffer and swap
-// greens for the active theme's equivalent shade.
-// -------------------------------------------------------------------------
-
 static const u16 sPipBoyGreenRamp[PIPBOY_RAMP_SIZE] = {
-    RGB(24, 31, 15), // #C0F878
-    RGB(19, 29, 12), // #98E860
-    RGB(14, 27,  8), // #70D840
-    RGB( 9, 25,  4), // #48C820
-    RGB( 5, 21,  2), // #28A810
-    RGB( 3, 16,  2), // #188010
-    RGB( 2, 12,  1), // #106008
-    RGB( 1,  8,  1), // #084008
+    RGB(24, 31, 15),
+    RGB(19, 29, 12),
+    RGB(14, 27,  8),
+    RGB( 9, 25,  4),
+    RGB( 5, 21,  2),
+    RGB( 3, 16,  2),
+    RGB( 2, 12,  1),
+    RGB( 1,  8,  1),
 };
 
 static const u16 sPipBoyThemeRamps[THEME_COUNT][PIPBOY_RAMP_SIZE] = {
@@ -94,12 +74,6 @@ static const u16 sPipBoyThemeRamps[THEME_COUNT][PIPBOY_RAMP_SIZE] = {
     },
 };
 
-// -------------------------------------------------------------------------
-// Per-theme spotlight gradient palettes (8 colors each). Loaded into the
-// slot-3 gradient reservation by PipBoy_LoadThemeGradient; indexed directly
-// by the Birch-intro spotlight fade task via gPipBoyGradients[theme][offset].
-// -------------------------------------------------------------------------
-
 static const u16 sPipBoyGradientGreen[]  = INCBIN_U16("graphics/birch_speech/bg2.gbapal");
 static const u16 sPipBoyGradientBlue[]   = INCBIN_U16("graphics/birch_speech/bg2_blue.gbapal");
 static const u16 sPipBoyGradientRed[]    = INCBIN_U16("graphics/birch_speech/bg2_red.gbapal");
@@ -112,9 +86,6 @@ const u16 *const gPipBoyGradients[THEME_COUNT] = {
     [THEME_YELLOW] = sPipBoyGradientYellow,
 };
 
-// Backdrop palettes carry the gradient at slots 1-8 plus accent colors
-// at 0 and 9-15 (frame, shadow, highlights). Loaders overlay the live
-// gradient on top of slot 3 so the colors track theme + animation.
 static const u16 sPipBoyBackdropGreen[]  = INCBIN_U16("graphics/birch_speech/bg0.gbapal");
 static const u16 sPipBoyBackdropBlue[]   = INCBIN_U16("graphics/birch_speech/bg0_blue.gbapal");
 static const u16 sPipBoyBackdropRed[]    = INCBIN_U16("graphics/birch_speech/bg0_red.gbapal");
@@ -151,7 +122,6 @@ void PipBoy_LoadTerminalSpotlight(u8 charBase, u8 mapBase)
     LoadSpotlightAssets(sPipBoyTerminalSpotlightGfx, sPipBoyTerminalSpotlightMap, charBase, mapBase);
 }
 
-
 static const struct TilesPal sWindowFrames[THEME_COUNT] =
 {
     [THEME_GREEN]  = { gTextWindowFrame1_Gfx, gPipBoyFramePalGreen   },
@@ -166,10 +136,6 @@ const struct TilesPal *GetWindowFrameTilesPal(u8 id)
         return &sWindowFrames[0];
     return &sWindowFrames[id];
 }
-
-// -------------------------------------------------------------------------
-// Active-theme queries
-// -------------------------------------------------------------------------
 
 u8 GetActiveTheme(void)
 {
@@ -188,10 +154,6 @@ const u16 *GetActiveThemeFramePal(void)
 {
     return gPipBoyThemes[GetActiveTheme()].framePal;
 }
-
-// -------------------------------------------------------------------------
-// Theme application
-// -------------------------------------------------------------------------
 
 void PipBoy_ApplyThemeToPalettes(u16 bgStart, u16 bgCount, u16 objStart, u16 objCount)
 {

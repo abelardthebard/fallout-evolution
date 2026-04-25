@@ -1,20 +1,5 @@
-@ Adding a new terminal:
-@   1. Reserve FLAG_TERMINAL_<Name> in include/constants/flags.h
-@   2. Add EventScript_Terminal_<Name> below using the `terminal` macro.
-@   3. In porymap, place the MB_TERMINAL tile + a Sign Event pointing at
-@      EventScript_Terminal_<Name>.
-@
-@ MB_TERMINAL tiles without a bg_script_event fall through to
-@ EventScript_TerminalOffline.
+@ MB_TERMINAL tiles without a bg_script_event fall through to EventScript_TerminalOffline.
 
-@ Usage: terminal <flag>, <TERMINAL_CONTENT_* id>, <tier>
-@   tier = TERMINAL_TIER_0 (no password) or TERMINAL_TIER_1..3 (hack).
-@
-@ First visit with hack: boot -> password prompt -> hack -> (on success
-@ the hack chains straight into the content viewer without re-entering the
-@ overworld CB, so there's no flash of the map between them). Script
-@ resumes after the content viewer exits.
-@ Repeat visits (flag set): boot -> content viewer -> shutdown.
 .macro terminal flag:req, contentId:req, tier:req
 	lockall
 	special DoTerminalTurnOnEffect
