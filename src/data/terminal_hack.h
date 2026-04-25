@@ -12,16 +12,50 @@ struct TerminalDifficulty
     u8 bracketPairs;
 };
 
-// Tier difficulty inverts word length with word count: higher tiers use
-// shorter words but more of them. Shorter words give weaker per-guess
-// likeness signal (fewer positions to share), and a denser board spreads
-// the same 4 dud-removals across more candidates, so the player's info
-// gain per bracket shrinks as tier climbs.
+// #defines (not just initializers) so terminal_hack.c can use them in
+// STATIC_ASSERTs. Higher tiers = shorter words, more of them: weaker
+// likeness signal, less dud-removal leverage.
+#define TIER_1_WORD_LEN_MIN     7
+#define TIER_1_WORD_LEN_MAX     8
+#define TIER_1_WORD_COUNT      10
+#define TIER_1_LOCKOUT_STEPS   50
+#define TIER_1_BRACKET_PAIRS    4
+
+#define TIER_2_WORD_LEN_MIN     5
+#define TIER_2_WORD_LEN_MAX     7
+#define TIER_2_WORD_COUNT      12
+#define TIER_2_LOCKOUT_STEPS  125
+#define TIER_2_BRACKET_PAIRS    4
+
+#define TIER_3_WORD_LEN_MIN     4
+#define TIER_3_WORD_LEN_MAX     5
+#define TIER_3_WORD_COUNT      14
+#define TIER_3_LOCKOUT_STEPS  200
+#define TIER_3_BRACKET_PAIRS    4
+
 static const struct TerminalDifficulty sTerminalDifficulty[NUM_TERMINAL_TIERS] =
 {
-    [TERMINAL_TIER_1] = { .wordLenMin = 7, .wordLenMax = 8, .wordCount = 10, .lockoutSteps =  50, .bracketPairs = 4 },
-    [TERMINAL_TIER_2] = { .wordLenMin = 5, .wordLenMax = 7, .wordCount = 12, .lockoutSteps =  75, .bracketPairs = 4 },
-    [TERMINAL_TIER_3] = { .wordLenMin = 4, .wordLenMax = 5, .wordCount = 14, .lockoutSteps = 100, .bracketPairs = 4 },
+    [TERMINAL_TIER_1] = {
+        .wordLenMin   = TIER_1_WORD_LEN_MIN,
+        .wordLenMax   = TIER_1_WORD_LEN_MAX,
+        .wordCount    = TIER_1_WORD_COUNT,
+        .lockoutSteps = TIER_1_LOCKOUT_STEPS,
+        .bracketPairs = TIER_1_BRACKET_PAIRS,
+    },
+    [TERMINAL_TIER_2] = {
+        .wordLenMin   = TIER_2_WORD_LEN_MIN,
+        .wordLenMax   = TIER_2_WORD_LEN_MAX,
+        .wordCount    = TIER_2_WORD_COUNT,
+        .lockoutSteps = TIER_2_LOCKOUT_STEPS,
+        .bracketPairs = TIER_2_BRACKET_PAIRS,
+    },
+    [TERMINAL_TIER_3] = {
+        .wordLenMin   = TIER_3_WORD_LEN_MIN,
+        .wordLenMax   = TIER_3_WORD_LEN_MAX,
+        .wordCount    = TIER_3_WORD_COUNT,
+        .lockoutSteps = TIER_3_LOCKOUT_STEPS,
+        .bracketPairs = TIER_3_BRACKET_PAIRS,
+    },
 };
 
 // Only chars available in pokeemerald's charmap. `[` `]` `{` `}` `@` `#` `^`
@@ -317,12 +351,9 @@ struct TerminalWordPool
 #define TERMINAL_WORD_BUCKET(arr, len, base) \
     { .words = (const u8 *)(arr), .count = ARRAY_COUNT(arr), .globalIdBase = (base), .wordLen = (len), .stride = (len) + 1 }
 
-// globalIdBase allocations are each bucket's size summed. Reserve a flat
-// region per bucket so BurnTerminalWord can address any word uniquely.
-// On appending new words to a bucket: the bucket's size grows and every
-// subsequent bucket's base shifts up by the same amount, which invalidates
-// burn-flag state in existing saves for the shifted buckets. Acceptable
-// mid-development; plan a save migration if you bump word counts post-ship.
+// Bumping a bucket's count shifts every later bucket's globalIdBase,
+// which invalidates burn-flags in existing saves. Plan a save migration
+// if word counts change post-ship.
 static const struct TerminalWordPool sTerminalWordPools[TERMINAL_NUM_LENGTH_BUCKETS] =
 {
     [0] = TERMINAL_WORD_BUCKET(sTerminalWordsLen4,   4,   0),

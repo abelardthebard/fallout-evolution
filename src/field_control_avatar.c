@@ -31,7 +31,7 @@
 #include "secret_base.h"
 #include "sound.h"
 #include "start_menu.h"
-#include "terminal_hack.h"
+#include "terminal.h"
 #include "trainer_see.h"
 #include "trainer_hill.h"
 #include "vs_seeker.h"

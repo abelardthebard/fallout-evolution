@@ -112,20 +112,9 @@ const u16 *const gPipBoyGradients[THEME_COUNT] = {
     [THEME_YELLOW] = sPipBoyGradientYellow,
 };
 
-// -------------------------------------------------------------------------
-// Shared spotlight assets: tile art + tilemap + per-theme 16-color backdrop
-// palettes. Originally authored for the Birch intro; now consumed by any
-// themed screen that wants the "player stands on a glowing disc" look
-// (terminal content viewer, future screens). Loaded into a caller-chosen
-// BG via PipBoy_LoadSpotlight().
-//
-// The backdrop palettes carry the gradient at positions 1-8 (matching
-// gPipBoyGradients) plus feature-independent accent colors at 0 and 9-15
-// (dark frame, shadow, pin highlights). PipBoy_LoadSpotlight overlays the
-// live gradient after loading the backdrop so the gradient always matches
-// whatever animation offset the caller wants.
-// -------------------------------------------------------------------------
-
+// Backdrop palettes carry the gradient at slots 1-8 plus accent colors
+// at 0 and 9-15 (frame, shadow, highlights). Loaders overlay the live
+// gradient on top of slot 3 so the colors track theme + animation.
 static const u16 sPipBoyBackdropGreen[]  = INCBIN_U16("graphics/birch_speech/bg0.gbapal");
 static const u16 sPipBoyBackdropBlue[]   = INCBIN_U16("graphics/birch_speech/bg0_blue.gbapal");
 static const u16 sPipBoyBackdropRed[]    = INCBIN_U16("graphics/birch_speech/bg0_red.gbapal");
@@ -141,18 +130,27 @@ static const u16 *const sPipBoyBackdropPals[THEME_COUNT] = {
 static const u32 sPipBoySpotlightGfx[] = INCBIN_U32("graphics/birch_speech/shadow.4bpp.smol");
 static const u32 sPipBoySpotlightMap[] = INCBIN_U32("graphics/birch_speech/map.bin.smolTM");
 
-void PipBoy_LoadSpotlight(u8 charBase, u8 mapBase)
+static const u32 sPipBoyTerminalSpotlightGfx[] = INCBIN_U32("graphics/terminal/spotlight.4bpp.smol");
+static const u32 sPipBoyTerminalSpotlightMap[] = INCBIN_U32("graphics/terminal/spotlight.bin.smolTM");
+
+static void LoadSpotlightAssets(const u32 *gfx, const u32 *map, u8 charBase, u8 mapBase)
 {
-    DecompressDataWithHeaderVram(sPipBoySpotlightGfx, (void *)BG_CHAR_ADDR(charBase));
-    DecompressDataWithHeaderVram(sPipBoySpotlightMap, (void *)BG_SCREEN_ADDR(mapBase));
+    DecompressDataWithHeaderVram(gfx, (void *)BG_CHAR_ADDR(charBase));
+    DecompressDataWithHeaderVram(map, (void *)BG_SCREEN_ADDR(mapBase));
     LoadPalette(sPipBoyBackdropPals[GetActiveTheme()], BG_PLTT_ID(3), PLTT_SIZE_4BPP);
     PipBoy_LoadThemeGradient(BG_PLTT_ID(3));
 }
 
-// -------------------------------------------------------------------------
-// Theme-indexed window-frame table. Tile art is shared across all themes;
-// only the palette differs.
-// -------------------------------------------------------------------------
+void PipBoy_LoadSpotlight(u8 charBase, u8 mapBase)
+{
+    LoadSpotlightAssets(sPipBoySpotlightGfx, sPipBoySpotlightMap, charBase, mapBase);
+}
+
+void PipBoy_LoadTerminalSpotlight(u8 charBase, u8 mapBase)
+{
+    LoadSpotlightAssets(sPipBoyTerminalSpotlightGfx, sPipBoyTerminalSpotlightMap, charBase, mapBase);
+}
+
 
 static const struct TilesPal sWindowFrames[THEME_COUNT] =
 {
