@@ -3,6 +3,7 @@
 #include "data.h"
 #include "event_data.h"
 #include "field_effect.h"
+#include "field_player_avatar.h"
 #include "gpu_regs.h"
 #include "international_string_util.h"
 #include "main.h"
@@ -2043,13 +2044,144 @@ static void HairPicker_Open(void)
                                    HAIR_PICKER_COLS, sHairPicker_Original);
 }
 
+// ---- SKIN picker ----
+//
+// 2-col grid (3 rows x 2 cols = 6 skin tones). Same B-cancel pattern as
+// HAIR -- onCancel restores the original tone.
+
+#define SKIN_PICKER_COLS  2
+
+static EWRAM_DATA struct TerminalItem sSkinPickerItems[PLAYER_SKIN_OPTION_COUNT] = {0};
+static EWRAM_DATA u8 sSkinPicker_Original = 0;
+
+static void SkinPicker_ClosePicker(void)
+{
+    TerminalContent_SetCursorMoveHook(NULL);
+    TerminalContent_SetCancelCallback(NULL);
+    TerminalContent_RestorePageItems(MED_ROW_SKIN);
+}
+
+static void SkinPicker_Preview(u8 newCursorIdx)
+{
+    if (newCursorIdx >= PLAYER_SKIN_OPTION_COUNT)
+        return;
+    if (sTC->playerSpriteId == MAX_SPRITES)
+        return;
+    PreviewPlayerSkinPalette(gSprites[sTC->playerSpriteId].oam.paletteNum, newCursorIdx);
+}
+
+static void SkinPicker_Cancel(void)
+{
+    PlaySE(SE_SELECT);
+    if (sTC->playerSpriteId != MAX_SPRITES)
+        PreviewPlayerSkinPalette(gSprites[sTC->playerSpriteId].oam.paletteNum, sSkinPicker_Original);
+    SkinPicker_ClosePicker();
+}
+
+static void SkinPicker_Commit(void)
+{
+    u8 idx = sTC->cursorItemIdx;
+    if (idx >= PLAYER_SKIN_OPTION_COUNT)
+        return;
+    SetPlayerSkinTone(idx);
+    PlaySE(SE_SUCCESS);
+    TerminalMedicalRecords_Prepare();
+    SkinPicker_ClosePicker();
+}
+
+static void SkinPicker_Open(void)
+{
+    u8 i;
+
+    PlaySE(SE_SELECT);
+    sSkinPicker_Original = gSaveBlock2Ptr->skinTone;
+
+    for (i = 0; i < PLAYER_SKIN_OPTION_COUNT; i++)
+    {
+        sSkinPickerItems[i].type       = TERMINAL_ITEM_SELECTABLE;
+        sSkinPickerItems[i].text       = GetPlayerSkinToneName(i);
+        sSkinPickerItems[i].sprite     = NULL;
+        sSkinPickerItems[i].onActivate = SkinPicker_Commit;
+    }
+
+    TerminalContent_SetCursorMoveHook(SkinPicker_Preview);
+    TerminalContent_SetCancelCallback(SkinPicker_Cancel);
+    TerminalContent_SetActiveItems(sSkinPickerItems, PLAYER_SKIN_OPTION_COUNT,
+                                   SKIN_PICKER_COLS, sSkinPicker_Original);
+}
+
+// ---- GENDER picker ----
+//
+// Two options (Masculine / Feminine) rendered as a single-column list.
+// Preview rebuilds the trainer sprite because gender swap changes the
+// underlying facility class, not just a palette. Cancel rebuilds back.
+
+#define GENDER_PICKER_COLS  1
+
+static EWRAM_DATA struct TerminalItem sGenderPickerItems[GENDER_COUNT] = {0};
+static EWRAM_DATA u8 sGenderPicker_Original = 0;
+
+static void GenderPicker_ClosePicker(void)
+{
+    TerminalContent_SetCursorMoveHook(NULL);
+    TerminalContent_SetCancelCallback(NULL);
+    TerminalContent_RestorePageItems(MED_ROW_GENDER);
+}
+
+static void GenderPicker_Preview(u8 newCursorIdx)
+{
+    if (newCursorIdx >= GENDER_COUNT)
+        return;
+    TerminalContent_RecreatePlayerSprite(newCursorIdx);
+}
+
+static void GenderPicker_Cancel(void)
+{
+    PlaySE(SE_SELECT);
+    TerminalContent_RecreatePlayerSprite(sGenderPicker_Original);
+    GenderPicker_ClosePicker();
+}
+
+static void GenderPicker_Commit(void)
+{
+    u8 idx = sTC->cursorItemIdx;
+    if (idx >= GENDER_COUNT)
+        return;
+    SetPlayerGender(idx);
+    RefreshPlayerAvatarGender();
+    PlaySE(SE_SUCCESS);
+    TerminalMedicalRecords_Prepare();
+    GenderPicker_ClosePicker();
+}
+
+static void GenderPicker_Open(void)
+{
+    u8 i;
+
+    PlaySE(SE_SELECT);
+    sGenderPicker_Original = gSaveBlock2Ptr->playerGender;
+
+    for (i = 0; i < GENDER_COUNT; i++)
+    {
+        sGenderPickerItems[i].type       = TERMINAL_ITEM_SELECTABLE;
+        sGenderPickerItems[i].text       = TerminalMedicalRecords_GenderName(i);
+        sGenderPickerItems[i].sprite     = NULL;
+        sGenderPickerItems[i].onActivate = GenderPicker_Commit;
+    }
+
+    TerminalContent_SetCursorMoveHook(GenderPicker_Preview);
+    TerminalContent_SetCancelCallback(GenderPicker_Cancel);
+    TerminalContent_SetActiveItems(sGenderPickerItems, GENDER_COUNT,
+                                   GENDER_PICKER_COLS, sGenderPicker_Original);
+}
+
 static const struct TerminalItem sTerminalMedicalRecords_Items[] =
 {
     [MED_ROW_NAME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_NameRow   },
     [MED_ROW_HOME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Home },
-    [MED_ROW_GENDER] = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow },
+    [MED_ROW_GENDER] = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow, .onActivate = GenderPicker_Open },
     [MED_ROW_HAIR]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_HairRow,   .onActivate = HairPicker_Open },
-    [MED_ROW_SKIN]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_SkinRow   },
+    [MED_ROW_SKIN]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_SkinRow,   .onActivate = SkinPicker_Open },
     [MED_ROW_EVAL]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Eval },
     [MED_ROW_BLANK]  = { .type = TERMINAL_ITEM_BLANK },
     [MED_ROW_EXIT]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Exit, .onActivate = TerminalContent_ExitCallback },

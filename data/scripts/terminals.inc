@@ -89,8 +89,8 @@ Terminal_Text_PasswordProtected:
 	.string "This machine is password protected.$"
 
 Terminal_Text_LockedOut:
-	.string "Terminal temporarily locked.\n"
-	.string "Cooldown {STR_VAR_1}.$"
+	.string "The terminal is temporarily\n"
+	.string "locked. Cooldown {STR_VAR_1}.$"
 
 Terminal_Text_Offline:
 	.string "TERMINAL OFFLINE.\p"

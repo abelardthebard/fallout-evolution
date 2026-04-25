@@ -35,6 +35,7 @@ u8 PlayerGetElevation(void);
 void SetPlayerAvatarTransitionFlags(u16 transitionFlags);
 void CancelPlayerForcedMovement(void);
 void InitPlayerAvatar(s16 x, s16 y, enum Direction direction, enum Gender gender);
+void RefreshPlayerAvatarGender(void);
 void PlayerFreeze(void);
 void StopPlayerAvatar(void);
 void SetSpinStartFacingDir(enum Direction direction);
