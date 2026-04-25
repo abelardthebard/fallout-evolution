@@ -9,6 +9,7 @@
 #include "main.h"
 #include "malloc.h"
 #include "menu.h"
+#include "naming_screen.h"
 #include "overworld.h"
 #include "palette.h"
 #include "random.h"
@@ -1338,26 +1339,28 @@ static void TerminalContent_CreatePlayerSpriteAs(u16 x, u16 y, u8 gender);
 
 extern const struct TerminalPage *const gTerminalContents[NUM_TERMINAL_CONTENTS];
 
-void ShowTerminalContent(void)
+static void EnterTerminalContent(const struct TerminalPage *page, u8 initialCursorIdx)
 {
-    u16 contentId = gSpecialVar_0x8000;
+    AGB_ASSERT(page != NULL);
+    AGB_ASSERT(page->cols > 0);
 
     sTC = AllocZeroed(sizeof(*sTC));
     sTC->exitCb = CB2_ReturnToFieldContinueScript;
-
-    AGB_ASSERT(contentId < NUM_TERMINAL_CONTENTS);
-    sTC->page = gTerminalContents[contentId];
-    AGB_ASSERT(sTC->page != NULL);
-    AGB_ASSERT(sTC->page->cols > 0);
-
-    sTC->activeItems = sTC->page->items;
-    sTC->activeItemCount = sTC->page->itemCount;
-    sTC->activeCols = sTC->page->cols;
+    sTC->page = page;
+    sTC->activeItems = page->items;
+    sTC->activeItemCount = page->itemCount;
+    sTC->activeCols = page->cols;
     sTC->playerSpriteId = MAX_SPRITES;
 
-    if (sTC->page->prepare != NULL)
-        sTC->page->prepare();
+    if (page->prepare != NULL)
+        page->prepare();
 
+    if (initialCursorIdx < sTC->activeItemCount
+        && sTC->activeItems[initialCursorIdx].type == TERMINAL_ITEM_SELECTABLE)
+    {
+        sTC->cursorItemIdx = initialCursorIdx;
+    }
+    else
     {
         s8 idx = TerminalContent_FindSelectable(0, 1);
         sTC->cursorItemIdx = (idx < 0) ? 0 : (u8)idx;
@@ -1368,6 +1371,13 @@ void ShowTerminalContent(void)
     ResetPaletteFade();
     SetMainCallback2(CB2_TerminalContentSetup);
     gMain.state = 0;
+}
+
+void ShowTerminalContent(void)
+{
+    u16 contentId = gSpecialVar_0x8000;
+    AGB_ASSERT(contentId < NUM_TERMINAL_CONTENTS);
+    EnterTerminalContent(gTerminalContents[contentId], 0xFF);
 }
 
 static void CB2_TerminalContentSetup(void)
@@ -2068,9 +2078,37 @@ static void GenderPicker_Open(void)
                                    GENDER_PICKER_COLS, sGenderPicker_Original);
 }
 
+static EWRAM_DATA const struct TerminalPage *sNamePicker_ReturnPage = NULL;
+static EWRAM_DATA u8 sNamePicker_ReturnCursor = 0;
+
+static void CB2_TerminalContent_ReturnFromNamingScreen(void)
+{
+    EnterTerminalContent(sNamePicker_ReturnPage, sNamePicker_ReturnCursor);
+}
+
+static void Task_NamePicker_LaunchNamingScreen(u8 taskId)
+{
+    if (gPaletteFade.active)
+        return;
+    DestroyTask(taskId);
+    TerminalContent_Teardown();
+    DoNamingScreen(NAMING_SCREEN_PLAYER, gSaveBlock2Ptr->playerName,
+                   gSaveBlock2Ptr->playerGender, 0, 0,
+                   CB2_TerminalContent_ReturnFromNamingScreen);
+}
+
+static void NamePicker_Open(void)
+{
+    PlaySE(SE_SELECT);
+    sNamePicker_ReturnPage   = sTC->page;
+    sNamePicker_ReturnCursor = sTC->cursorItemIdx;
+    BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+    gTasks[sTC->taskId].func = Task_NamePicker_LaunchNamingScreen;
+}
+
 static const struct TerminalItem sTerminalMedicalRecords_Items[] =
 {
-    [MED_ROW_NAME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_NameRow   },
+    [MED_ROW_NAME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_NameRow,   .onActivate = NamePicker_Open },
     [MED_ROW_HOME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Home },
     [MED_ROW_GENDER] = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow, .onActivate = GenderPicker_Open },
     [MED_ROW_HAIR]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_HairRow,   .onActivate = HairPicker_Open },
