@@ -177,10 +177,12 @@ static void TerminalUI_ShowSpotlight(const struct SpotlightLayout *layout)
 
     SetGpuReg(REG_OFFSET_BG1HOFS, layout->scrollX);
     SetGpuReg(REG_OFFSET_BG1VOFS, layout->scrollY);
+    ShowBg(T_BG_SPOTLIGHT);
 }
 
 static void TerminalUI_HideSpotlight(void)
 {
+    HideBg(T_BG_SPOTLIGHT);
     ClearGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON);
     SetGpuReg(REG_OFFSET_WIN0H,  0);
     SetGpuReg(REG_OFFSET_WIN0V,  0);
@@ -1298,6 +1300,7 @@ struct TerminalPage
     u8 cols;               // grid column count, must be >= 1 (1 = list)
     void (*prepare)(void);
     void (*createSprites)(void);
+    void (*onBack)(void);  // B-button handler; NULL = page-default (jump to EXIT row)
 };
 
 struct TerminalContentState
@@ -1417,7 +1420,6 @@ static void CB2_TerminalContentSetup(void)
         SetVBlankCallback(TerminalContent_VBlank);
         EnableInterrupts(INTR_FLAG_VBLANK);
         ShowBg(T_BG_TEXT);
-        ShowBg(T_BG_SPOTLIGHT);
         ShowBg(T_BG_IMAGE);
         HideBg(3);
         SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
@@ -1798,6 +1800,41 @@ static void TerminalContent_RestorePageItems(u8 initialCursorIdx)
     TerminalContent_RenderBody();
 }
 
+static void TerminalContent_SwapPage(const struct TerminalPage *page, u8 initialCursorIdx)
+{
+    u8 i;
+
+    AGB_ASSERT(page != NULL);
+    AGB_ASSERT(page->cols > 0);
+
+    sTC->onCursorMove = NULL;
+    sTC->onCancel = page->onBack;
+
+    for (i = 0; i < sTC->spriteCount; i++)
+        DestroySprite(&gSprites[sTC->spriteIds[i]]);
+    sTC->spriteCount = 0;
+    if (sTC->playerSpriteId != MAX_SPRITES)
+    {
+        DestroySprite(&gSprites[sTC->playerSpriteId]);
+        sTC->playerSpriteId = MAX_SPRITES;
+    }
+    TerminalUI_HideSpotlight();
+
+    sTC->page            = page;
+    sTC->activeItems     = page->items;
+    sTC->activeItemCount = page->itemCount;
+    sTC->activeCols      = page->cols;
+
+    if (page->prepare != NULL)
+        page->prepare();
+
+    TerminalContent_SeedCursor(initialCursorIdx);
+    TerminalContent_RenderBody();
+
+    if (page->createSprites != NULL)
+        page->createSprites();
+}
+
 static void TerminalContent_SetCursorMoveHook(void (*cb)(u8 newCursorIdx))
 {
     sTC->onCursorMove = cb;
@@ -2106,10 +2143,82 @@ static void NamePicker_Open(void)
     gTasks[sTC->taskId].func = Task_NamePicker_LaunchNamingScreen;
 }
 
+static const struct TerminalPage sTerminalMedicalRecords_Page;
+
+static const u8 sText_TerminalHousing_Title[]     = _("UNIT 315: THE GREEN FAMILY");
+static const u8 sText_TerminalHousing_Matriarch[] = _("MATRIARCH: Iris, Cook");
+static const u8 sText_TerminalHousing_Patriarch[] = _("PATRIARCH: Caleb, Engineer");
+static const u8 sText_TerminalHousing_Child1Lbl[] = _("CHILD 1: ");
+static const u8 sText_TerminalHousing_Child1Suf[] = _(", Pending");
+static const u8 sText_TerminalHousing_Child2[]    = _("CHILD 2: Amy, Pending");
+static const u8 sText_TerminalHousing_Desc1[]     = _("Home environment reported as");
+static const u8 sText_TerminalHousing_Desc2[]     = _("'stable' and 'unremarkable'.");
+static const u8 sText_TerminalHousing_Back[]      = _("BACK");
+
+// "CHILD 1: " (9) + PLAYER_NAME_LENGTH (7) + ", Pending" (9) + EOS
+#define TERMINAL_HOUSING_CHILD1_BUF_SIZE  32
+
+static EWRAM_DATA u8 sTerminalHousing_Child1Row[TERMINAL_HOUSING_CHILD1_BUF_SIZE] = {0};
+
+enum
+{
+    HOUSING_ROW_TITLE,
+    HOUSING_ROW_MATRIARCH,
+    HOUSING_ROW_PATRIARCH,
+    HOUSING_ROW_CHILD1,
+    HOUSING_ROW_CHILD2,
+    HOUSING_ROW_DESC1,
+    HOUSING_ROW_DESC2,
+    HOUSING_ROW_BACK,
+};
+
+static void TerminalHousing_Prepare(void)
+{
+    u8 *dst = sTerminalHousing_Child1Row;
+    dst = StringCopy(dst, sText_TerminalHousing_Child1Lbl);
+    dst = StringCopy(dst, gSaveBlock2Ptr->playerName);
+    StringCopy(dst, sText_TerminalHousing_Child1Suf);
+}
+
+static void Housing_BackToMedicalRecords(void)
+{
+    PlaySE(SE_SELECT);
+    TerminalContent_SwapPage(&sTerminalMedicalRecords_Page, MED_ROW_HOME);
+}
+
+static const struct TerminalItem sTerminalHousing_Items[] =
+{
+    [HOUSING_ROW_TITLE]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Title     },
+    [HOUSING_ROW_MATRIARCH] = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Matriarch },
+    [HOUSING_ROW_PATRIARCH] = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Patriarch },
+    [HOUSING_ROW_CHILD1]    = { .type = TERMINAL_ITEM_TEXT, .text = sTerminalHousing_Child1Row      },
+    [HOUSING_ROW_CHILD2]    = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Child2    },
+    [HOUSING_ROW_DESC1]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Desc1     },
+    [HOUSING_ROW_DESC2]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Desc2     },
+    [HOUSING_ROW_BACK]      = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalHousing_Back, .onActivate = Housing_BackToMedicalRecords },
+};
+
+static const struct TerminalPage sTerminalHousing_Page =
+{
+    .header        = sText_TerminalMedicalRecords_Header,
+    .items         = sTerminalHousing_Items,
+    .itemCount     = ARRAY_COUNT(sTerminalHousing_Items),
+    .cols          = 1,
+    .prepare       = TerminalHousing_Prepare,
+    .createSprites = NULL,
+    .onBack        = Housing_BackToMedicalRecords,
+};
+
+static void Housing_Open(void)
+{
+    PlaySE(SE_SELECT);
+    TerminalContent_SwapPage(&sTerminalHousing_Page, HOUSING_ROW_BACK);
+}
+
 static const struct TerminalItem sTerminalMedicalRecords_Items[] =
 {
     [MED_ROW_NAME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_NameRow,   .onActivate = NamePicker_Open },
-    [MED_ROW_HOME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Home },
+    [MED_ROW_HOME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Home, .onActivate = Housing_Open },
     [MED_ROW_GENDER] = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow, .onActivate = GenderPicker_Open },
     [MED_ROW_HAIR]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_HairRow,   .onActivate = HairPicker_Open },
     [MED_ROW_SKIN]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_SkinRow,   .onActivate = SkinPicker_Open },
