@@ -179,6 +179,11 @@ enum Gender
     GENDER_COUNT,
 };
 
+// gSaveBlock2Ptr->introAnswers bits. Set during Birch intro question handlers.
+#define INTRO_ANSWER_REMEMBERED_BASICS    (1 << 0)
+#define INTRO_ANSWER_GUESSED_YEAR_RIGHT   (1 << 1)
+#define INTRO_ANSWER_NAMED_TODD_CORRECTLY (1 << 2)
+
 #define NUM_BARD_SONG_WORDS    6
 #define NUM_STORYTELLER_TALES  4
 #define NUM_TRADER_ITEMS       4

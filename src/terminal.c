@@ -112,6 +112,9 @@ static const struct WindowTemplate sTerminalWindowTemplates[2] =
 static const u8 sTerminalTextColors[]          = { 0, 2, 3 };
 static const u8 sTerminalTextColors_Inverted[] = { 2, 1, 2 };
 
+static const u8 sText_TerminalScrollUp[]   = _("{UP_ARROW}");
+static const u8 sText_TerminalScrollDown[] = _("{DOWN_ARROW}");
+
 static const u32 sBgImageTiles[] = INCBIN_U32("graphics/terminal/background.4bpp");
 static const u32 sBgImageMap[]   = INCBIN_U32("graphics/terminal/background.bin");
 static const u16 sBgImagePal[]   = INCBIN_U16("graphics/terminal/background.gbapal");
@@ -1311,6 +1314,7 @@ struct TerminalContentState
     u8 activeItemCount;
     u8 activeCols;         // current column count -- pickers override page
     u8 cursorItemIdx;
+    u8 scrollOffset;       // top visible row; only nonzero when itemCount > T_BODY_ROWS
     u8 taskId;
     void (*onCursorMove)(u8 newCursorIdx);
     void (*onCancel)(void);
@@ -1451,14 +1455,32 @@ static void TerminalContent_ItemPos(u8 itemIdx, u16 *outX, u16 *outY)
     u8 col  = itemIdx % cols;
     u16 colW = T_BODY_W / cols;
     *outX = T_BODY_X + col * colW;
-    *outY = T_BODY_Y + row * T_ROW_HEIGHT;
+    *outY = T_BODY_Y + (row - sTC->scrollOffset) * T_ROW_HEIGHT;
 }
+
+static u8 TerminalContent_TotalRows(void)
+{
+    return (sTC->activeItemCount + sTC->activeCols - 1) / sTC->activeCols;
+}
+
+static bool8 TerminalContent_IsItemVisible(u8 itemIdx)
+{
+    u8 row = itemIdx / sTC->activeCols;
+    return row >= sTC->scrollOffset
+        && row <  sTC->scrollOffset + T_BODY_ROWS;
+}
+
+static bool8 TerminalContent_IsScrollable(void)
+{
+    return TerminalContent_TotalRows() > T_BODY_ROWS;
+}
+
+#define T_SCROLL_ARROW_X   (T_MARGIN_X + T_CONTENT_W - 12)
 
 static void TerminalContent_RenderBody(void)
 {
     const struct TerminalItem *items = sTC->activeItems;
     u8 count = sTC->activeItemCount;
-    u8 cap   = sTC->activeCols * T_BODY_ROWS;
     u8 i;
 
     FillWindowPixelBuffer(T_WIN_TEXT, PIXEL_FILL(0));
@@ -1466,10 +1488,13 @@ static void TerminalContent_RenderBody(void)
     if (sTC->page->header != NULL)
         TerminalUI_DrawCenteredHeader(T_WIN_TEXT, sTC->page->header);
 
-    for (i = 0; i < count && i < cap; i++)
+    for (i = 0; i < count; i++)
     {
         const struct TerminalItem *item = &items[i];
         u16 x, y;
+
+        if (!TerminalContent_IsItemVisible(i))
+            continue;
         TerminalContent_ItemPos(i, &x, &y);
 
         switch (item->type)
@@ -1490,6 +1515,18 @@ static void TerminalContent_RenderBody(void)
         default:
             break;
         }
+    }
+
+    if (TerminalContent_IsScrollable())
+    {
+        if (sTC->scrollOffset > 0)
+            AddTextPrinterParameterized3(T_WIN_TEXT, FONT_NORMAL,
+                T_SCROLL_ARROW_X, T_BODY_Y,
+                sTerminalTextColors, TEXT_SKIP_DRAW, sText_TerminalScrollUp);
+        if (sTC->scrollOffset + T_BODY_ROWS < TerminalContent_TotalRows())
+            AddTextPrinterParameterized3(T_WIN_TEXT, FONT_NORMAL,
+                T_SCROLL_ARROW_X, T_BODY_Y + (T_BODY_ROWS - 1) * T_ROW_HEIGHT,
+                sTerminalTextColors, TEXT_SKIP_DRAW, sText_TerminalScrollDown);
     }
 
     TerminalContent_DrawCursor(sTC->cursorItemIdx);
@@ -1531,6 +1568,8 @@ static void TerminalContent_DrawCursor(u8 itemIdx)
         return;
     if (sTC->activeItems[itemIdx].type != TERMINAL_ITEM_SELECTABLE)
         return;
+    if (!TerminalContent_IsItemVisible(itemIdx))
+        return;
     TerminalContent_ItemPos(itemIdx, &x, &y);
     AddTextPrinterParameterized3(T_WIN_TEXT, FONT_NORMAL, x, y,
         sTerminalTextColors, TEXT_SKIP_DRAW, gText_SelectorArrow3);
@@ -1540,6 +1579,8 @@ static void TerminalContent_EraseCursor(u8 itemIdx)
 {
     u16 x, y;
     if (itemIdx >= sTC->activeItemCount)
+        return;
+    if (!TerminalContent_IsItemVisible(itemIdx))
         return;
     TerminalContent_ItemPos(itemIdx, &x, &y);
     FillWindowPixelRect(T_WIN_TEXT, PIXEL_FILL(0), x, y, TC_CURSOR_COL_W, T_ROW_HEIGHT);
@@ -1671,10 +1712,29 @@ static void TerminalContent_Activate(void)
 
 static void Task_TerminalContentInput(u8 taskId)
 {
-    if (JOY_REPEAT(DPAD_UP))         TerminalContent_MoveCursorGrid( 0, -1);
-    else if (JOY_REPEAT(DPAD_DOWN))  TerminalContent_MoveCursorGrid( 0,  1);
-    else if (JOY_REPEAT(DPAD_LEFT))  TerminalContent_MoveCursorGrid(-1,  0);
-    else if (JOY_REPEAT(DPAD_RIGHT)) TerminalContent_MoveCursorGrid( 1,  0);
+    if (TerminalContent_IsScrollable())
+    {
+        if (JOY_REPEAT(DPAD_UP) && sTC->scrollOffset > 0)
+        {
+            PlaySE(SE_SELECT);
+            sTC->scrollOffset--;
+            TerminalContent_RenderBody();
+        }
+        else if (JOY_REPEAT(DPAD_DOWN)
+              && sTC->scrollOffset + T_BODY_ROWS < TerminalContent_TotalRows())
+        {
+            PlaySE(SE_SELECT);
+            sTC->scrollOffset++;
+            TerminalContent_RenderBody();
+        }
+    }
+    else
+    {
+        if (JOY_REPEAT(DPAD_UP))         TerminalContent_MoveCursorGrid( 0, -1);
+        else if (JOY_REPEAT(DPAD_DOWN))  TerminalContent_MoveCursorGrid( 0,  1);
+        else if (JOY_REPEAT(DPAD_LEFT))  TerminalContent_MoveCursorGrid(-1,  0);
+        else if (JOY_REPEAT(DPAD_RIGHT)) TerminalContent_MoveCursorGrid( 1,  0);
+    }
 
     if (JOY_NEW(A_BUTTON | START_BUTTON))
     {
@@ -1787,6 +1847,7 @@ static void TerminalContent_SetActiveItems(const struct TerminalItem *items,
     sTC->activeItems     = items;
     sTC->activeItemCount = itemCount;
     sTC->activeCols      = cols;
+    sTC->scrollOffset    = 0;
     TerminalContent_SeedCursor(initialCursorIdx);
     TerminalContent_RenderBody();
 }
@@ -1796,6 +1857,7 @@ static void TerminalContent_RestorePageItems(u8 initialCursorIdx)
     sTC->activeItems     = sTC->page->items;
     sTC->activeItemCount = sTC->page->itemCount;
     sTC->activeCols      = sTC->page->cols;
+    sTC->scrollOffset    = 0;
     TerminalContent_SeedCursor(initialCursorIdx);
     TerminalContent_RenderBody();
 }
@@ -1824,6 +1886,7 @@ static void TerminalContent_SwapPage(const struct TerminalPage *page, u8 initial
     sTC->activeItems     = page->items;
     sTC->activeItemCount = page->itemCount;
     sTC->activeCols      = page->cols;
+    sTC->scrollOffset    = 0;
 
     if (page->prepare != NULL)
         page->prepare();
@@ -1874,22 +1937,28 @@ static void BuildFieldRow(u8 *out, u8 cap, const u8 *label, const u8 *value)
 
 static const u8 sText_TerminalMedicalRecords_Header[]    = _("VAULT 42 PATIENT RECORDS");
 static const u8 sText_TerminalMedicalRecords_Home[]      = _("HOME: Unit 315");
-static const u8 sText_TerminalMedicalRecords_Eval[]      = _("EVAL:");
 static const u8 sText_TerminalMedicalRecords_Exit[]      = _("EXIT");
 
 static const u8 sText_TerminalMedicalRecords_NameLbl[]   = _("NAME: ");
 static const u8 sText_TerminalMedicalRecords_GenderLbl[] = _("GENDER: ");
 static const u8 sText_TerminalMedicalRecords_HairLbl[]   = _("HAIR: ");
 static const u8 sText_TerminalMedicalRecords_SkinLbl[]   = _("SKIN: ");
+static const u8 sText_TerminalMedicalRecords_EvalLbl[]   = _("EVAL: ");
 
 static const u8 sText_TerminalMedicalRecords_Masculine[] = _("Masculine");
 static const u8 sText_TerminalMedicalRecords_Feminine[]  = _("Feminine");
 static const u8 sText_TerminalMedicalRecords_Unknown[]   = _("--");
 
+static const u8 sText_TerminalMedicalRecords_EvalBad[]   = _("BAD");
+static const u8 sText_TerminalMedicalRecords_EvalPoor[]  = _("POOR");
+static const u8 sText_TerminalMedicalRecords_EvalGood[]  = _("GOOD");
+static const u8 sText_TerminalMedicalRecords_EvalGreat[] = _("GREAT");
+
 static EWRAM_DATA u8 sTerminalMedicalRecords_NameRow[TERMINAL_MED_RECORDS_ROW_BUF_SIZE]   = {0};
 static EWRAM_DATA u8 sTerminalMedicalRecords_GenderRow[TERMINAL_MED_RECORDS_ROW_BUF_SIZE] = {0};
 static EWRAM_DATA u8 sTerminalMedicalRecords_HairRow[TERMINAL_MED_RECORDS_ROW_BUF_SIZE]   = {0};
 static EWRAM_DATA u8 sTerminalMedicalRecords_SkinRow[TERMINAL_MED_RECORDS_ROW_BUF_SIZE]   = {0};
+static EWRAM_DATA u8 sTerminalMedicalRecords_EvalRow[TERMINAL_MED_RECORDS_ROW_BUF_SIZE]   = {0};
 
 static const u8 *TerminalMedicalRecords_GenderName(u8 gender)
 {
@@ -1898,6 +1967,21 @@ static const u8 *TerminalMedicalRecords_GenderName(u8 gender)
     case MALE:   return sText_TerminalMedicalRecords_Masculine;
     case FEMALE: return sText_TerminalMedicalRecords_Feminine;
     default:     return sText_TerminalMedicalRecords_Unknown;
+    }
+}
+
+static const u8 *TerminalMedicalRecords_EvalLabel(void)
+{
+    u8 a = gSaveBlock2Ptr->introAnswers;
+    u8 score = ((a & INTRO_ANSWER_REMEMBERED_BASICS)    ? 1 : 0)
+             + ((a & INTRO_ANSWER_GUESSED_YEAR_RIGHT)   ? 1 : 0)
+             + ((a & INTRO_ANSWER_NAMED_TODD_CORRECTLY) ? 1 : 0);
+    switch (score)
+    {
+    case 0:  return sText_TerminalMedicalRecords_EvalBad;
+    case 1:  return sText_TerminalMedicalRecords_EvalPoor;
+    case 2:  return sText_TerminalMedicalRecords_EvalGood;
+    default: return sText_TerminalMedicalRecords_EvalGreat;
     }
 }
 
@@ -1920,6 +2004,9 @@ static void TerminalMedicalRecords_Prepare(void)
     BuildFieldRow(sTerminalMedicalRecords_SkinRow, TERMINAL_MED_RECORDS_ROW_BUF_SIZE,
         sText_TerminalMedicalRecords_SkinLbl,
         (skin != NULL) ? skin : sText_TerminalMedicalRecords_Unknown);
+
+    BuildFieldRow(sTerminalMedicalRecords_EvalRow, TERMINAL_MED_RECORDS_ROW_BUF_SIZE,
+        sText_TerminalMedicalRecords_EvalLbl, TerminalMedicalRecords_EvalLabel());
 }
 
 enum
@@ -2150,7 +2237,7 @@ static const u8 sText_TerminalHousing_Matriarch[] = _("MATRIARCH: Iris, Cook");
 static const u8 sText_TerminalHousing_Patriarch[] = _("PATRIARCH: Caleb, Engineer");
 static const u8 sText_TerminalHousing_Child1Lbl[] = _("CHILD 1: ");
 static const u8 sText_TerminalHousing_Child1Suf[] = _(", Pending");
-static const u8 sText_TerminalHousing_Child2[]    = _("CHILD 2: Amy, Pending");
+static const u8 sText_TerminalHousing_Child2[]    = _("CHILD 2: Maisie, Pending");
 static const u8 sText_TerminalHousing_Desc1[]     = _("Home environment reported as");
 static const u8 sText_TerminalHousing_Desc2[]     = _("'stable' and 'unremarkable'.");
 static const u8 sText_TerminalHousing_Back[]      = _("BACK");
@@ -2163,12 +2250,15 @@ static EWRAM_DATA u8 sTerminalHousing_Child1Row[TERMINAL_HOUSING_CHILD1_BUF_SIZE
 enum
 {
     HOUSING_ROW_TITLE,
+    HOUSING_ROW_BLANK1,
     HOUSING_ROW_MATRIARCH,
     HOUSING_ROW_PATRIARCH,
     HOUSING_ROW_CHILD1,
     HOUSING_ROW_CHILD2,
+    HOUSING_ROW_BLANK2,
     HOUSING_ROW_DESC1,
     HOUSING_ROW_DESC2,
+    HOUSING_ROW_BLANK3,
     HOUSING_ROW_BACK,
 };
 
@@ -2189,12 +2279,15 @@ static void Housing_BackToMedicalRecords(void)
 static const struct TerminalItem sTerminalHousing_Items[] =
 {
     [HOUSING_ROW_TITLE]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Title     },
+    [HOUSING_ROW_BLANK1]    = { .type = TERMINAL_ITEM_BLANK },
     [HOUSING_ROW_MATRIARCH] = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Matriarch },
     [HOUSING_ROW_PATRIARCH] = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Patriarch },
     [HOUSING_ROW_CHILD1]    = { .type = TERMINAL_ITEM_TEXT, .text = sTerminalHousing_Child1Row      },
     [HOUSING_ROW_CHILD2]    = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Child2    },
+    [HOUSING_ROW_BLANK2]    = { .type = TERMINAL_ITEM_BLANK },
     [HOUSING_ROW_DESC1]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Desc1     },
     [HOUSING_ROW_DESC2]     = { .type = TERMINAL_ITEM_TEXT, .text = sText_TerminalHousing_Desc2     },
+    [HOUSING_ROW_BLANK3]    = { .type = TERMINAL_ITEM_BLANK },
     [HOUSING_ROW_BACK]      = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalHousing_Back, .onActivate = Housing_BackToMedicalRecords },
 };
 
@@ -2215,6 +2308,142 @@ static void Housing_Open(void)
     TerminalContent_SwapPage(&sTerminalHousing_Page, HOUSING_ROW_BACK);
 }
 
+static const u8 sText_TerminalEval_Title1[]    = _("S.P.E.C.I.A.L STATS:");
+static const u8 sText_TerminalEval_Title2[]    = _("Pending G.O.A.T. results");
+
+static const u8 sText_TerminalEval_S1Right1[]  = _("Recalled Vault 42 and post-war");
+static const u8 sText_TerminalEval_S1Right2[]  = _("conditions without prompting.");
+static const u8 sText_TerminalEval_S1Wrong1[]  = _("Required briefing on Vault 42");
+static const u8 sText_TerminalEval_S1Wrong2[]  = _("and post-war conditions.");
+
+static const u8 sText_TerminalEval_S2Right1[]  = _("Identified current year as 2291.");
+static const u8 sText_TerminalEval_S2Right2[]  = _("Hippocampus functional.");
+static const u8 sText_TerminalEval_S2Wrong1[]  = _("Misidentified current year.");
+static const u8 sText_TerminalEval_S2Wrong2[]  = _("Cause of error undetermined:");
+static const u8 sText_TerminalEval_S2Wrong3[]  = _("concussion, ignorance, or defiance.");
+
+static const u8 sText_TerminalEval_S3Locked1[] = _("Stated own name and described");
+static const u8 sText_TerminalEval_S3Locked2[] = _("self accurately.");
+
+static const u8 sText_TerminalEval_S4Right1[]  = _("Correctly referred to attending");
+static const u8 sText_TerminalEval_S4Right2[]  = _("party as 'Todd'. Social recall intact.");
+static const u8 sText_TerminalEval_S4Wrong1[]  = _("Referred to attending party by");
+static const u8 sText_TerminalEval_S4Wrong2[]  = _("incorrect name. Suggests left");
+static const u8 sText_TerminalEval_S4Wrong3[]  = _("temporal lobe impairment.");
+
+static const u8 sText_TerminalEval_Back[]      = _("BACK");
+
+#define EVAL_MAX_ROWS  18
+
+static EWRAM_DATA struct TerminalItem sTerminalEval_Items[EVAL_MAX_ROWS] = {0};
+
+static void Eval_BackToMedicalRecords(void)
+{
+    PlaySE(SE_SELECT);
+    TerminalContent_SwapPage(&sTerminalMedicalRecords_Page, MED_ROW_EVAL);
+}
+
+static void EvalPushText(u8 *idx, const u8 *text)
+{
+    sTerminalEval_Items[*idx].type       = TERMINAL_ITEM_TEXT;
+    sTerminalEval_Items[*idx].text       = text;
+    sTerminalEval_Items[*idx].sprite     = NULL;
+    sTerminalEval_Items[*idx].onActivate = NULL;
+    (*idx)++;
+}
+
+static void EvalPushBlank(u8 *idx)
+{
+    sTerminalEval_Items[*idx].type       = TERMINAL_ITEM_BLANK;
+    sTerminalEval_Items[*idx].text       = NULL;
+    sTerminalEval_Items[*idx].sprite     = NULL;
+    sTerminalEval_Items[*idx].onActivate = NULL;
+    (*idx)++;
+}
+
+static void EvalPushBack(u8 *idx)
+{
+    sTerminalEval_Items[*idx].type       = TERMINAL_ITEM_SELECTABLE;
+    sTerminalEval_Items[*idx].text       = sText_TerminalEval_Back;
+    sTerminalEval_Items[*idx].sprite     = NULL;
+    sTerminalEval_Items[*idx].onActivate = Eval_BackToMedicalRecords;
+    (*idx)++;
+}
+
+static void TerminalEval_Prepare(void)
+{
+    u8 a = gSaveBlock2Ptr->introAnswers;
+    u8 i = 0;
+
+    EvalPushText(&i, sText_TerminalEval_Title1);
+    EvalPushText(&i, sText_TerminalEval_Title2);
+    EvalPushBlank(&i);
+
+    if (a & INTRO_ANSWER_REMEMBERED_BASICS)
+    {
+        EvalPushText(&i, sText_TerminalEval_S1Right1);
+        EvalPushText(&i, sText_TerminalEval_S1Right2);
+    }
+    else
+    {
+        EvalPushText(&i, sText_TerminalEval_S1Wrong1);
+        EvalPushText(&i, sText_TerminalEval_S1Wrong2);
+    }
+    EvalPushBlank(&i);
+
+    if (a & INTRO_ANSWER_GUESSED_YEAR_RIGHT)
+    {
+        EvalPushText(&i, sText_TerminalEval_S2Right1);
+        EvalPushText(&i, sText_TerminalEval_S2Right2);
+    }
+    else
+    {
+        EvalPushText(&i, sText_TerminalEval_S2Wrong1);
+        EvalPushText(&i, sText_TerminalEval_S2Wrong2);
+        EvalPushText(&i, sText_TerminalEval_S2Wrong3);
+    }
+    EvalPushBlank(&i);
+
+    EvalPushText(&i, sText_TerminalEval_S3Locked1);
+    EvalPushText(&i, sText_TerminalEval_S3Locked2);
+    EvalPushBlank(&i);
+
+    if (a & INTRO_ANSWER_NAMED_TODD_CORRECTLY)
+    {
+        EvalPushText(&i, sText_TerminalEval_S4Right1);
+        EvalPushText(&i, sText_TerminalEval_S4Right2);
+    }
+    else
+    {
+        EvalPushText(&i, sText_TerminalEval_S4Wrong1);
+        EvalPushText(&i, sText_TerminalEval_S4Wrong2);
+        EvalPushText(&i, sText_TerminalEval_S4Wrong3);
+    }
+    EvalPushBlank(&i);
+
+    EvalPushBack(&i);
+
+    AGB_ASSERT(i <= EVAL_MAX_ROWS);
+    sTC->activeItemCount = i;
+}
+
+static const struct TerminalPage sTerminalEval_Page =
+{
+    .header        = sText_TerminalMedicalRecords_Header,
+    .items         = sTerminalEval_Items,
+    .itemCount     = EVAL_MAX_ROWS,
+    .cols          = 1,
+    .prepare       = TerminalEval_Prepare,
+    .createSprites = NULL,
+    .onBack        = Eval_BackToMedicalRecords,
+};
+
+static void Eval_Open(void)
+{
+    PlaySE(SE_SELECT);
+    TerminalContent_SwapPage(&sTerminalEval_Page, 0);
+}
+
 static const struct TerminalItem sTerminalMedicalRecords_Items[] =
 {
     [MED_ROW_NAME]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_NameRow,   .onActivate = NamePicker_Open },
@@ -2222,7 +2451,7 @@ static const struct TerminalItem sTerminalMedicalRecords_Items[] =
     [MED_ROW_GENDER] = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_GenderRow, .onActivate = GenderPicker_Open },
     [MED_ROW_HAIR]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_HairRow,   .onActivate = HairPicker_Open },
     [MED_ROW_SKIN]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_SkinRow,   .onActivate = SkinPicker_Open },
-    [MED_ROW_EVAL]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Eval },
+    [MED_ROW_EVAL]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sTerminalMedicalRecords_EvalRow,   .onActivate = Eval_Open },
     [MED_ROW_BLANK]  = { .type = TERMINAL_ITEM_BLANK },
     [MED_ROW_EXIT]   = { .type = TERMINAL_ITEM_SELECTABLE, .text = sText_TerminalMedicalRecords_Exit, .onActivate = TerminalContent_ExitCallback },
 };

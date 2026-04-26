@@ -603,7 +603,8 @@ struct SaveBlock2
     /*0x18*/ struct Pokedex pokedex;
     /*0x90*/ u8 hairColor;
     /*0x91*/ u8 skinTone;
-    /*0x92*/ u8 filler_92[0x6];
+    /*0x92*/ u8 introAnswers;  // bitfield; INTRO_ANSWER_* in constants/global.h
+    /*0x93*/ u8 filler_93[0x5];
     /*0x98*/ struct Time localTimeOffset;
     /*0xA0*/ struct Time lastBerryTreeUpdate;
     /*0xA8*/ u32 gcnLinkFlags; // Read by Pokémon Colosseum/XD

@@ -1498,6 +1498,7 @@ static void Task_NewGameBirchSpeech_ProcessRememberChoice(u8 taskId)
     {
     case 0: // Remind me
         PlaySE(SE_SELECT);
+        gSaveBlock2Ptr->introAnswers &= ~INTRO_ANSWER_REMEMBERED_BASICS;
         NewGameBirchSpeech_ClearGenderWindow(3, 1);
         NewGameBirchSpeech_ClearWindow(0);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ShowRemindLore;
@@ -1505,6 +1506,7 @@ static void Task_NewGameBirchSpeech_ProcessRememberChoice(u8 taskId)
     case 1: // I remember
     case MENU_B_PRESSED:
         PlaySE(SE_SELECT);
+        gSaveBlock2Ptr->introAnswers |= INTRO_ANSWER_REMEMBERED_BASICS;
         NewGameBirchSpeech_ClearGenderWindow(3, 1);
         NewGameBirchSpeech_ClearWindow(0);
         gTasks[taskId].func = Task_NewGameBirchSpeech_ShowRememberResponse;
@@ -1571,9 +1573,15 @@ static void Task_NewGameBirchSpeech_ProcessYearChoice(u8 taskId)
         NewGameBirchSpeech_ClearGenderWindow(4, 1);
         NewGameBirchSpeech_ClearWindow(0);
         if (input == YEAR_CORRECT_INDEX)
+        {
+            gSaveBlock2Ptr->introAnswers |= INTRO_ANSWER_GUESSED_YEAR_RIGHT;
             gTasks[taskId].func = Task_NewGameBirchSpeech_ShowYearCorrect;
+        }
         else
+        {
+            gSaveBlock2Ptr->introAnswers &= ~INTRO_ANSWER_GUESSED_YEAR_RIGHT;
             gTasks[taskId].func = Task_NewGameBirchSpeech_ShowYearWrong;
+        }
         break;
     }
 }
@@ -2239,10 +2247,12 @@ static void Task_NewGameBirchSpeech_ShowToddResult(u8 taskId)
          || StringCompare(sRivalNameBuffer, sText_ToddUpper) == 0
          || StringCompare(sRivalNameBuffer, sText_ToddLower) == 0)
         {
+            gSaveBlock2Ptr->introAnswers |= INTRO_ANSWER_NAMED_TODD_CORRECTLY;
             StringExpandPlaceholders(gStringVar4, gText_MissNanny_ToddCorrect);
         }
         else
         {
+            gSaveBlock2Ptr->introAnswers &= ~INTRO_ANSWER_NAMED_TODD_CORRECTLY;
             StringExpandPlaceholders(gStringVar4, gText_MissNanny_ToddWrong);
         }
         AddTextPrinterForMessage(TRUE);
