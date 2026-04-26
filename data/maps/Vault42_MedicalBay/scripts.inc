@@ -9,7 +9,7 @@ Vault42_MedicalBay_MapScripts::
 	.byte 0
 
 Vault42_MedicalBay_OnFrame:
-	map_script_2 VAR_VAULT_INTRO_STATE, 0, Vault42_MedicalBay_EventScript_Intro
+	map_script_2 VAR_PROLOGUE_STATE, 0, Vault42_MedicalBay_EventScript_Intro
 	.2byte 0
 
 Vault42_MedicalBay_EventScript_Intro::
@@ -50,7 +50,7 @@ Vault42_MedicalBay_EventScript_Intro::
 	playse SE_EXIT
 	removeobject LOCALID_MEDBAY_TODD
 	setflag FLAG_HIDE_MEDBAY_TODD
-	setvar VAR_VAULT_INTRO_STATE, 1
+	setvar VAR_PROLOGUE_STATE, 1
 	releaseall
 	end
 
@@ -83,9 +83,34 @@ Vault42_MedicalBay_Movement_ToddWalkToExit:
 Vault42_MedicalBay_EventScript_Nanny::
 	lock
 	faceplayer
-	msgbox Vault42_MedicalBay_Text_NannyGreeting, MSGBOX_DEFAULT
+	goto_if_set FLAG_RECEIVED_RUNNING_SHOES, Vault42_MedicalBay_EventScript_NannyAfterShoes
+	msgbox Vault42_MedicalBay_Text_NannyBeforeShoes, MSGBOX_DEFAULT
 	release
 	end
+
+Vault42_MedicalBay_EventScript_NannyAfterShoes::
+	msgbox Vault42_MedicalBay_Text_NannyAfterShoes, MSGBOX_DEFAULT
+	release
+	end
+
+Vault42_MedicalBay_EventScript_NannyBlockExit::
+	lockall
+	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterUp
+	waitmovement 0
+	playse SE_PIN
+	applymovement LOCALID_PLAYER, Common_Movement_ExclamationMark
+	waitmovement 0
+	delay 30
+	msgbox Vault42_MedicalBay_Text_NannyBlockExit, MSGBOX_DEFAULT
+	closemessage
+	applymovement LOCALID_PLAYER, Vault42_MedicalBay_Movement_PlayerStepNorth
+	waitmovement 0
+	releaseall
+	end
+
+Vault42_MedicalBay_Movement_PlayerStepNorth:
+	walk_up
+	step_end
 
 @ Fallback — lockall during intro means this never fires normally.
 Vault42_MedicalBay_EventScript_Todd::
@@ -95,10 +120,18 @@ Vault42_MedicalBay_EventScript_Todd::
 	release
 	end
 
-Vault42_MedicalBay_Text_NannyGreeting:
-	.string "I am a Miss Nanny unit assigned\n"
-	.string "to vault medical care.\p"
-	.string "Please rest if you are injured.$"
+Vault42_MedicalBay_Text_NannyBeforeShoes:
+	.string "MISS NANNY: You'd best put on your\n"
+	.string "shoes and get going.\p"
+	.string "The G.O.A.T. waits for no one!$"
+
+Vault42_MedicalBay_Text_NannyAfterShoes:
+	.string "MISS NANNY: You'd best get going.\n"
+	.string "The G.O.A.T. waits for no one!$"
+
+Vault42_MedicalBay_Text_NannyBlockExit:
+	.string "MISS NANNY: Wait!\n"
+	.string "Don't forget your shoes!$"
 
 Vault42_MedicalBay_Text_ToddFinally:
 	.string "Finally.\p"

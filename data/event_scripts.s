@@ -1704,6 +1704,7 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/scripts/mauville_man.inc"
 	.include "data/scripts/field_move_scripts.inc"
 	.include "data/scripts/item_ball_scripts.inc"
+	.include "data/scripts/running_shoes_pickup.inc"
 	.include "data/scripts/profile_man.inc"
 	.include "data/scripts/day_care.inc"
 	.include "data/scripts/flash.inc"

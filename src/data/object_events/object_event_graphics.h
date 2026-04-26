@@ -638,6 +638,8 @@ const u16 gObjectEventPic_ClefairyOld[] = INCBIN_U16("graphics/object_events/pic
 #endif // IS_FRLG
 
 // Todd (rival)
-const u32 gObjectEventPic_ToddNormal[] = INCBIN_U32("graphics/object_events/pics/people/todd/walking.4bpp", "graphics/object_events/pics/people/todd/walking.4bpp");
+const u32 gObjectEventPic_ToddNormal[] = INCBIN_U32("graphics/object_events/pics/people/todd/walking.4bpp");
 const u16 gObjectEventPal_Todd[] = INCBIN_U16("graphics/object_events/palettes/todd.gbapal");
 const u16 gObjectEventPal_ToddReflection[] = INCBIN_U16("graphics/object_events/palettes/todd.gbapal");
+
+const u32 gObjectEventPic_RunningShoes[] = INCBIN_U32("graphics/object_events/pics/misc/running_shoes.4bpp");

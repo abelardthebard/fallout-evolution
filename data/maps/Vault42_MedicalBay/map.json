@@ -19,7 +19,7 @@
       "x": 8,
       "y": 6,
       "elevation": 3,
-      "movement_type": "MOVEMENT_TYPE_WALK_IN_PLACE_LEFT",
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
       "movement_range_x": 0,
       "movement_range_y": 0,
       "trainer_type": "TRAINER_TYPE_NONE",
@@ -39,6 +39,19 @@
       "trainer_sight_or_berry_tree_id": "0",
       "script": "Vault42_MedicalBay_EventScript_Todd",
       "flag": "FLAG_HIDE_MEDBAY_TODD"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_RUNNING_SHOES",
+      "x": 5,
+      "y": 7,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Common_EventScript_RunningShoesPickup",
+      "flag": "FLAG_RECEIVED_RUNNING_SHOES"
     }
   ],
   "warp_events": [
@@ -64,12 +77,31 @@
       "dest_warp_id": "0"
     }
   ],
-  "coord_events": [],
+  "coord_events": [
+    {
+      "type": "trigger",
+      "x": 7,
+      "y": 9,
+      "elevation": 0,
+      "var": "VAR_PROLOGUE_STATE",
+      "var_value": "1",
+      "script": "Vault42_MedicalBay_EventScript_NannyBlockExit"
+    },
+    {
+      "type": "trigger",
+      "x": 8,
+      "y": 9,
+      "elevation": 0,
+      "var": "VAR_PROLOGUE_STATE",
+      "var_value": "1",
+      "script": "Vault42_MedicalBay_EventScript_NannyBlockExit"
+    }
+  ],
   "bg_events": [
     {
       "type": "hidden_item",
-      "x": 10,
-      "y": 1,
+      "x": 11,
+      "y": 2,
       "elevation": 0,
       "item": "ITEM_POTION",
       "flag": "FLAG_HIDDEN_ITEM_MEDBAY_POTION"

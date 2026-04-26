@@ -24,16 +24,10 @@
 #include "constants/songs.h"
 
 enum {
-    TAG_VERSION = 1000,
-    TAG_PRESS_START_COPYRIGHT,
+    TAG_PRESS_START_COPYRIGHT = 1000,
     TAG_LOGO_SHINE,
 };
 
-#define VERSION_BANNER_RIGHT_TILEOFFSET 64
-#define VERSION_BANNER_LEFT_X 98
-#define VERSION_BANNER_RIGHT_X 162
-#define VERSION_BANNER_Y 2
-#define VERSION_BANNER_Y_GOAL 66
 #define START_BANNER_X 128
 
 #define CLEAR_SAVE_BUTTON_COMBO (B_BUTTON | SELECT_BUTTON | DPAD_UP)
@@ -53,8 +47,6 @@ static void CB2_GoToCopyrightScreen(void);
 static void InitStormReveal(void);
 static void UpdateStormPalette(void);
 
-static void SpriteCB_VersionBannerLeft(struct Sprite *sprite);
-static void SpriteCB_VersionBannerRight(struct Sprite *sprite);
 static void SpriteCB_PressStartCopyrightBanner(struct Sprite *sprite);
 static void SpriteCB_PokemonLogoShine(struct Sprite *sprite);
 
@@ -67,8 +59,6 @@ static bool8 sStormActive;
 static s8 sStormDirection;
 
 // const rom data
-static const u16 sUnusedUnknownPal[] = INCBIN_U16("graphics/title_screen/unused.gbapal");
-
 static const u32 sTitleScreenRayquazaGfx[] = INCBIN_U32("graphics/title_screen/falloutevolution_mainmenu.4bpp.smol");
 static const u32 sTitleScreenRayquazaTilemap[] = INCBIN_U32("graphics/title_screen/falloutevolution_mainmenu.bin.smolTM");
 static const u32 sTitleScreenLogoShineGfx[] = INCBIN_U32("graphics/title_screen/logo_shine.4bpp.smol");
@@ -114,82 +104,6 @@ const u16 gTitleScreenAlphaBlend[64] =
     BLDALPHA_BLEND(0, 16),
     [32 ... 63] = BLDALPHA_BLEND(0, 16)
 };
-
-static const struct OamData sVersionBannerLeftOamData =
-{
-    .y = DISPLAY_HEIGHT,
-    .affineMode = ST_OAM_AFFINE_OFF,
-    .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
-    .bpp = ST_OAM_8BPP,
-    .shape = SPRITE_SHAPE(64x32),
-    .x = 0,
-    .matrixNum = 0,
-    .size = SPRITE_SIZE(64x32),
-    .tileNum = 0,
-    .priority = 0,
-    .paletteNum = 0,
-    .affineParam = 0,
-};
-
-static const struct OamData sVersionBannerRightOamData =
-{
-    .y = DISPLAY_HEIGHT,
-    .affineMode = ST_OAM_AFFINE_OFF,
-    .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
-    .bpp = ST_OAM_8BPP,
-    .shape = SPRITE_SHAPE(64x32),
-    .x = 0,
-    .matrixNum = 0,
-    .size = SPRITE_SIZE(64x32),
-    .tileNum = 0,
-    .priority = 0,
-    .paletteNum = 0,
-    .affineParam = 0,
-};
-
-static const union AnimCmd sVersionBannerLeftAnimSequence[] =
-{
-    ANIMCMD_FRAME(0, 30),
-    ANIMCMD_END,
-};
-
-static const union AnimCmd sVersionBannerRightAnimSequence[] =
-{
-    ANIMCMD_FRAME(VERSION_BANNER_RIGHT_TILEOFFSET, 30),
-    ANIMCMD_END,
-};
-
-static const union AnimCmd *const sVersionBannerLeftAnimTable[] =
-{
-    sVersionBannerLeftAnimSequence,
-};
-
-static const union AnimCmd *const sVersionBannerRightAnimTable[] =
-{
-    sVersionBannerRightAnimSequence,
-};
-
-static const struct SpriteTemplate sVersionBannerLeftSpriteTemplate =
-{
-    .tileTag = TAG_VERSION,
-    .paletteTag = TAG_VERSION,
-    .oam = &sVersionBannerLeftOamData,
-    .anims = sVersionBannerLeftAnimTable,
-    .callback = SpriteCB_VersionBannerLeft,
-};
-
-static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
-{
-    .tileTag = TAG_VERSION,
-    .paletteTag = TAG_VERSION,
-    .oam = &sVersionBannerRightOamData,
-    .anims = sVersionBannerRightAnimTable,
-    .callback = SpriteCB_VersionBannerRight,
-};
-
-// FE: Version banner removed — baked into logo
 
 static const struct OamData sOamData_CopyrightBanner =
 {
@@ -359,41 +273,6 @@ static const struct CompressedSpriteSheet sPokemonLogoShineSpriteSheet[] =
 #define tPointless  data[2] // Incremented but never used to do anything.
 #define tBg2Y       data[3]
 #define tBg1Y       data[4]
-
-// Sprite data for sVersionBannerLeftSpriteTemplate / sVersionBannerRightSpriteTemplate
-#define sAlphaBlendIdx data[0]
-#define sParentTaskId  data[1]
-
-static void SpriteCB_VersionBannerLeft(struct Sprite *sprite)
-{
-    if (gTasks[sprite->sParentTaskId].tSkipToNext)
-    {
-        sprite->oam.objMode = ST_OAM_OBJ_NORMAL;
-        sprite->y = VERSION_BANNER_Y_GOAL;
-    }
-    else
-    {
-        if (sprite->y != VERSION_BANNER_Y_GOAL)
-            sprite->y++;
-        if (sprite->sAlphaBlendIdx != 0)
-            sprite->sAlphaBlendIdx--;
-        SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[sprite->sAlphaBlendIdx]);
-    }
-}
-
-static void SpriteCB_VersionBannerRight(struct Sprite *sprite)
-{
-    if (gTasks[sprite->sParentTaskId].tSkipToNext)
-    {
-        sprite->oam.objMode = ST_OAM_OBJ_NORMAL;
-        sprite->y = VERSION_BANNER_Y_GOAL;
-    }
-    else
-    {
-        if (sprite->y != VERSION_BANNER_Y_GOAL)
-            sprite->y++;
-    }
-}
 
 // Sprite data for SpriteCB_PressStartCopyrightBanner
 #define sAnimate data[0]
@@ -599,7 +478,6 @@ void CB2_InitTitleScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         gReservedSpritePaletteCount = 9;
-        // FE: Version banner removed — baked into logo
         LoadCompressedSpriteSheet(&sSpriteSheet_PressStart[0]);
         LoadCompressedSpriteSheet(&sPokemonLogoShineSpriteSheet[0]);
         LoadSpritePalette(&sSpritePalette_PressStart[0]);
@@ -712,9 +590,6 @@ static void Task_TitleScreenPhase1(u8 taskId)
         gTasks[taskId].func = Task_TitleScreenPhase2;
     }
 }
-
-#undef sParentTaskId
-#undef sAlphaBlendIdx
 
 // Create "Press Start" and copyright banners, and slide Pokémon logo up
 static void Task_TitleScreenPhase2(u8 taskId)

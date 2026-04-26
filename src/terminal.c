@@ -2239,7 +2239,7 @@ static const u8 sText_TerminalHousing_Child1Lbl[] = _("CHILD 1: ");
 static const u8 sText_TerminalHousing_Child1Suf[] = _(", Pending");
 static const u8 sText_TerminalHousing_Child2[]    = _("CHILD 2: Maisie, Pending");
 static const u8 sText_TerminalHousing_Desc1[]     = _("Home environment reported as");
-static const u8 sText_TerminalHousing_Desc2[]     = _("'stable' and 'unremarkable'.");
+static const u8 sText_TerminalHousing_Desc2[]     = _("“stable” and “unremarkable”.");
 static const u8 sText_TerminalHousing_Back[]      = _("BACK");
 
 // "CHILD 1: " (9) + PLAYER_NAME_LENGTH (7) + ", Pending" (9) + EOS

@@ -7244,3 +7244,21 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_ToddNormal = {
     .images = sPicTable_ToddNormal,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
+
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RunningShoes = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_BRENDAN,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 128,
+    .width = 16,
+    .height = 16,
+    .paletteSlot = PALSLOT_PLAYER,
+    .shadowSize = SHADOW_SIZE_S,
+    .inanimate = TRUE,
+    .compressed = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_16x16,
+    .subspriteTables = NULL,
+    .anims = sAnimTable_Inanimate,
+    .images = sPicTable_RunningShoes,
+};

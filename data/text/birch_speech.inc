@@ -1,14 +1,14 @@
-gText_Birch_Welcome::
+gText_MissNanny_Welcome::
 	.string "You are conscious.\n"
 	.string "This is an improvement.\p"
 	.string "I am a Miss Nanny unit assigned\n"
 	.string "to the Vault 42 Medical Bay.\p"
 	.string "$"
 
-gText_Birch_Pokemon::
+gText_MissNanny_Pokemon::
 	.string "$"
 
-gText_Birch_MainSpeech::
+gText_MissNanny_MainSpeech::
 	.string "You were brought in approximately\n"
 	.string "four hours ago in a condition\l"
 	.string "I would describe as... bad.\p"
@@ -69,12 +69,12 @@ gText_MissNanny_YearCorrect::
 	.string "214 years since the Great War.\p"
 	.string "$"
 
-gText_Birch_AndYouAre::
+gText_MissNanny_AndYouAre::
 	.string "Now I need to evaluate your\n"
 	.string "self-perception.\p"
 	.string "$"
 
-gText_Birch_BoyOrGirl::
+gText_MissNanny_BoyOrGirl::
 	.string "What is your gender presentation?$"
 
 gText_MissNanny_HairColor::
@@ -96,14 +96,14 @@ gText_MissNanny_FaceComment::
 	.string "Eventually...\p"
 	.string "$"
 
-gText_Birch_WhatsYourName::
+gText_MissNanny_WhatsYourName::
 	.string "Moving on...\n"
 	.string "Do you remember your name?$"
 
-gText_Birch_SoItsPlayer::
+gText_MissNanny_SoItsPlayer::
 	.string "And you are certain it's {PLAYER}?$"
 
-gText_Birch_YourePlayer::
+gText_MissNanny_YourePlayer::
 	.string "Your classmate found you on the floor\n"
 	.string "and carried you here.\p"
 	.string "Can you recall their name?\p"
@@ -122,7 +122,7 @@ gText_MissNanny_ToddWrong::
 	.string "I will note this in your file.\p"
 	.string "$"
 
-gText_Birch_AreYouReady::
+gText_MissNanny_AreYouReady::
 	.string "The evaluation is now complete.\n"
 	.string "Results have been logged.\p"
 	.string "One additional item of concern...\p"
