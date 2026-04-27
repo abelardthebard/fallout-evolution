@@ -411,7 +411,7 @@ endif
 # Porymap edits the bin; porytiles compiles from the csv. Run this after porymap
 # behavior changes so the csv stays the source of truth for the next porytiles
 # run. See memory/reference_porytiles.md.
-PORYTILES ?= porytiles
+PORYTILES ?= /usr/local/bin/porytiles
 PORYTILES_DECOMP_TMP := .porytiles-decomp
 
 sync-porytiles-csvs:
