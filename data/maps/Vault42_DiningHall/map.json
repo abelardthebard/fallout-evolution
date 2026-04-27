@@ -1,9 +1,9 @@
 {
-  "id": "MAP_VAULT42_2F_HALLWAY",
-  "name": "Vault42_2F_Hallway",
-  "layout": "LAYOUT_VAULT42_2F_HALLWAY",
+  "id": "MAP_VAULT42_DINING_HALL",
+  "name": "Vault42_DiningHall",
+  "layout": "LAYOUT_VAULT42_DINING_HALL",
   "music": "MUS_DUMMY",
-  "region_map_section": "MAPSEC_VAULT_42_2F_HALLWAY",
+  "region_map_section": "MAPSEC_VAULT_42_DINING_HALL",
   "requires_flash": false,
   "weather": "WEATHER_NONE",
   "map_type": "MAP_TYPE_INDOOR",
@@ -14,15 +14,7 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
   "object_events": [],
-  "warp_events": [
-    {
-      "x": 7,
-      "y": 2,
-      "elevation": 0,
-      "dest_map": "MAP_VAULT42_MEDICAL_BAY",
-      "dest_warp_id": "1"
-    }
-  ],
+  "warp_events": [],
   "coord_events": [],
   "bg_events": []
 }

@@ -1746,3 +1746,5 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/maps/Vault42_MedicalBay/scripts.inc"
 
 	.include "data/maps/Vault42_2F_Hallway/scripts.inc"
+
+	.include "data/maps/Vault42_DiningHall/scripts.inc"

@@ -1628,16 +1628,28 @@
       "height": 1
     },
     {
-      "id": "MAPSEC_VAULT_42",
-      "name": "VAULT 42"
-    },
-    {
       "id": "MAPSEC_VAULT_42_MEDICAL_BAY",
       "name": "MEDICAL BAY"
     },
     {
-      "id": "MAPSEC_VAULT_42_2ND_FLOOR",
-      "name": "2ND FLOOR"
+      "id": "MAPSEC_VAULT_42_2F_HALLWAY",
+      "name": "2F HALL"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_OVERSEERS_OFFICE",
+      "name": "OVERSEER'S OFFICE"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_DINING_HALL",
+      "name": "DINING HALL"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_CLASSROOM",
+      "name": "CLASSROOM"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_TRASH_ROOM",
+      "name": "TRASH ROOM"
     }
   ]
 }
