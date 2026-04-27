@@ -121,16 +121,16 @@ Vault42_MedicalBay_EventScript_Todd::
 	end
 
 Vault42_MedicalBay_Text_NannyBeforeShoes:
-	.string "MISS NANNY: You'd best put on your\n"
-	.string "shoes and get going.\p"
+	.string "You'd best put on your shoes and\n"
+	.string "get going.\p"
 	.string "The G.O.A.T. waits for no one!$"
 
 Vault42_MedicalBay_Text_NannyAfterShoes:
-	.string "MISS NANNY: You'd best get going.\n"
+	.string "You'd best get going.\n"
 	.string "The G.O.A.T. waits for no one!$"
 
 Vault42_MedicalBay_Text_NannyBlockExit:
-	.string "MISS NANNY: Wait!\n"
+	.string "Wait!\n"
 	.string "Don't forget your shoes!$"
 
 Vault42_MedicalBay_Text_ToddFinally:
