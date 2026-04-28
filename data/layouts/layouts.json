@@ -9348,7 +9348,7 @@
       "id": "LAYOUT_VAULT42_DINING_HALL",
       "name": "Vault42_DiningHall_Layout",
       "width": 20,
-      "height": 20,
+      "height": 18,
       "primary_tileset": "gTileset_VaultGeneral",
       "secondary_tileset": "gTileset_VaultExtras",
       "border_filepath": "data/layouts/Vault42_DiningHall/border.bin",
