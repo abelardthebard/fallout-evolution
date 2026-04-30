@@ -1165,6 +1165,13 @@
   "gMapGroup_Vault42": [
     "Vault42_MedicalBay",
     "Vault42_2F_Hallway",
-    "Vault42_DiningHall"
+    "Vault42_DiningHall",
+    "Vault42_2F_Trashroom",
+    "Vault42_Classroom",
+    "Vault42_OverseersOffice",
+    "Vault42_2F_Bathroom",
+    "Vault42_OverseersLobby",
+    "Vault42_PlayerHome",
+    "Vault42_Elevator"
   ]
 }

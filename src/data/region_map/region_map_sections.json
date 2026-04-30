@@ -1632,8 +1632,8 @@
       "name": "MEDICAL BAY"
     },
     {
-      "id": "MAPSEC_VAULT_42_2F_HALLWAY",
-      "name": "2F HALL"
+      "id": "MAPSEC_VAULT_42_HALLWAY",
+      "name": "HALLWAY"
     },
     {
       "id": "MAPSEC_VAULT_42_OVERSEERS_OFFICE",
@@ -1650,6 +1650,14 @@
     {
       "id": "MAPSEC_VAULT_42_TRASH_ROOM",
       "name": "TRASH ROOM"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_BATHROOM",
+      "name": "BATHROOM"
+    },
+    {
+      "id": "MAPSEC_VAULT_42_HOME",
+      "name": "VAULT 42 HOME"
     }
   ]
 }

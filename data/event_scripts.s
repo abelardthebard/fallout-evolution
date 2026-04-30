@@ -1748,3 +1748,17 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/maps/Vault42_2F_Hallway/scripts.inc"
 
 	.include "data/maps/Vault42_DiningHall/scripts.inc"
+
+	.include "data/maps/Vault42_2F_Trashroom/scripts.inc"
+
+	.include "data/maps/Vault42_Classroom/scripts.inc"
+
+	.include "data/maps/Vault42_OverseersOffice/scripts.inc"
+
+	.include "data/maps/Vault42_2F_Bathroom/scripts.inc"
+
+	.include "data/maps/Vault42_OverseersLobby/scripts.inc"
+
+	.include "data/maps/Vault42_PlayerHome/scripts.inc"
+
+	.include "data/maps/Vault42_Elevator/scripts.inc"

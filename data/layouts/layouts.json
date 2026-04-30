@@ -9337,8 +9337,8 @@
     {
       "id": "LAYOUT_VAULT42_2F_HALLWAY",
       "name": "Vault42_2F_Hallway_Layout",
-      "width": 50,
-      "height": 25,
+      "width": 44,
+      "height": 27,
       "primary_tileset": "gTileset_VaultGeneral",
       "secondary_tileset": "gTileset_VaultIndustrial",
       "border_filepath": "data/layouts/Vault42_2F_Hallway/border.bin",
@@ -9353,6 +9353,76 @@
       "secondary_tileset": "gTileset_VaultExtras",
       "border_filepath": "data/layouts/Vault42_DiningHall/border.bin",
       "blockdata_filepath": "data/layouts/Vault42_DiningHall/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_2F_TRASHROOM",
+      "name": "Vault42_2F_Trashroom_Layout",
+      "width": 9,
+      "height": 18,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultIndustrial",
+      "border_filepath": "data/layouts/Vault42_2F_Trashroom/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_2F_Trashroom/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_CLASSROOM",
+      "name": "Vault42_Classroom_Layout",
+      "width": 11,
+      "height": 19,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_Classroom/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_Classroom/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_OVERSEERS_OFFICE",
+      "name": "Vault42_OverseersOffice_Layout",
+      "width": 10,
+      "height": 12,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_OverseersOffice/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_OverseersOffice/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_2F_BATHROOM",
+      "name": "Vault42_2F_Bathroom_Layout",
+      "width": 13,
+      "height": 16,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_2F_Bathroom/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_2F_Bathroom/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_OVERSEERS_LOBBY",
+      "name": "Vault42_OverseersLobby_Layout",
+      "width": 8,
+      "height": 7,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_OverseersLobby/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_OverseersLobby/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_PLAYER_HOME",
+      "name": "Vault42_PlayerHome_Layout",
+      "width": 20,
+      "height": 20,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_PlayerHome/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_PlayerHome/map.bin"
+    },
+    {
+      "id": "LAYOUT_VAULT42_ELEVATOR",
+      "name": "Vault42_Elevator_Layout",
+      "width": 4,
+      "height": 5,
+      "primary_tileset": "gTileset_VaultGeneral",
+      "secondary_tileset": "gTileset_VaultExtras",
+      "border_filepath": "data/layouts/Vault42_Elevator/border.bin",
+      "blockdata_filepath": "data/layouts/Vault42_Elevator/map.bin"
     }
   ]
 }
