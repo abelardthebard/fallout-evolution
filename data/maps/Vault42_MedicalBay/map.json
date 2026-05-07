@@ -65,14 +65,14 @@
     {
       "x": 7,
       "y": 9,
-      "elevation": 3,
+      "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
       "dest_warp_id": "0"
     },
     {
       "x": 8,
       "y": 9,
-      "elevation": 3,
+      "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
       "dest_warp_id": "0"
     }
