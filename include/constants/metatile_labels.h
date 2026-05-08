@@ -1015,6 +1015,9 @@
 #define METATILE_Underwater_FloorShadow  0x228
 #define METATILE_Underwater_RockWall     0x21E
 
+// gTileset_VaultGeneral
+#define METATILE_VaultGeneral_Door  0x188
+
 // gTileset_VaultIndustrial
 #define METATILE_VaultIndustrial_TerminalOn  0x323
 
@@ -1081,8 +1084,5 @@
 #define METATILE_RSMossdeepGym_RedArrow_Up           0x20D
 #define METATILE_RSMossdeepGym_Switch_Down           0x239
 #define METATILE_RSMossdeepGym_Switch_Up             0x238
-
-// gTileset_VaultGeneral
-#define METATILE_VaultGeneral_Door  0x188
 
 #endif // GUARD_METATILE_LABELS_H

@@ -642,4 +642,9 @@ const u32 gObjectEventPic_ToddNormal[] = INCBIN_U32("graphics/object_events/pics
 const u16 gObjectEventPal_Todd[] = INCBIN_U16("graphics/object_events/palettes/todd.gbapal");
 const u16 gObjectEventPal_ToddReflection[] = INCBIN_U16("graphics/object_events/palettes/todd.gbapal");
 
+// Mrs. Bauer (vault instructor)
+const u32 gObjectEventPic_VaultMrsBauer[] = INCBIN_U32("graphics/object_events/pics/people/vault_mrsbauer.4bpp");
+const u16 gObjectEventPal_VaultMrsBauer[] = INCBIN_U16("graphics/object_events/palettes/vault_old1.gbapal");
+const u16 gObjectEventPal_VaultMrsBauerReflection[] = INCBIN_U16("graphics/object_events/palettes/vault_old1.gbapal");
+
 const u32 gObjectEventPic_RunningShoes[] = INCBIN_U32("graphics/object_events/pics/misc/running_shoes.4bpp");

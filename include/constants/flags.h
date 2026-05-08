@@ -53,9 +53,9 @@
 
 #define FLAG_HIDE_MEDBAY_TODD    0x20
 #define FLAG_HIDE_HALLWAY_TODD    0x21
-#define FLAG_UNUSED_0x022    0x22 // Unused Flag
-#define FLAG_UNUSED_0x023    0x23 // Unused Flag
-#define FLAG_UNUSED_0x024    0x24 // Unused Flag
+#define FLAG_HIDE_HALLWAY_MRSBAUER    0x22
+#define FLAG_HIDE_CLASSROOM_MRSBAUER    0x23
+#define FLAG_HIDE_CLASSROOM_TODD    0x24
 #define FLAG_UNUSED_0x025    0x25 // Unused Flag
 #define FLAG_UNUSED_0x026    0x26 // Unused Flag
 #define FLAG_UNUSED_0x027    0x27 // Unused Flag

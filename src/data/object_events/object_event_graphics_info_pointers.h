@@ -402,6 +402,7 @@ extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_UnusedMauvi
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_ApricornTree;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_ToddNormal;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RunningShoes;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_VaultMrsBauer;
 
 const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM_OBJ_EVENT_GFX] = {
     [OBJ_EVENT_GFX_BRENDAN_NORMAL] =           &gObjectEventGraphicsInfo_BrendanNormal,
@@ -795,6 +796,7 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
 #endif // IS_FRLG
     [OBJ_EVENT_GFX_TODD_NORMAL]              = &gObjectEventGraphicsInfo_ToddNormal,
     [OBJ_EVENT_GFX_RUNNING_SHOES]            = &gObjectEventGraphicsInfo_RunningShoes,
+    [OBJ_EVENT_GFX_VAULT_MRSBAUER]           = &gObjectEventGraphicsInfo_VaultMrsBauer,
 };
 
 const struct ObjectEventGraphicsInfo *const gMauvilleOldManGraphicsInfoPointers[] = {

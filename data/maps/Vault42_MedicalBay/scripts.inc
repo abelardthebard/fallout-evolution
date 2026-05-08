@@ -50,7 +50,9 @@ Vault42_MedicalBay_EventScript_Intro::
 	playse SE_EXIT
 	removeobject LOCALID_MEDBAY_TODD
 	setflag FLAG_HIDE_MEDBAY_TODD
-	setflag FLAG_HIDE_HALLWAY_TODD
+	setflag FLAG_HIDE_HALLWAY_MRSBAUER
+	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
+	setflag FLAG_HIDE_CLASSROOM_TODD
 	setvar VAR_PROLOGUE_STATE, 1
 	releaseall
 	end
@@ -133,8 +135,9 @@ Vault42_MedicalBay_Text_NannyBeforeShoes:
 Vault42_MedicalBay_Text_NannyAfterShoes:
 	.string "You'd best get going.\n"
 	.string "The G.O.A.T. waits for no one!\p"
-	.string "But mind your step running\n"
-	.string "around the Vault, dear.$"
+	.string "And mind your step.\n"
+	.string "We've patched you up\l"
+	.string "once today already.$"
 
 Vault42_MedicalBay_Text_NannyBlockExit:
 	.string "Wait!\n"
