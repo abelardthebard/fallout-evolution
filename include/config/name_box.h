@@ -10,8 +10,7 @@
 #define OW_NAME_BOX_DEFAULT_HEIGHT    2     // Maximum height of the namebox window.
 
 // Text colors of Namebox. The numbers corresponds to the palette index.
-// The BG color is not provided as it always needs to be 0.
-#define OW_NAME_BOX_FOREGROUND_COLOR  1
-#define OW_NAME_BOX_SHADOW_COLOR      2
+#define OW_NAME_BOX_FOREGROUND_COLOR  TEXT_COLOR_DARK_GRAY    // idx 2 = themed bright accent
+#define OW_NAME_BOX_SHADOW_COLOR      TEXT_COLOR_LIGHT_GRAY   // idx 3 = themed dark accent
 
 #endif // GUARD_CONFIG_NAME_BOX_H

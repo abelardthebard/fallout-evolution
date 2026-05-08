@@ -14,6 +14,7 @@ Vault42_MedicalBay_OnFrame:
 
 Vault42_MedicalBay_EventScript_Intro::
 	lockall
+	setspeaker SP_NAME_TODD
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddStepWest
 	waitmovement 0
 	applymovement LOCALID_PLAYER, Vault42_MedicalBay_Movement_PlayerFaceEast
@@ -21,29 +22,28 @@ Vault42_MedicalBay_EventScript_Intro::
 	message Vault42_MedicalBay_Text_ToddFinally
 	waitmessage
 	waitbuttonpress
-	playse SE_SELECT
 	closemessage
 	playse SE_PIN
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddBeatEmote
 	waitmovement 0
 	waitfieldeffect FLDEFF_ELLIPSIS_ICON
+	setspeaker SP_NAME_TODD
 	message Vault42_MedicalBay_Text_ToddForCarrying
 	waitmessage
 	waitbuttonpress
-	playse SE_SELECT
+	setspeaker SP_NAME_TODD
 	message Vault42_MedicalBay_Text_ToddHeavyExam
 	waitmessage
 	waitbuttonpress
-	playse SE_SELECT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkSouth2
 	waitmovement 0
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddFaceNorth
 	waitmovement 0
+	setspeaker SP_NAME_TODD
 	message Vault42_MedicalBay_Text_ToddWaitOutside
 	waitmessage
 	waitbuttonpress
-	playse SE_SELECT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkToExit
 	waitmovement 0
@@ -83,18 +83,21 @@ Vault42_MedicalBay_Movement_ToddWalkToExit:
 Vault42_MedicalBay_EventScript_Nanny::
 	lock
 	faceplayer
+	setspeaker SP_NAME_NANNY
 	goto_if_set FLAG_RECEIVED_RUNNING_SHOES, Vault42_MedicalBay_EventScript_NannyAfterShoes
 	msgbox Vault42_MedicalBay_Text_NannyBeforeShoes, MSGBOX_DEFAULT
 	release
 	end
 
 Vault42_MedicalBay_EventScript_NannyAfterShoes::
+	setspeaker SP_NAME_NANNY
 	msgbox Vault42_MedicalBay_Text_NannyAfterShoes, MSGBOX_DEFAULT
 	release
 	end
 
 Vault42_MedicalBay_EventScript_NannyBlockExit::
 	lockall
+	setspeaker SP_NAME_NANNY
 	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterUp
 	waitmovement 0
 	playse SE_PIN
@@ -116,6 +119,7 @@ Vault42_MedicalBay_Movement_PlayerStepNorth:
 Vault42_MedicalBay_EventScript_Todd::
 	lock
 	faceplayer
+	setspeaker SP_NAME_TODD
 	msgbox Vault42_MedicalBay_Text_ToddWaitOutside, MSGBOX_DEFAULT
 	release
 	end
