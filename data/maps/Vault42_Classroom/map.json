@@ -9,7 +9,7 @@
   "map_type": "MAP_TYPE_NONE",
   "allow_cycling": false,
   "allow_escaping": false,
-  "allow_running": false,
+  "allow_running": true,
   "show_map_name": true,
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
@@ -43,7 +43,7 @@
   ],
   "warp_events": [
     {
-      "warp_id": "WARP_ID_TO_HALLWAY",
+      "warp_id": "WARP_ID_CLASSROOM_TO_HALLWAY",
       "x": 4,
       "y": 18,
       "elevation": 0,
@@ -51,7 +51,6 @@
       "dest_warp_id": "WARP_ID_TO_CLASSROOM"
     },
     {
-      "warp_id": "WARP_ID_TO_HALLWAY",
       "x": 5,
       "y": 18,
       "elevation": 0,

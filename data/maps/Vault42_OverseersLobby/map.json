@@ -9,12 +9,28 @@
   "map_type": "MAP_TYPE_NONE",
   "allow_cycling": false,
   "allow_escaping": false,
-  "allow_running": false,
+  "allow_running": true,
   "show_map_name": true,
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
   "object_events": [],
-  "warp_events": [],
+  "warp_events": [
+    {
+      "warp_id": "WARP_ID_LOBBY_TO_HALLWAY",
+      "x": 3,
+      "y": 6,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_LOBBY"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_LOBBY"
+    }
+  ],
   "coord_events": [],
   "bg_events": []
 }

@@ -14,7 +14,24 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
   "object_events": [],
-  "warp_events": [],
+  "warp_events": [
+    {
+      "warp_id": "WARP_ID_TO_HALLWAY",
+      "x": 7,
+      "y": 17,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_DININGHALL"
+    },
+    {
+      "warp_id": "WARP_ID_TO_HALLWAY",
+      "x": 8,
+      "y": 17,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_DININGHALL"
+    }
+  ],
   "coord_events": [],
   "bg_events": []
 }

@@ -1,8 +1,10 @@
 @ Local IDs (array order in map.json, 1-indexed):
-@   1 = Todd
-@   2 = Mrs. Bauer
+@   1 = Todd (first scene, north end at (11, 3))
+@   2 = Mrs. Bauer (door at (4, 23))
+@   3 = Todd_Later (second/third scene, south corridor at (26, 25))
 .set LOCALID_HALLWAY_TODD, 1
 .set LOCALID_HALLWAY_MRSBAUER, 2
+.set LOCALID_HALLWAY_TODD_LATER, 3
 
 Vault42_2F_Hallway_MapScripts::
 	map_script MAP_SCRIPT_ON_FRAME_TABLE, Vault42_2F_Hallway_OnFrame
@@ -14,9 +16,10 @@ Vault42_2F_Hallway_OnFrame:
 
 @ First hallway cutscene — fires via ON_FRAME when player arrives in the hallway
 @ with VAR_PROLOGUE_STATE == 2. Todd is already visible at his perm position
-@ (11, 3) from the moment the player enters; no clearflag/addobject needed at
-@ start. At the end Todd transitions to (26, 25) facing up so he is visible
-@ waiting for the second cutscene.
+@ (11, 3) from the moment the player enters. At the end the first Todd object
+@ is despawned permanently and the second Todd object (Todd_Later, at (26, 25)
+@ facing up) is revealed — same Wally-style two-object pattern used by vanilla
+@ pokeemerald to relocate an NPC across cutscenes without in-script repositioning.
 Vault42_2F_Hallway_EventScript_ToddCatchUpScene::
 	lockall
 	playse SE_PIN
@@ -31,10 +34,9 @@ Vault42_2F_Hallway_EventScript_ToddCatchUpScene::
 	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddRunOffEast
 	waitmovement 0
 	removeobject LOCALID_HALLWAY_TODD
-	setobjectxyperm LOCALID_HALLWAY_TODD, 26, 25
-	setobjectmovementtype LOCALID_HALLWAY_TODD, MOVEMENT_TYPE_FACE_UP
-	clearflag FLAG_HIDE_HALLWAY_TODD
-	addobject LOCALID_HALLWAY_TODD
+	setflag FLAG_HIDE_HALLWAY_TODD
+	clearflag FLAG_HIDE_HALLWAY_TODD_LATER
+	addobject LOCALID_HALLWAY_TODD_LATER
 	setvar VAR_PROLOGUE_STATE, 3
 	releaseall
 	end
@@ -48,12 +50,13 @@ Vault42_2F_Hallway_EventScript_MrsBauerIdle::
 	end
 
 @ Second hallway cutscene — fires once when player crosses (25,21)/(26,21)/(27,21)
-@ with VAR_PROLOGUE_STATE == 3. Todd reveals at (26,25), rushes up to player,
-@ delivers his line, then leads the player south + west to (4,25)/(5,25).
+@ with VAR_PROLOGUE_STATE == 3. Todd_Later is already visible at (26,25) from
+@ the end of the first cutscene; he rushes up to player, delivers his line,
+@ then leads the player south + west to (4,25)/(5,25) for the door entry.
 Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	lockall
 	playse SE_PIN
-	applymovement LOCALID_HALLWAY_TODD, Common_Movement_ExclamationMark
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_ExclamationMark
 	waitmovement 0
 	delay 30
 	getplayerxy VAR_TEMP_0, VAR_TEMP_1
@@ -66,16 +69,14 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	call_if_eq VAR_TEMP_0, 25, Vault42_2F_Hallway_EventScript_BothSouthFromCol25
 	call_if_eq VAR_TEMP_0, 26, Vault42_2F_Hallway_EventScript_BothSouthFromCol26
 	call_if_eq VAR_TEMP_0, 27, Vault42_2F_Hallway_EventScript_BothSouthFromCol27
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddCornerStep
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_ToddCornerStep
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_PlayerCornerStep
 	waitmovement 0
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_WalkWestLong
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_WalkWestLong
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_WalkWestLong
 	waitmovement 0
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_FaceUp
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_FaceUp
 	waitmovement 0
-	setobjectxyperm LOCALID_HALLWAY_TODD, 4, 25
-	setobjectmovementtype LOCALID_HALLWAY_TODD, MOVEMENT_TYPE_FACE_UP
 
 	@ Mrs. Bauer comes out of the door at (4, 23)
 	opendoor 4, 23
@@ -97,7 +98,7 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	waitdooranim
 	applymovement LOCALID_HALLWAY_MRSBAUER, Vault42_2F_Hallway_Movement_BauerEnterDoor
 	waitmovement 0
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddEnterDoor
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_ToddEnterDoor
 	waitmovement 0
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_PlayerEnterDoor
 	waitmovement 0
@@ -107,18 +108,14 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 
 	@ Persist hidden state for both NPCs in the hallway
 	removeobject LOCALID_HALLWAY_MRSBAUER
-	removeobject LOCALID_HALLWAY_TODD
+	removeobject LOCALID_HALLWAY_TODD_LATER
 	setflag FLAG_HIDE_HALLWAY_MRSBAUER
-	setflag FLAG_HIDE_HALLWAY_TODD
+	setflag FLAG_HIDE_HALLWAY_TODD_LATER
 
 	@ Time-jump: fade to black, hold a beat, Mrs. Bauer narrates over black
 	fadescreen FADE_TO_BLACK
 	delay 60
-	setspeaker SP_NAME_MRSBAUER
-	msgbox Vault42_2F_Hallway_Text_MrsBauerTimesUp, MSGBOX_DEFAULT
-	closemessage
-	setspeaker SP_NAME_MRSBAUER
-	msgbox Vault42_2F_Hallway_Text_MrsBauerCheckScores, MSGBOX_DEFAULT
+	msgbox Vault42_2F_Hallway_Text_MrsBauerTimeJump, MSGBOX_DEFAULT
 	closemessage
 
 	@ Reveal classroom NPCs and warp player to the classroom
@@ -136,34 +133,34 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	end
 
 Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol25::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddUpFromCol25
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_ToddUpFromCol25
 	waitmovement 0
 	return
 
 Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol26::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddUpFromCol26
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_ToddUpFromCol26
 	waitmovement 0
 	return
 
 Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol27::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_ToddUpFromCol27
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_ToddUpFromCol27
 	waitmovement 0
 	return
 
 Vault42_2F_Hallway_EventScript_BothSouthFromCol25::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_SouthFromCol25
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_SouthFromCol25
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_SouthFromCol25
 	waitmovement 0
 	return
 
 Vault42_2F_Hallway_EventScript_BothSouthFromCol26::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_SouthFromCol26
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_SouthFromCol26
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_SouthFromCol26
 	waitmovement 0
 	return
 
 Vault42_2F_Hallway_EventScript_BothSouthFromCol27::
-	applymovement LOCALID_HALLWAY_TODD, Vault42_2F_Hallway_Movement_SouthFromCol27
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_SouthFromCol27
 	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_SouthFromCol27
 	waitmovement 0
 	return
@@ -304,10 +301,8 @@ Vault42_2F_Hallway_Text_MrsBauerArrival:
 	.string "In, in! The G.O.A.T. has\n"
 	.string "already begun!$"
 
-Vault42_2F_Hallway_Text_MrsBauerTimesUp:
-	.string "Time's up!$"
-
-Vault42_2F_Hallway_Text_MrsBauerCheckScores:
+Vault42_2F_Hallway_Text_MrsBauerTimeJump:
+	.string "Time's up!\p"
 	.string "You may check your scores\n"
 	.string "on the classroom terminal…$"
 

@@ -1,0 +1,120 @@
+.string "You are conscious.\n"
+.string "This is an improvement.\p"
+.string "I am a Miss Nanny unit assigned\n"
+.string "to Vault 42 Medical.\p"
+.string "You were brought in approximately\n"
+.string "four hours ago in a condition\l" 
+.string "I would describe as...\l"
+.string "... I want to be precise here...\p"
+.string "Bad.\p"
+.string "You were hit by a door.\n"
+.string "Specifically, by someone opening\l"
+.string "it into your face.\p"
+.string "I have been asked to conduct a\n"
+.string "brief cognitive evaluation before\l"
+.string "clearing you for discharge.\p" 
+.string "I will ask you some questions.\n"
+.string "Please answer honestly.\l"
+.string "I will know if you do not.\p"
+.string "That last part was not true.\n" 
+.string "I cannot detect dishonesty.\p" 
+.string "I simply find it helps...\p"
+
+.string "First question.\n"
+.string "Do you know the basics of where\l" 
+.string "and when you are?\p"
+
+// MULTICHOICE: "I remember." / "Remind me."
+    
+// BRANCH: "I remember."
+.string "Good.\n"
+.string "That is one less concern.\p"
+
+// BRANCH: "Remind me."
+.string "In 2077, the United States and\n"
+.string "China engaged in a brief but\l"
+.string "productive nuclear exchange.\p"
+.string "This is commonly referred to\n"
+.string "as the Great War.\p"
+.string "Vault-Tec, in its wisdom,\n"
+.string "anticipated this outcome.\p"
+.string "Vault 42 is one of many\n"
+.string "state-of-the-art underground\l"
+.string "residential facilities built\l"
+.string "to preserve humanity.\p"
+.string "Outside these walls lies the\n"
+.string "Chicago metropolitan area.\p"
+.string "It is, technically, still there.\n"
+.string "But...\l"
+.string "You are not missing anything.\p"
+
+// MERGE: year question
+.string "Second question.\n"
+.string "What year is it?\p"
+
+// MULTICHOICE: 2277 / 2281 / 2287 / 2291 / 2297
+
+// BRANCH: wrong answer
+.string "That is not correct.\n"
+.string "I will note this in your file.\p"
+.string "Some memories do not come back.\n"
+.string "It is better not to dwell.\p"
+.string "The current year is 2291.\n"
+.string "214 years since the Great War.\p"
+
+// BRANCH: correct answer
+.string "Correct.\n"
+.string "214 years since the Great War.\p"
+
+// MERGE: name question
+.string "Third question.\n"
+.string "I need you to describe yourself.\p"
+.string "Hair, complexion.\n"
+.string "The basics.\p"
+
+// CHARACTER CREATOR — TBD
+
+.string "Fourth question.\n"
+.string "What is your name?\p"
+
+// PLAYER NAMING SCREEN
+
+.string "{PLAYER}.\p"
+.string "And you are certain that is\n"
+.string "your name?\p"
+
+// MULTICHOICE: "Yes." / "No."
+
+.string "One final question.\p"
+
+// INSERT RIVAL PORTRAIT
+
+.string "Following your injury, you were\n"
+.string "found unconscious.\p"
+.string "This individual brought you in.\n"
+.string "Do you remember who this is?\p"
+
+// RIVAL NAMING SCREEN
+
+// BRANCH: "Todd"
+.string "Correct.\n"
+.string "Your memory is improving.\p"
+
+// BRANCH: not "Todd"
+.string "That is not correct.\n"
+.string "His name is Todd.\p"
+.string "You did not remember the person\n"
+.string "who may have saved your life.\p"
+.string "I will note this in your file.\p"
+.string "The evaluation is now complete.\n"
+.string "Results have been logged.\p"
+
+.string "Hey! You're awake.\n"
+.string "How are you feeling?\p"
+.string "Actually, don't answer that.\n"
+.string "We are eleven minutes late\l"
+.string "for our aptitude exams.\p"
+.string "Vault policy requires discharged\n"
+.string "patients to be supervised.\p"
+.string "I cannot stress this enough.\n"
+.string "Please get up.\p"

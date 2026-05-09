@@ -39,6 +39,19 @@
       "trainer_sight_or_berry_tree_id": "0",
       "script": "Vault42_2F_Hallway_EventScript_MrsBauerIdle",
       "flag": "FLAG_HIDE_HALLWAY_MRSBAUER"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_TODD_NORMAL",
+      "x": 26,
+      "y": 25,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_UP",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Vault42_2F_Hallway_EventScript_ToddIdle",
+      "flag": "FLAG_HIDE_HALLWAY_TODD_LATER"
     }
   ],
   "warp_events": [
@@ -57,6 +70,38 @@
       "elevation": 0,
       "dest_map": "MAP_VAULT42_CLASSROOM",
       "dest_warp_id": "0"
+    },
+    {
+      "warp_id": "WARP_ID_TO_TRASHROOM",
+      "x": 18,
+      "y": 1,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_TRASHROOM",
+      "dest_warp_id": "WARP_ID_TRASHROOM_TO_HALLWAY"
+    },
+    {
+      "warp_id": "WARP_ID_TO_DININGHALL",
+      "x": 31,
+      "y": 1,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_DINING_HALL",
+      "dest_warp_id": "WARP_ID_DININGHALL_TO_HALLWAY"
+    },
+    {
+      "warp_id": "WARP_ID_TO_BATHROOM",
+      "x": 15,
+      "y": 23,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_BATHROOM",
+      "dest_warp_id": "WARP_ID_BATHROOM_TO_HALLWAY"
+    },
+    {
+      "warp_id": "WARP_ID_TO_LOBBY",
+      "x": 35,
+      "y": 23,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_OVERSEERS_LOBBY",
+      "dest_warp_id": "WARP_ID_LOBBY_TO_HALLWAY"
     }
   ],
   "coord_events": [

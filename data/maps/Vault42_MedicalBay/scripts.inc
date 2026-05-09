@@ -19,31 +19,20 @@ Vault42_MedicalBay_EventScript_Intro::
 	waitmovement 0
 	applymovement LOCALID_PLAYER, Vault42_MedicalBay_Movement_PlayerFaceEast
 	waitmovement 0
-	message Vault42_MedicalBay_Text_ToddFinally
-	waitmessage
-	waitbuttonpress
+	msgbox Vault42_MedicalBay_Text_ToddFinally, MSGBOX_DEFAULT
 	closemessage
 	playse SE_PIN
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddBeatEmote
 	waitmovement 0
 	waitfieldeffect FLDEFF_ELLIPSIS_ICON
-	setspeaker SP_NAME_TODD
-	message Vault42_MedicalBay_Text_ToddForCarrying
-	waitmessage
-	waitbuttonpress
-	setspeaker SP_NAME_TODD
-	message Vault42_MedicalBay_Text_ToddHeavyExam
-	waitmessage
-	waitbuttonpress
+	msgbox Vault42_MedicalBay_Text_ToddForCarrying, MSGBOX_DEFAULT
+	msgbox Vault42_MedicalBay_Text_ToddHeavyExam, MSGBOX_DEFAULT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkSouth2
 	waitmovement 0
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddFaceNorth
 	waitmovement 0
-	setspeaker SP_NAME_TODD
-	message Vault42_MedicalBay_Text_ToddWaitOutside
-	waitmessage
-	waitbuttonpress
+	msgbox Vault42_MedicalBay_Text_ToddWaitOutside, MSGBOX_DEFAULT
 	closemessage
 	applymovement LOCALID_MEDBAY_TODD, Vault42_MedicalBay_Movement_ToddWalkToExit
 	waitmovement 0
@@ -51,6 +40,7 @@ Vault42_MedicalBay_EventScript_Intro::
 	removeobject LOCALID_MEDBAY_TODD
 	setflag FLAG_HIDE_MEDBAY_TODD
 	setflag FLAG_HIDE_HALLWAY_MRSBAUER
+	setflag FLAG_HIDE_HALLWAY_TODD_LATER
 	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	setflag FLAG_HIDE_CLASSROOM_TODD
 	setvar VAR_PROLOGUE_STATE, 1
