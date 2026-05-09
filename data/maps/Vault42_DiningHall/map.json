@@ -16,20 +16,18 @@
   "object_events": [],
   "warp_events": [
     {
-      "warp_id": "WARP_ID_TO_HALLWAY",
       "x": 7,
       "y": 17,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
-      "dest_warp_id": "WARP_ID_TO_DININGHALL"
+      "dest_warp_id": "3"
     },
     {
-      "warp_id": "WARP_ID_TO_HALLWAY",
       "x": 8,
       "y": 17,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
-      "dest_warp_id": "WARP_ID_TO_DININGHALL"
+      "dest_warp_id": "3"
     }
   ],
   "coord_events": [],

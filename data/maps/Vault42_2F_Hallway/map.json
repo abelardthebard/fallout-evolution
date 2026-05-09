@@ -56,7 +56,6 @@
   ],
   "warp_events": [
     {
-      "warp_id": "WARP_ID_TO_MEDBAY",
       "x": 7,
       "y": 1,
       "elevation": 0,
@@ -64,7 +63,6 @@
       "dest_warp_id": "1"
     },
     {
-      "warp_id": "WARP_ID_TO_CLASSROOM",
       "x": 4,
       "y": 23,
       "elevation": 0,
@@ -72,44 +70,39 @@
       "dest_warp_id": "0"
     },
     {
-      "warp_id": "WARP_ID_TO_TRASHROOM",
       "x": 18,
       "y": 1,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_TRASHROOM",
-      "dest_warp_id": "WARP_ID_TRASHROOM_TO_HALLWAY"
+      "dest_warp_id": "0"
     },
     {
-      "warp_id": "WARP_ID_TO_DININGHALL",
       "x": 31,
       "y": 1,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_DINING_HALL",
-      "dest_warp_id": "WARP_ID_DININGHALL_TO_HALLWAY"
+      "dest_warp_id": "0"
     },
     {
-      "warp_id": "WARP_ID_TO_BATHROOM",
       "x": 15,
       "y": 23,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_BATHROOM",
-      "dest_warp_id": "WARP_ID_BATHROOM_TO_HALLWAY"
+      "dest_warp_id": "0"
     },
     {
-      "warp_id": "WARP_ID_TO_LOBBY",
       "x": 35,
       "y": 23,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_OVERSEERS_LOBBY",
-      "dest_warp_id": "WARP_ID_LOBBY_TO_HALLWAY"
+      "dest_warp_id": "0"
     },
     {
-      "warp_id": "WARP_ID_TO_ELEVATOR",
       "x": 30,
       "y": 11,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_ELEVATOR",
-      "dest_warp_id": "WARP_ID_ELEVATOR_TO_HALLWAY"
+      "dest_warp_id": "0"
     }
   ],
   "coord_events": [

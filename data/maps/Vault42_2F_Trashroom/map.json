@@ -16,19 +16,18 @@
   "object_events": [],
   "warp_events": [
     {
-      "warp_id": "WARP_ID_TRASHROOM_TO_HALLWAY",
       "x": 2,
       "y": 17,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
-      "dest_warp_id": "WARP_ID_TO_TRASHROOM"
+      "dest_warp_id": "2"
     },
     {
       "x": 3,
       "y": 17,
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
-      "dest_warp_id": "WARP_ID_TO_TRASHROOM"
+      "dest_warp_id": "2"
     }
   ],
   "coord_events": [],
