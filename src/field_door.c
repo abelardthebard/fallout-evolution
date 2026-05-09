@@ -135,6 +135,8 @@ static const u8 sDoorAnimTiles_TrainerHillRoofElevator[] = INCBIN_U8("graphics/d
 static const u16 sDoorNullPalette49[16] = {};
 
 static const u8 sDoorAnimTiles_Vault42General[] = INCBIN_U8("graphics/door_anims/vault42_general.4bpp");
+static const u8 sDoorAnimTiles_Vault42Painted[] = INCBIN_U8("graphics/door_anims/vault42_painted.4bpp");
+static const u8 sDoorAnimTiles_Vault42Elevator[] = INCBIN_U8("graphics/door_anims/vault42_elevator.4bpp");
 
 #if IS_FRLG
 
@@ -294,6 +296,8 @@ static const u8 sDoorAnimPalettes_TrainerHillLobbyElevator[] = {7, 7, 7, 7, 7, 7
 static const u8 sDoorAnimPalettes_TrainerHillRoofElevator[] = {9, 9, 7, 7, 7, 7, 7, 7};
 
 static const u8 sDoorAnimPalettes_Vault42General[] = {5, 5, 5, 5, 5, 5, 5, 5};
+static const u8 sDoorAnimPalettes_Vault42Painted[] = {5, 5, 5, 5, 5, 5, 5, 5};
+static const u8 sDoorAnimPalettes_Vault42Elevator[] = {5, 5, 5, 5, 5, 5, 5, 5};
 
 #if IS_FRLG
 
@@ -391,6 +395,8 @@ static const struct DoorGraphics sDoorAnimGraphicsTable[] =
     {METATILE_TrainerHill_Door_Elevator_Lobby,              &gTileset_TrainerHill, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_TrainerHillLobbyElevator, sDoorAnimPalettes_TrainerHillLobbyElevator},
     {METATILE_TrainerHill_Door_Elevator_Roof,               &gTileset_TrainerHill, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_TrainerHillRoofElevator, sDoorAnimPalettes_TrainerHillRoofElevator},
     {METATILE_VaultGeneral_Door,                            &gTileset_VaultGeneral, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_Vault42General, sDoorAnimPalettes_Vault42General},
+    {METATILE_VaultGeneral_DoorPainted,                     &gTileset_VaultGeneral, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_Vault42Painted, sDoorAnimPalettes_Vault42Painted},
+    {METATILE_VaultIndustrial_DoorElevator,                 &gTileset_VaultIndustrial, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_Vault42Elevator, sDoorAnimPalettes_Vault42Elevator},
 #else
     {METATILE_GeneralFrlg_Door,                             &gTileset_General_Frlg, DOOR_SOUND_NORMAL,  1, sDoorAnimTiles_GeneralFrlg, sDoorAnimPalettes_GeneralFrlg},
     {METATILE_GeneralFrlg_SlidingSingleDoor,                &gTileset_General_Frlg, DOOR_SOUND_SLIDING, 1, sDoorAnimTiles_SlidingSingle, sDoorAnimPalettes_SlidingSingle},

@@ -14,7 +14,23 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
   "object_events": [],
-  "warp_events": [],
+  "warp_events": [
+    {
+      "warp_id": "WARP_ID_ELEVATOR_TO_HALLWAY",
+      "x": 1,
+      "y": 4,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_ELEVATOR"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_2F_HALLWAY",
+      "dest_warp_id": "WARP_ID_TO_ELEVATOR"
+    }
+  ],
   "coord_events": [],
   "bg_events": []
 }

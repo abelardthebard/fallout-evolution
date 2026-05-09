@@ -102,6 +102,14 @@
       "elevation": 0,
       "dest_map": "MAP_VAULT42_OVERSEERS_LOBBY",
       "dest_warp_id": "WARP_ID_LOBBY_TO_HALLWAY"
+    },
+    {
+      "warp_id": "WARP_ID_TO_ELEVATOR",
+      "x": 30,
+      "y": 11,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_ELEVATOR",
+      "dest_warp_id": "WARP_ID_ELEVATOR_TO_HALLWAY"
     }
   ],
   "coord_events": [

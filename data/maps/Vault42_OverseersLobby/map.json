@@ -29,6 +29,14 @@
       "elevation": 0,
       "dest_map": "MAP_VAULT42_2F_HALLWAY",
       "dest_warp_id": "WARP_ID_TO_LOBBY"
+    },
+    {
+      "warp_id": "WARP_ID_TO_OFFICE",
+      "x": 6,
+      "y": 1,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_OVERSEERS_OFFICE",
+      "dest_warp_id": "WARP_ID_OFFICE_TO_LOBBY"
     }
   ],
   "coord_events": [],

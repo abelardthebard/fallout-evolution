@@ -14,7 +14,23 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
   "object_events": [],
-  "warp_events": [],
+  "warp_events": [
+    {
+      "warp_id": "WARP_ID_OFFICE_TO_LOBBY",
+      "x": 4,
+      "y": 11,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_OVERSEERS_LOBBY",
+      "dest_warp_id": "WARP_ID_TO_OFFICE"
+    },
+    {
+      "x": 5,
+      "y": 11,
+      "elevation": 0,
+      "dest_map": "MAP_VAULT42_OVERSEERS_LOBBY",
+      "dest_warp_id": "WARP_ID_TO_OFFICE"
+    }
+  ],
   "coord_events": [],
   "bg_events": []
 }
