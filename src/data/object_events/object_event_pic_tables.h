@@ -3038,6 +3038,10 @@ static const struct SpriteFrameImage sPicTable_VaultMrsBauer[] = {
     overworld_ascending_frames(gObjectEventPic_VaultMrsBauer, 2, 4),
 };
 
+static const struct SpriteFrameImage sPicTable_VaultChef[] = {
+    overworld_ascending_frames(gObjectEventPic_VaultChef, 2, 4),
+};
+
 static const struct SpriteFrameImage sPicTable_RunningShoes[] = {
     overworld_frame(gObjectEventPic_RunningShoes, 2, 2, 0),
 };

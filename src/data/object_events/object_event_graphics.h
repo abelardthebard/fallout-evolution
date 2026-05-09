@@ -647,4 +647,9 @@ const u32 gObjectEventPic_VaultMrsBauer[] = INCBIN_U32("graphics/object_events/p
 const u16 gObjectEventPal_VaultMrsBauer[] = INCBIN_U16("graphics/object_events/palettes/vault_old1.gbapal");
 const u16 gObjectEventPal_VaultMrsBauerReflection[] = INCBIN_U16("graphics/object_events/palettes/vault_old1.gbapal");
 
+// Vault Chef
+const u32 gObjectEventPic_VaultChef[] = INCBIN_U32("graphics/object_events/pics/people/vault_chef.4bpp");
+const u16 gObjectEventPal_VaultChef[] = INCBIN_U16("graphics/object_events/palettes/vault_black2.gbapal");
+const u16 gObjectEventPal_VaultChefReflection[] = INCBIN_U16("graphics/object_events/palettes/vault_black2.gbapal");
+
 const u32 gObjectEventPic_RunningShoes[] = INCBIN_U32("graphics/object_events/pics/misc/running_shoes.4bpp");
