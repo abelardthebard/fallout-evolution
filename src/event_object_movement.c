@@ -514,6 +514,8 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_VaultMrsBauerReflection, OBJ_EVENT_PAL_TAG_VAULT_MRSBAUER_REFLECTION},
     {gObjectEventPal_VaultChef,             OBJ_EVENT_PAL_TAG_VAULT_CHEF},
     {gObjectEventPal_VaultChefReflection,   OBJ_EVENT_PAL_TAG_VAULT_CHEF_REFLECTION},
+    {gObjectEventPal_VaultSecretary,        OBJ_EVENT_PAL_TAG_VAULT_SECRETARY},
+    {gObjectEventPal_VaultSecretaryReflection, OBJ_EVENT_PAL_TAG_VAULT_SECRETARY_REFLECTION},
     {gObjectEventPal_MovingBox,             OBJ_EVENT_PAL_TAG_MOVING_BOX},
     {gObjectEventPal_CableCar,              OBJ_EVENT_PAL_TAG_CABLE_CAR},
     {gObjectEventPal_SSTidal,               OBJ_EVENT_PAL_TAG_SSTIDAL},

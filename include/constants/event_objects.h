@@ -427,8 +427,9 @@
 #define OBJ_EVENT_GFX_RUNNING_SHOES              389
 #define OBJ_EVENT_GFX_VAULT_MRSBAUER             390
 #define OBJ_EVENT_GFX_VAULT_CHEF                 391
+#define OBJ_EVENT_GFX_VAULT_SECRETARY            392
 
-#define NUM_OBJ_EVENT_GFX                        392
+#define NUM_OBJ_EVENT_GFX                        393
 
 
 // These are dynamic object gfx ids.
@@ -545,6 +546,8 @@
 #define OBJ_EVENT_PAL_TAG_VAULT_MRSBAUER_REFLECTION 0x1143
 #define OBJ_EVENT_PAL_TAG_VAULT_CHEF              0x1144
 #define OBJ_EVENT_PAL_TAG_VAULT_CHEF_REFLECTION   0x1145
+#define OBJ_EVENT_PAL_TAG_VAULT_SECRETARY         0x1146
+#define OBJ_EVENT_PAL_TAG_VAULT_SECRETARY_REFLECTION 0x1147
 #define OBJ_EVENT_PAL_TAG_MOVING_BOX              0x1112
 #define OBJ_EVENT_PAL_TAG_CABLE_CAR               0x1113
 #define OBJ_EVENT_PAL_TAG_SSTIDAL                 0x1114

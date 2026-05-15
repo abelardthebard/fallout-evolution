@@ -297,7 +297,7 @@ static const u8 sDoorAnimPalettes_TrainerHillRoofElevator[] = {9, 9, 7, 7, 7, 7,
 
 static const u8 sDoorAnimPalettes_Vault42General[] = {5, 5, 5, 5, 5, 5, 5, 5};
 static const u8 sDoorAnimPalettes_Vault42Painted[] = {5, 5, 5, 5, 5, 5, 5, 5};
-static const u8 sDoorAnimPalettes_Vault42Elevator[] = {5, 5, 5, 5, 5, 5, 5, 5};
+static const u8 sDoorAnimPalettes_Vault42Elevator[] = {6, 6, 6, 6, 6, 6, 6, 6};
 
 #if IS_FRLG
 
