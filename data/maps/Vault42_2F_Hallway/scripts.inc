@@ -7,12 +7,67 @@
 .set LOCALID_HALLWAY_TODD_LATER, 3
 
 Vault42_2F_Hallway_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Vault42_2F_Hallway_OnTransition
 	map_script MAP_SCRIPT_ON_FRAME_TABLE, Vault42_2F_Hallway_OnFrame
 	.byte 0
 
 Vault42_2F_Hallway_OnFrame:
 	map_script_2 VAR_PROLOGUE_STATE, 2, Vault42_2F_Hallway_EventScript_ToddCatchup1
+	map_script_2 VAR_TODD_HALLWAY_DETOUR, 2, Vault42_2F_Hallway_EventScript_DetourFromMedbay
+	map_script_2 VAR_TODD_HALLWAY_DETOUR, 3, Vault42_2F_Hallway_EventScript_DetourFromTrash
+	map_script_2 VAR_TODD_HALLWAY_DETOUR, 4, Vault42_2F_Hallway_EventScript_DetourFromDining
+	map_script_2 VAR_TODD_HALLWAY_DETOUR, 5, Vault42_2F_Hallway_EventScript_DetourFromElevator
 	.2byte 0
+
+Vault42_2F_Hallway_OnTransition::
+	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 1, Vault42_2F_Hallway_OnTransition_End
+	getplayerxy VAR_TEMP_0, VAR_TEMP_1
+	goto_if_eq VAR_TEMP_0, 7, Vault42_2F_Hallway_OnTransition_MaybeMedbay
+	goto_if_eq VAR_TEMP_0, 18, Vault42_2F_Hallway_OnTransition_MaybeTrash
+	goto_if_eq VAR_TEMP_0, 31, Vault42_2F_Hallway_OnTransition_MaybeDining
+	goto_if_eq VAR_TEMP_0, 30, Vault42_2F_Hallway_OnTransition_MaybeElevator
+Vault42_2F_Hallway_OnTransition_End::
+	end
+
+Vault42_2F_Hallway_OnTransition_MaybeMedbay::
+	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageMedbay
+	end
+
+Vault42_2F_Hallway_OnTransition_MaybeTrash::
+	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageTrash
+	end
+
+Vault42_2F_Hallway_OnTransition_MaybeDining::
+	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageDining
+	end
+
+Vault42_2F_Hallway_OnTransition_MaybeElevator::
+	goto_if_eq VAR_TEMP_1, 12, Vault42_2F_Hallway_OnTransition_StageElevator
+	end
+
+Vault42_2F_Hallway_OnTransition_StageMedbay::
+	setvar VAR_TODD_HALLWAY_DETOUR, 2
+	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 7, 3
+	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
+	end
+
+Vault42_2F_Hallway_OnTransition_StageTrash::
+	setvar VAR_TODD_HALLWAY_DETOUR, 3
+	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 18, 3
+	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
+	end
+
+Vault42_2F_Hallway_OnTransition_StageDining::
+	setvar VAR_TODD_HALLWAY_DETOUR, 4
+	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 31, 3
+	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
+	end
+
+Vault42_2F_Hallway_OnTransition_StageElevator::
+	setvar VAR_TODD_HALLWAY_DETOUR, 5
+	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 30, 13
+	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
+	end
 
 @ First hallway cutscene — fires via ON_FRAME when player arrives in the hallway
 @ with VAR_PROLOGUE_STATE == 2. Todd is already visible at his perm position
@@ -49,10 +104,6 @@ Vault42_2F_Hallway_EventScript_ToddIdle::
 Vault42_2F_Hallway_EventScript_MrsBauerIdle::
 	end
 
-@ Second hallway cutscene — fires once when player crosses (25,21)/(26,21)/(27,21)
-@ with VAR_PROLOGUE_STATE == 3. Todd_Later is already visible at (26,25) from
-@ the end of the first cutscene; he rushes up to player, delivers his line,
-@ then leads the player south + west to (4,25)/(5,25) for the door entry.
 Vault42_2F_Hallway_EventScript_ToddCatchup2A::
 	lockall
 	playse SE_PIN
@@ -63,9 +114,16 @@ Vault42_2F_Hallway_EventScript_ToddCatchup2A::
 	call_if_eq VAR_TEMP_0, 25, Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol25
 	call_if_eq VAR_TEMP_0, 26, Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol26
 	call_if_eq VAR_TEMP_0, 27, Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol27
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core
+
+Vault42_2F_Hallway_EventScript_ToddCatchup2A_FromDetour::
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core
+
+Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core::
 	setspeaker SP_NAME_TODD
 	msgbox Vault42_2F_Hallway_Text_ToddCatchup2A, MSGBOX_DEFAULT
 	closemessage
+	getplayerxy VAR_TEMP_0, VAR_TEMP_1
 	call_if_eq VAR_TEMP_0, 25, Vault42_2F_Hallway_EventScript_BothSouthFromCol25
 	call_if_eq VAR_TEMP_0, 26, Vault42_2F_Hallway_EventScript_BothSouthFromCol26
 	call_if_eq VAR_TEMP_0, 27, Vault42_2F_Hallway_EventScript_BothSouthFromCol27
@@ -263,6 +321,185 @@ Vault42_2F_Hallway_Movement_PlayerEnterDoor:
 	walk_up
 	walk_up
 	step_end
+
+Vault42_2F_Hallway_EventScript_DetourFromMedbay::
+	lockall
+	setvar VAR_TODD_HALLWAY_DETOUR, 9
+	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromMedbay
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromMedbay
+	waitmovement 0
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
+	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
+	waitmovement 0
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_FromDetour
+
+Vault42_2F_Hallway_EventScript_DetourFromTrash::
+	lockall
+	setvar VAR_TODD_HALLWAY_DETOUR, 9
+	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromTrash
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromTrash
+	waitmovement 0
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
+	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
+	waitmovement 0
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_FromDetour
+
+Vault42_2F_Hallway_EventScript_DetourFromDining::
+	lockall
+	setvar VAR_TODD_HALLWAY_DETOUR, 9
+	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromDining
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromDining
+	waitmovement 0
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
+	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
+	waitmovement 0
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_FromDetour
+
+Vault42_2F_Hallway_EventScript_DetourFromElevator::
+	lockall
+	setvar VAR_TODD_HALLWAY_DETOUR, 9
+	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
+	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromElevator
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromElevator
+	waitmovement 0
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
+	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
+	waitmovement 0
+	goto Vault42_2F_Hallway_EventScript_ToddCatchup2A_FromDetour
+
+Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup::
+	playse SE_PIN
+	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_ExclamationMark
+	waitmovement 0
+	delay 30
+	setspeaker SP_NAME_TODD
+	msgbox Vault42_2F_Hallway_Text_ToddDillyDally, MSGBOX_DEFAULT
+	closemessage
+	return
+
+Vault42_2F_Hallway_Movement_DetourFromMedbay:
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromTrash:
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromDining:
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromElevator:
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	step_end
+
+Vault42_2F_Hallway_Text_ToddDillyDally:
+	.string "Are you lost?\p"
+	.string "I'm not going to be late\n"
+	.string "to the most important test\l"
+	.string "of my life because of you.\p"
+	.string "Come on!$"
 
 Vault42_2F_Hallway_Text_ToddCatchup2A:
 	.string "I already carried you once today.\n"

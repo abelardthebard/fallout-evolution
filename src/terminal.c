@@ -25,6 +25,7 @@
 #include "player_appearance.h"
 #include "window.h"
 #include "constants/characters.h"
+#include "constants/flags.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
@@ -2801,6 +2802,8 @@ static void TerminalTestScores_Prepare(void)
 static void TestScores_OpenStudentDetails(void)
 {
     sCurrentStudentIdx = sRowToStudentIdx[sTC->cursorItemIdx];
+    if (sCurrentStudentIdx == PLAYER_STUDENT_IDX)
+        FlagSet(FLAG_VIEWED_OWN_TEST_SCORES);
     PlaySE(SE_SELECT);
     TerminalContent_SwapPage(&sTerminalStudentDetails_Page, 0);
 }

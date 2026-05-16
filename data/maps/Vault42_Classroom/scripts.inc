@@ -10,6 +10,7 @@ Vault42_Classroom_MapScripts::
 
 Vault42_Classroom_OnFrame:
 	map_script_2 VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_AfterTimeJump
+	map_script_2 VAR_PROLOGUE_STATE, 6, Vault42_Classroom_EventScript_PostScoresCheck
 	.2byte 0
 
 @ Fires once on classroom arrival after the time-jump (VAR_PROLOGUE_STATE == 5).
@@ -71,6 +72,7 @@ Vault42_Classroom_EventScript_MrsBauerIdle::
 	faceplayer
 	setspeaker SP_NAME_MRSBAUER
 	goto_if_eq VAR_PROLOGUE_STATE, 6, Vault42_Classroom_EventScript_BauerCheckScoresPrompt
+	goto_if_eq VAR_PROLOGUE_STATE, 7, Vault42_Classroom_EventScript_BauerOverseerReminder
 	release
 	end
 
@@ -79,7 +81,51 @@ Vault42_Classroom_EventScript_BauerCheckScoresPrompt::
 	release
 	end
 
+Vault42_Classroom_EventScript_BauerOverseerReminder::
+	msgbox Vault42_Classroom_Text_BauerOverseerReminder, MSGBOX_DEFAULT
+	release
+	end
+
 Vault42_Classroom_EventScript_ToddIdle::
+	end
+
+@ Fires polling at VAR_PROLOGUE_STATE == 6. No-ops until the player has
+@ opened their own row on the test scores terminal (FLAG_VIEWED_OWN_TEST_SCORES).
+@ Then Bauer addresses the player about their results and sends them to the Overseer.
+Vault42_Classroom_EventScript_PostScoresCheck::
+	goto_if_unset FLAG_VIEWED_OWN_TEST_SCORES, Vault42_Classroom_EventScript_PostScoresCheck_End
+	lockall
+
+	@ Bauer turns to face player (west); player turns to face Bauer (east)
+	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceLeft
+	applymovement LOCALID_PLAYER, Common_Movement_FaceRight
+	waitmovement 0
+
+	setspeaker SP_NAME_MRSBAUER
+	msgbox Vault42_Classroom_Text_BauerPostScoresIntro, MSGBOX_DEFAULT
+	multichoice 20, 8, MULTI_VAULT42_SCORES_RESPONSE, TRUE
+	switch VAR_RESULT
+	case 0, Vault42_Classroom_EventScript_PostScores_Mistake
+	case 1, Vault42_Classroom_EventScript_PostScores_WhatNow
+
+Vault42_Classroom_EventScript_PostScores_Mistake::
+	msgbox Vault42_Classroom_Text_BauerMistakeReply, MSGBOX_DEFAULT
+	goto Vault42_Classroom_EventScript_PostScores_Merge
+
+Vault42_Classroom_EventScript_PostScores_WhatNow::
+	msgbox Vault42_Classroom_Text_BauerWhatNowReply, MSGBOX_DEFAULT
+	goto Vault42_Classroom_EventScript_PostScores_Merge
+
+Vault42_Classroom_EventScript_PostScores_Merge::
+	msgbox Vault42_Classroom_Text_BauerOverseerClose, MSGBOX_DEFAULT
+	closemessage
+	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceDown
+	waitmovement 0
+	setvar VAR_PROLOGUE_STATE, 7
+	releaseall
+	end
+
+Vault42_Classroom_EventScript_PostScoresCheck_End::
 	end
 
 @ Fires on either south-exit doormat (4,18)/(5,18) when VAR_PROLOGUE_STATE == 6.
@@ -157,3 +203,35 @@ Vault42_Classroom_Text_BauerBlockExit:
 	.string "Hold it!\p"
 	.string "You need to check your test\n"
 	.string "scores before you leave.$"
+
+Vault42_Classroom_Text_BauerPostScoresIntro:
+	.string "Ah. There you are, dear.\n"
+	.string "A quick word before you go.\p"
+	.string "In regards to your exam\n"
+	.string "results…\p"
+	.string "Your scores were very\n"
+	.string "consistent.\p"
+	.string "The same number, in every\n"
+	.string "single category.\l"
+	.string "And that number was zero.$"
+
+Vault42_Classroom_Text_BauerMistakeReply:
+	.string "I did check it twice, dear.\n"
+	.string "The machine does not err…$"
+
+Vault42_Classroom_Text_BauerWhatNowReply:
+	.string "That, dear, is above my\n"
+	.string "station.$"
+
+Vault42_Classroom_Text_BauerOverseerClose:
+	.string "The particulars are best\n"
+	.string "left to the Overseer…\p"
+	.string "He is expecting you.\n"
+	.string "Do try not to keep him\l"
+	.string "waiting.$"
+
+Vault42_Classroom_Text_BauerOverseerReminder:
+	.string "Still here?\p"
+	.string "The Overseer's office is\n"
+	.string "just down the hall.\p"
+	.string "Do hurry along.$"

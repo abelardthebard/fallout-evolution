@@ -5,12 +5,22 @@
 .set LOCALID_MEDBAY_TODD, 2
 
 Vault42_MedicalBay_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Vault42_MedicalBay_OnTransition
 	map_script MAP_SCRIPT_ON_FRAME_TABLE, Vault42_MedicalBay_OnFrame
 	.byte 0
 
 Vault42_MedicalBay_OnFrame:
 	map_script_2 VAR_PROLOGUE_STATE, 0, Vault42_MedicalBay_EventScript_Intro
 	.2byte 0
+
+@ Arms the hallway dilly-dally detour if the player backtracked here
+@ during VAR_PROLOGUE_STATE 3 (post-first-catchup, pre-second-catchup).
+Vault42_MedicalBay_OnTransition::
+	goto_if_ne VAR_PROLOGUE_STATE, 3, Vault42_MedicalBay_OnTransition_End
+	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 0, Vault42_MedicalBay_OnTransition_End
+	setvar VAR_TODD_HALLWAY_DETOUR, 1
+Vault42_MedicalBay_OnTransition_End::
+	end
 
 Vault42_MedicalBay_EventScript_Intro::
 	lockall

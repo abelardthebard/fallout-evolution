@@ -1,2 +1,12 @@
 Vault42_Elevator_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Vault42_Elevator_OnTransition
 	.byte 0
+
+@ Arms the hallway dilly-dally detour if the player wandered in here
+@ during VAR_PROLOGUE_STATE 3 (post-first-catchup, pre-second-catchup).
+Vault42_Elevator_OnTransition::
+	goto_if_ne VAR_PROLOGUE_STATE, 3, Vault42_Elevator_OnTransition_End
+	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 0, Vault42_Elevator_OnTransition_End
+	setvar VAR_TODD_HALLWAY_DETOUR, 1
+Vault42_Elevator_OnTransition_End::
+	end

@@ -693,7 +693,7 @@
 #define FLAG_TERMINAL_ACCESSED_START   0x27C
 #define FLAG_TERMINAL_MEDICAL_RECORDS  0x27C
 #define FLAG_TERMINAL_TEST_SCORES      0x27D
-#define FLAG_UNUSED_0x27E  0x27E // Unused Flag
+#define FLAG_VIEWED_OWN_TEST_SCORES    0x27E
 #define FLAG_UNUSED_0x27F  0x27F // Unused Flag
 #define FLAG_UNUSED_0x280  0x280 // Unused Flag
 #define FLAG_UNUSED_0x281  0x281 // Unused Flag
