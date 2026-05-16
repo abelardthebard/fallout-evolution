@@ -1,8 +1,14 @@
 @ MB_TERMINAL tiles without a bg_script_event fall through to EventScript_TerminalOffline.
+@ The optional `animMode` parameter (default 1 = on) controls whether the
+@ camera-centred turn-on/turn-off VFX play. Set to 0 for side-facing terminals
+@ where the spotlight effect would aim past the player and look wrong.
 
-.macro terminal flag:req, contentId:req, tier:req
+.macro terminal flag:req, contentId:req, tier:req, animMode=1
 	lockall
+	setvar VAR_0x8003, \animMode
+.if \animMode != 0
 	special DoTerminalTurnOnEffect
+.endif
 	playse SE_PC_ON
 	message Terminal_Text_BootUp
 	waitmessage
@@ -49,7 +55,9 @@ Terminal_SkipToContent_\@:
 
 Terminal_Shutdown::
 	playse SE_PC_OFF
+	goto_if_eq VAR_0x8003, 0, Terminal_Shutdown_NoAnim
 	special DoTerminalTurnOffEffect
+Terminal_Shutdown_NoAnim::
 	releaseall
 	end
 
@@ -95,3 +103,26 @@ EventScript_TerminalOffline::
 EventScript_Terminal_MedicalRecords::
 	terminal FLAG_TERMINAL_MEDICAL_RECORDS, TERMINAL_CONTENT_MEDICAL_RECORDS, TERMINAL_TIER_1
 	end
+
+@ Classroom test scores terminal — side-facing, only usable when the player
+@ approaches from the east (i.e. is standing at (3, 4) facing west).
+@ Other approach directions show a Fallout-flavoured "wrong angle" reject.
+EventScript_Terminal_TestScores::
+	getplayerxy VAR_TEMP_0, VAR_TEMP_1
+	goto_if_ne VAR_TEMP_0, 3, EventScript_Terminal_TestScores_Reject
+	goto_if_ne VAR_TEMP_1, 4, EventScript_Terminal_TestScores_Reject
+	terminal FLAG_TERMINAL_TEST_SCORES, TERMINAL_CONTENT_TEST_SCORES, TERMINAL_TIER_0, animMode=0
+	end
+
+EventScript_Terminal_TestScores_Reject::
+	lockall
+	msgbox Terminal_Text_TestScoresWrongAngle, MSGBOX_DEFAULT
+	closemessage
+	releaseall
+	end
+
+Terminal_Text_TestScoresWrongAngle:
+	.string "From this angle all you see\n"
+	.string "is the side of the terminal.\p"
+	.string "You'll have to stand in front\n"
+	.string "of the screen to use it.$"

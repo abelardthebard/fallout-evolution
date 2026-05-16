@@ -11,7 +11,7 @@ Vault42_2F_Hallway_MapScripts::
 	.byte 0
 
 Vault42_2F_Hallway_OnFrame:
-	map_script_2 VAR_PROLOGUE_STATE, 2, Vault42_2F_Hallway_EventScript_ToddCatchUpScene
+	map_script_2 VAR_PROLOGUE_STATE, 2, Vault42_2F_Hallway_EventScript_ToddCatchup1
 	.2byte 0
 
 @ First hallway cutscene — fires via ON_FRAME when player arrives in the hallway
@@ -20,7 +20,7 @@ Vault42_2F_Hallway_OnFrame:
 @ is despawned permanently and the second Todd object (Todd_Later, at (26, 25)
 @ facing up) is revealed — same Wally-style two-object pattern used by vanilla
 @ pokeemerald to relocate an NPC across cutscenes without in-script repositioning.
-Vault42_2F_Hallway_EventScript_ToddCatchUpScene::
+Vault42_2F_Hallway_EventScript_ToddCatchup1::
 	lockall
 	playse SE_PIN
 	applymovement LOCALID_HALLWAY_TODD, Common_Movement_ExclamationMark
@@ -53,7 +53,7 @@ Vault42_2F_Hallway_EventScript_MrsBauerIdle::
 @ with VAR_PROLOGUE_STATE == 3. Todd_Later is already visible at (26,25) from
 @ the end of the first cutscene; he rushes up to player, delivers his line,
 @ then leads the player south + west to (4,25)/(5,25) for the door entry.
-Vault42_2F_Hallway_EventScript_ToddSecondScene::
+Vault42_2F_Hallway_EventScript_ToddCatchup2A::
 	lockall
 	playse SE_PIN
 	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_ExclamationMark
@@ -64,7 +64,7 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	call_if_eq VAR_TEMP_0, 26, Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol26
 	call_if_eq VAR_TEMP_0, 27, Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol27
 	setspeaker SP_NAME_TODD
-	msgbox Vault42_2F_Hallway_Text_ToddSecondScene, MSGBOX_DEFAULT
+	msgbox Vault42_2F_Hallway_Text_ToddCatchup2A, MSGBOX_DEFAULT
 	closemessage
 	call_if_eq VAR_TEMP_0, 25, Vault42_2F_Hallway_EventScript_BothSouthFromCol25
 	call_if_eq VAR_TEMP_0, 26, Vault42_2F_Hallway_EventScript_BothSouthFromCol26
@@ -121,14 +121,14 @@ Vault42_2F_Hallway_EventScript_ToddSecondScene::
 	@ Reveal classroom NPCs and warp player to the classroom
 	clearflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	clearflag FLAG_HIDE_CLASSROOM_TODD
-	warp MAP_VAULT42_CLASSROOM, 8, 12
+	setvar VAR_PROLOGUE_STATE, 5
+	warp MAP_VAULT42_CLASSROOM, 4, 9
 	waitstate
 
-	@ Face player north on classroom arrival
-	applymovement LOCALID_PLAYER, Common_Movement_FaceUp
+	@ Face player north on classroom arrival (walk-in-place is more reliable than face_up post-warp)
+	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterUp
 	waitmovement 0
 
-	setvar VAR_PROLOGUE_STATE, 5
 	releaseall
 	end
 
@@ -242,6 +242,8 @@ Vault42_2F_Hallway_Movement_FaceUp:
 	step_end
 
 Vault42_2F_Hallway_Movement_BauerWalkOutOfDoor:
+	set_invisible
+	set_visible
 	walk_down
 	step_end
 
@@ -262,7 +264,7 @@ Vault42_2F_Hallway_Movement_PlayerEnterDoor:
 	walk_up
 	step_end
 
-Vault42_2F_Hallway_Text_ToddSecondScene:
+Vault42_2F_Hallway_Text_ToddCatchup2A:
 	.string "I already carried you once today.\n"
 	.string "Don't make me do it twice.\p"
 	.string "Hurry!$"

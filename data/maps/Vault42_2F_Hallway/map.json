@@ -113,7 +113,7 @@
       "elevation": 0,
       "var": "VAR_PROLOGUE_STATE",
       "var_value": "3",
-      "script": "Vault42_2F_Hallway_EventScript_ToddSecondScene"
+      "script": "Vault42_2F_Hallway_EventScript_ToddCatchup2A"
     },
     {
       "type": "trigger",
@@ -122,7 +122,7 @@
       "elevation": 0,
       "var": "VAR_PROLOGUE_STATE",
       "var_value": "3",
-      "script": "Vault42_2F_Hallway_EventScript_ToddSecondScene"
+      "script": "Vault42_2F_Hallway_EventScript_ToddCatchup2A"
     },
     {
       "type": "trigger",
@@ -131,7 +131,7 @@
       "elevation": 0,
       "var": "VAR_PROLOGUE_STATE",
       "var_value": "3",
-      "script": "Vault42_2F_Hallway_EventScript_ToddSecondScene"
+      "script": "Vault42_2F_Hallway_EventScript_ToddCatchup2A"
     }
   ],
   "bg_events": [

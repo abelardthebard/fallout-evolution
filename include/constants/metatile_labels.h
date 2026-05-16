@@ -1020,8 +1020,8 @@
 #define METATILE_VaultGeneral_DoorPainted  0x0C2
 
 // gTileset_VaultIndustrial
-#define METATILE_VaultIndustrial_TerminalOn    0x323
 #define METATILE_VaultIndustrial_DoorElevator  0x279
+#define METATILE_VaultIndustrial_TerminalOn    0x323
 
 // gTileset_VermilionCity
 #define METATILE_VermilionCity_Door        0x29E

@@ -692,7 +692,7 @@
 // Each terminal that's been unlocked (password entered or auto-granted) sets its flag.
 #define FLAG_TERMINAL_ACCESSED_START   0x27C
 #define FLAG_TERMINAL_MEDICAL_RECORDS  0x27C
-#define FLAG_UNUSED_0x27D  0x27D // Unused Flag
+#define FLAG_TERMINAL_TEST_SCORES      0x27D
 #define FLAG_UNUSED_0x27E  0x27E // Unused Flag
 #define FLAG_UNUSED_0x27F  0x27F // Unused Flag
 #define FLAG_UNUSED_0x280  0x280 // Unused Flag
