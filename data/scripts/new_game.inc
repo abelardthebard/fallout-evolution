@@ -272,6 +272,11 @@ EventScript_ResetAllMapFlags::
 	setflag FLAG_HIDE_EVER_GRANDE_POKEMON_CENTER_1F_SCOTT
 	setflag FLAG_HIDE_SKY_PILLAR_WALLACE
 	setflag FLAG_HIDE_SKY_PILLAR_TOP_RAYQUAZA_STILL
+	@ Vault 42 prologue stage NPCs (script-only visibility).
+	setflag FLAG_HIDE_HALLWAY_MRSBAUER
+	setflag FLAG_HIDE_HALLWAY_TODD_LATER
+	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
+	setflag FLAG_HIDE_CLASSROOM_TODD
 	call EventScript_ResetAllBerries
 	end
 

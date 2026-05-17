@@ -22,7 +22,8 @@
 	playse SE_SELECT
 	closemessage
 	setflag \flag
-	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
+	incrementgamestat GAME_STAT_TERMINALS_ACCESSED
+	incrementgamestat GAME_STAT_TERMINALS_AUTO
 	goto Terminal_SkipToContent_\@
 .else
 	setvar VAR_0x8000, \flag
@@ -39,10 +40,24 @@
 	special StartTerminalHack
 	waitstate
 	goto_if_eq VAR_RESULT, 1, Terminal_HackSuccess_\@
+	@ Failure: distinguish lockout-triggered (attempts exhausted) from user-abort
+	setvar VAR_0x8000, \flag
+	specialvar VAR_RESULT, IsTerminalLockedOut
+	goto_if_eq VAR_RESULT, 1, Terminal_HackFailed_\@
+	goto Terminal_Shutdown
+Terminal_HackFailed_\@:
+	incrementgamestat GAME_STAT_TERMINAL_HACK_FAILURES
 	goto Terminal_Shutdown
 Terminal_HackSuccess_\@:
 	setflag \flag
-	addvar VAR_TERMINALS_ACCESSED_COUNT, 1
+	incrementgamestat GAME_STAT_TERMINALS_ACCESSED
+.if \tier == TERMINAL_TIER_1
+	incrementgamestat GAME_STAT_HACKED_TIER1
+.elseif \tier == TERMINAL_TIER_2
+	incrementgamestat GAME_STAT_HACKED_TIER2
+.elseif \tier == TERMINAL_TIER_3
+	incrementgamestat GAME_STAT_HACKED_TIER3
+.endif
 	goto Terminal_Shutdown
 .endif
 Terminal_SkipToContent_\@:
@@ -63,6 +78,7 @@ Terminal_Shutdown_NoAnim::
 
 
 Terminal_ShowLockedOut::
+	incrementgamestat GAME_STAT_TERMINAL_LOCKOUTS_HIT
 	buffernumberstring STR_VAR_1, VAR_TERMINAL_LOCKOUT_STEPS
 	message Terminal_Text_LockedOut
 	waitmessage

@@ -1095,7 +1095,7 @@ static const struct MenuAction MultichoiceList_Exit[] =
 
 static const struct MenuAction MultichoiceList_Vault42ScoresResponse[] =
 {
-    {COMPOUND_STRING("There's a mistake")},
+    {COMPOUND_STRING("Some mistake!")},
     {COMPOUND_STRING("What now?")},
 };
 

@@ -146,6 +146,7 @@ void HideFieldMessageBox(void)
     DestroyTask_DrawFieldMessage();
     ClearDialogWindowAndFrame(0, TRUE);
     DestroyNamebox();
+    gSpeakerName = NULL;
     sFieldMessageBoxMode = FIELD_MESSAGE_BOX_HIDDEN;
 }
 

@@ -56,6 +56,12 @@ enum TerminalItemType
     TERMINAL_ITEM_BLANK,
 };
 
+enum TerminalLayout
+{
+    TERMINAL_LAYOUT_SPLIT,
+    TERMINAL_LAYOUT_SINGLE,
+};
+
 typedef void (*TerminalItemCallback)(void);
 
 struct TerminalSpriteItem
@@ -79,6 +85,7 @@ struct TerminalPage
     const struct TerminalItem *items;
     u8 itemCount;
     u8 cols;
+    u8 layout;             // TERMINAL_LAYOUT_*
     void (*prepare)(void);
     void (*createSprites)(void);
     void (*onBack)(void);
@@ -88,6 +95,7 @@ struct TerminalContentState
 {
     MainCallback exitCb;
     const struct TerminalPage *page;
+    const u8 *currentHeader;
     const struct TerminalItem *activeItems;
     u8 activeItemCount;
     u8 activeCols;
@@ -101,6 +109,7 @@ struct TerminalContentState
     u8 playerSpriteId;
     u16 playerSpriteX;
     u16 playerSpriteY;
+    bool8 cancelArmed;
 };
 
 extern struct TerminalContentState *sTC;
@@ -109,11 +118,13 @@ void EnterTerminalContent(const struct TerminalPage *page, u8 initialCursorIdx);
 void TerminalContent_SwapPage(const struct TerminalPage *page, u8 initialCursorIdx);
 void TerminalContent_RestorePageItems(u8 initialCursorIdx);
 void TerminalContent_SetActiveItems(const struct TerminalItem *items, u8 itemCount, u8 cols, u8 initialCursorIdx);
+void TerminalContent_SetScroll(u8 scrollOffset);
 void TerminalContent_SetCancelCallback(void (*cb)(void));
 void TerminalContent_SetCursorMoveHook(void (*cb)(u8 newCursorIdx));
 void TerminalContent_CreatePlayerSprite(u16 x, u16 y);
 void TerminalContent_RecreatePlayerSprite(u8 gender);
 void TerminalContent_ExitCallback(void);
+void TerminalContent_Teardown(void);
 void TerminalUI_ShowSpotlight(const struct SpotlightLayout *layout);
 void TerminalUI_HideSpotlight(void);
 

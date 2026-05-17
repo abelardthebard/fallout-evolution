@@ -1235,14 +1235,14 @@ static void CB2_TerminalContentMain(void);
 static void TerminalContent_VBlank(void);
 static void Task_TerminalContentInput(u8 taskId);
 static void Task_TerminalContentFadeOut(u8 taskId);
-static void TerminalContent_Teardown(void);
+void TerminalContent_Teardown(void);
 static void TerminalContent_RenderPage(void);
 static void TerminalContent_RenderBody(void);
 static void TerminalContent_DrawCursor(u8 itemIdx);
 static void TerminalContent_EraseCursor(u8 itemIdx);
 static void TerminalContent_SetCursor(u8 newIdx);
 static s8 TerminalContent_FindSelectable(s8 fromIdx, s8 direction);
-static s8 TerminalContent_FindExit(void);
+static s8 TerminalContent_FindRowByCallback(TerminalItemCallback cb);
 void TerminalContent_ExitCallback(void);
 void TerminalContent_CreatePlayerSprite(u16 x, u16 y);
 static void TerminalContent_CreatePlayerSpriteAs(u16 x, u16 y, u8 gender);
@@ -1257,6 +1257,7 @@ void EnterTerminalContent(const struct TerminalPage *page, u8 initialCursorIdx)
     sTC = AllocZeroed(sizeof(*sTC));
     sTC->exitCb = CB2_ReturnToFieldContinueScript;
     sTC->page = page;
+    sTC->currentHeader = page->header;
     sTC->activeItems = page->items;
     sTC->activeItemCount = page->itemCount;
     sTC->activeCols = page->cols;
@@ -1351,12 +1352,17 @@ static void TerminalContent_VBlank(void)
     TransferPlttBuffer();
 }
 
+static u16 TerminalContent_BodyWidth(void)
+{
+    return (sTC->page->layout == TERMINAL_LAYOUT_SINGLE) ? T_CONTENT_W : T_BODY_W;
+}
+
 static void TerminalContent_ItemPos(u8 itemIdx, u16 *outX, u16 *outY)
 {
     u8 cols = sTC->activeCols;
     u8 row  = itemIdx / cols;
     u8 col  = itemIdx % cols;
-    u16 colW = T_BODY_W / cols;
+    u16 colW = TerminalContent_BodyWidth() / cols;
     *outX = T_BODY_X + col * colW;
     *outY = T_BODY_Y + (row - sTC->scrollOffset) * T_ROW_HEIGHT;
 }
@@ -1388,8 +1394,8 @@ static void TerminalContent_RenderBody(void)
 
     FillWindowPixelBuffer(T_WIN_TEXT, PIXEL_FILL(0));
 
-    if (sTC->page->header != NULL)
-        TerminalUI_DrawCenteredHeader(T_WIN_TEXT, sTC->page->header);
+    if (sTC->currentHeader != NULL)
+        TerminalUI_DrawCenteredHeader(T_WIN_TEXT, sTC->currentHeader);
 
     for (i = 0; i < count; i++)
     {
@@ -1509,13 +1515,15 @@ static s8 TerminalContent_FindSelectable(s8 fromIdx, s8 direction)
     return -1;
 }
 
-static s8 TerminalContent_FindExit(void)
+static s8 TerminalContent_FindRowByCallback(TerminalItemCallback cb)
 {
     u8 i;
+    if (cb == NULL)
+        return -1;
     for (i = 0; i < sTC->activeItemCount; i++)
     {
         if (sTC->activeItems[i].type == TERMINAL_ITEM_SELECTABLE
-            && sTC->activeItems[i].onActivate == TerminalContent_ExitCallback)
+            && sTC->activeItems[i].onActivate == cb)
             return (s8)i;
     }
     return -1;
@@ -1523,20 +1531,44 @@ static s8 TerminalContent_FindExit(void)
 
 static void TerminalContent_SetCursor(u8 newIdx)
 {
+    u8 newRow;
+    bool8 scrollChanged = FALSE;
+
     if (newIdx == sTC->cursorItemIdx || newIdx >= sTC->activeItemCount)
         return;
     PlaySE(SE_SELECT);
-    TerminalContent_EraseCursor(sTC->cursorItemIdx);
-    sTC->cursorItemIdx = newIdx;
-    TerminalContent_DrawCursor(sTC->cursorItemIdx);
-    CopyWindowToVram(T_WIN_TEXT, COPYWIN_GFX);
+
+    newRow = newIdx / sTC->activeCols;
+    if (newRow < sTC->scrollOffset)
+    {
+        sTC->scrollOffset = newRow;
+        scrollChanged = TRUE;
+    }
+    else if (newRow >= sTC->scrollOffset + T_BODY_ROWS)
+    {
+        sTC->scrollOffset = newRow - T_BODY_ROWS + 1;
+        scrollChanged = TRUE;
+    }
+
+    if (scrollChanged)
+    {
+        sTC->cursorItemIdx = newIdx;
+        TerminalContent_RenderBody();
+    }
+    else
+    {
+        TerminalContent_EraseCursor(sTC->cursorItemIdx);
+        sTC->cursorItemIdx = newIdx;
+        TerminalContent_DrawCursor(sTC->cursorItemIdx);
+        CopyWindowToVram(T_WIN_TEXT, COPYWIN_GFX);
+    }
 
     if (sTC->onCursorMove != NULL)
         sTC->onCursorMove(newIdx);
 }
 
-// Mirrors vanilla ChangeMenuGridCursorPosition.
-static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
+// Mirrors vanilla ChangeMenuGridCursorPosition. Returns TRUE if cursor moved.
+static bool8 TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
 {
     u8 cols  = sTC->activeCols;
     u8 count = sTC->activeItemCount;
@@ -1552,7 +1584,7 @@ static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
         u8 rowStart = row * cols;
         u8 rowWidth = (rowStart + cols > count) ? (count - rowStart) : cols;
         if (rowWidth <= 1)
-            return;
+            return FALSE;
 
         for (tried = 0; tried < rowWidth; tried++)
         {
@@ -1565,7 +1597,7 @@ static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
                 break;
         }
         if (tried >= rowWidth)
-            return;
+            return FALSE;
     }
     else if (dy != 0)
     {
@@ -1582,16 +1614,34 @@ static void TerminalContent_MoveCursorGrid(s8 dx, s8 dy)
                 break;
         }
         if (tried >= rows)
-            return;
+            return FALSE;
     }
     else
     {
-        return;
+        return FALSE;
     }
 
     if (idx == startIdx)
-        return;
+        return FALSE;
     TerminalContent_SetCursor(idx);
+    return TRUE;
+}
+
+static bool8 TerminalContent_TryScroll(s8 direction)
+{
+    if (direction < 0 && sTC->scrollOffset > 0)
+    {
+        sTC->scrollOffset--;
+        TerminalContent_RenderBody();
+        return TRUE;
+    }
+    if (direction > 0 && sTC->scrollOffset + T_BODY_ROWS < TerminalContent_TotalRows())
+    {
+        sTC->scrollOffset++;
+        TerminalContent_RenderBody();
+        return TRUE;
+    }
+    return FALSE;
 }
 
 void TerminalContent_ExitCallback(void)
@@ -1615,53 +1665,77 @@ static void TerminalContent_Activate(void)
 
 static void Task_TerminalContentInput(u8 taskId)
 {
-    if (TerminalContent_IsScrollable())
+    if (JOY_REPEAT(DPAD_UP))
     {
-        if (JOY_REPEAT(DPAD_UP) && sTC->scrollOffset > 0)
-        {
-            PlaySE(SE_SELECT);
-            sTC->scrollOffset--;
-            TerminalContent_RenderBody();
-        }
-        else if (JOY_REPEAT(DPAD_DOWN)
-              && sTC->scrollOffset + T_BODY_ROWS < TerminalContent_TotalRows())
-        {
-            PlaySE(SE_SELECT);
-            sTC->scrollOffset++;
-            TerminalContent_RenderBody();
-        }
+        sTC->cancelArmed = FALSE;
+        if (!TerminalContent_MoveCursorGrid(0, -1))
+            TerminalContent_TryScroll(-1);
     }
-    else
+    else if (JOY_REPEAT(DPAD_DOWN))
     {
-        if (JOY_REPEAT(DPAD_UP))         TerminalContent_MoveCursorGrid( 0, -1);
-        else if (JOY_REPEAT(DPAD_DOWN))  TerminalContent_MoveCursorGrid( 0,  1);
-        else if (JOY_REPEAT(DPAD_LEFT))  TerminalContent_MoveCursorGrid(-1,  0);
-        else if (JOY_REPEAT(DPAD_RIGHT)) TerminalContent_MoveCursorGrid( 1,  0);
+        sTC->cancelArmed = FALSE;
+        if (!TerminalContent_MoveCursorGrid(0, 1))
+            TerminalContent_TryScroll(1);
+    }
+    else if (JOY_REPEAT(DPAD_LEFT))
+    {
+        sTC->cancelArmed = FALSE;
+        TerminalContent_MoveCursorGrid(-1, 0);
+    }
+    else if (JOY_REPEAT(DPAD_RIGHT))
+    {
+        sTC->cancelArmed = FALSE;
+        TerminalContent_MoveCursorGrid(1, 0);
     }
 
     if (JOY_NEW(A_BUTTON | START_BUTTON))
     {
+        sTC->cancelArmed = FALSE;
         TerminalContent_Activate();
     }
     else if (JOY_NEW(B_BUTTON))
     {
-        if (sTC->onCancel != NULL)
+        TerminalItemCallback cancelCb = (sTC->onCancel != NULL)
+                                      ? sTC->onCancel
+                                      : TerminalContent_ExitCallback;
+        const struct TerminalItem *current = &sTC->activeItems[sTC->cursorItemIdx];
+        bool8 cursorOnCancel = (current->type == TERMINAL_ITEM_SELECTABLE
+                                && current->onActivate == cancelCb);
+
+        if (cursorOnCancel && sTC->cancelArmed)
         {
-            sTC->onCancel();
+            cancelCb();
+        }
+        else if (cursorOnCancel)
+        {
+            u8 row = sTC->cursorItemIdx / sTC->activeCols;
+            bool8 scrollChanged = FALSE;
+            if (row < sTC->scrollOffset)
+            {
+                sTC->scrollOffset = row;
+                scrollChanged = TRUE;
+            }
+            else if (row >= sTC->scrollOffset + T_BODY_ROWS)
+            {
+                sTC->scrollOffset = row - T_BODY_ROWS + 1;
+                scrollChanged = TRUE;
+            }
+            if (scrollChanged)
+                TerminalContent_RenderBody();
+            PlaySE(SE_SELECT);
+            sTC->cancelArmed = TRUE;
         }
         else
         {
-            const struct TerminalItem *item = &sTC->activeItems[sTC->cursorItemIdx];
-            if (item->type == TERMINAL_ITEM_SELECTABLE
-                && item->onActivate == TerminalContent_ExitCallback)
+            s8 cancelIdx = TerminalContent_FindRowByCallback(cancelCb);
+            if (cancelIdx >= 0)
             {
-                TerminalContent_Activate();
+                TerminalContent_SetCursor((u8)cancelIdx);
+                sTC->cancelArmed = TRUE;
             }
             else
             {
-                s8 exitIdx = TerminalContent_FindExit();
-                if (exitIdx >= 0)
-                    TerminalContent_SetCursor((u8)exitIdx);
+                cancelCb();
             }
         }
     }
@@ -1677,7 +1751,7 @@ static void Task_TerminalContentFadeOut(u8 taskId)
     DestroyTask(taskId);
 }
 
-static void TerminalContent_Teardown(void)
+void TerminalContent_Teardown(void)
 {
     TerminalUI_HideSpotlight();
     FreeAllWindowBuffers();
@@ -1751,7 +1825,19 @@ void TerminalContent_SetActiveItems(const struct TerminalItem *items,
     sTC->activeItemCount = itemCount;
     sTC->activeCols      = cols;
     sTC->scrollOffset    = 0;
+    sTC->cancelArmed     = FALSE;
     TerminalContent_SeedCursor(initialCursorIdx);
+    TerminalContent_RenderBody();
+}
+
+void TerminalContent_SetScroll(u8 scrollOffset)
+{
+    u8 maxScroll;
+    u8 totalRows = TerminalContent_TotalRows();
+    maxScroll = (totalRows > T_BODY_ROWS) ? (totalRows - T_BODY_ROWS) : 0;
+    if (scrollOffset > maxScroll)
+        scrollOffset = maxScroll;
+    sTC->scrollOffset = scrollOffset;
     TerminalContent_RenderBody();
 }
 
@@ -1761,6 +1847,7 @@ void TerminalContent_RestorePageItems(u8 initialCursorIdx)
     sTC->activeItemCount = sTC->page->itemCount;
     sTC->activeCols      = sTC->page->cols;
     sTC->scrollOffset    = 0;
+    sTC->cancelArmed     = FALSE;
     TerminalContent_SeedCursor(initialCursorIdx);
     TerminalContent_RenderBody();
 }
@@ -1786,10 +1873,13 @@ void TerminalContent_SwapPage(const struct TerminalPage *page, u8 initialCursorI
     TerminalUI_HideSpotlight();
 
     sTC->page            = page;
+    if (page->header != NULL)
+        sTC->currentHeader = page->header;
     sTC->activeItems     = page->items;
     sTC->activeItemCount = page->itemCount;
     sTC->activeCols      = page->cols;
     sTC->scrollOffset    = 0;
+    sTC->cancelArmed     = FALSE;
 
     if (page->prepare != NULL)
         page->prepare();

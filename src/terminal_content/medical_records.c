@@ -362,7 +362,8 @@ static const u8 sText_TerminalHousing_Title[]     = _("UNIT 315: THE GREEN FAMIL
 static const u8 sText_TerminalHousing_Matriarch[] = _("MATRIARCH: Iris, Cook");
 static const u8 sText_TerminalHousing_Patriarch[] = _("PATRIARCH: Caleb, Engineer");
 static const u8 sText_TerminalHousing_Child1Lbl[] = _("CHILD 1: ");
-static const u8 sText_TerminalHousing_Child1Suf[] = _(", Pending");
+static const u8 sText_TerminalHousing_Child1Suf[]        = _(", Pending");
+static const u8 sText_TerminalHousing_Child1SufSurplus[] = _(", Surplus");
 static const u8 sText_TerminalHousing_Child2[]    = _("CHILD 2: Maisie, Pending");
 static const u8 sText_TerminalHousing_Desc1[]     = _("Home environment reported as");
 static const u8 sText_TerminalHousing_Desc2[]     = _("“stable” and “unremarkable”.");
@@ -393,7 +394,9 @@ static void TerminalHousing_Prepare(void)
     u8 *dst = sTerminalHousing_Child1Row;
     dst = StringCopy(dst, sText_TerminalHousing_Child1Lbl);
     dst = StringCopy(dst, gSaveBlock2Ptr->playerName);
-    StringCopy(dst, sText_TerminalHousing_Child1Suf);
+    StringCopy(dst, FlagGet(FLAG_VIEWED_OWN_TEST_SCORES)
+                    ? sText_TerminalHousing_Child1SufSurplus
+                    : sText_TerminalHousing_Child1Suf);
 }
 
 static void Housing_BackToMedicalRecords(void)
@@ -459,6 +462,14 @@ static const u8 sText_TerminalEval_S4Wrong3[]  = _("temporal lobe impairment.");
 
 static const u8 sText_TerminalEval_Back[]      = _("BACK");
 
+static const u8 sText_TerminalEval_StrZero[]   = _("STRENGTH: 0");
+static const u8 sText_TerminalEval_PerZero[]   = _("PERCEPTION: 0");
+static const u8 sText_TerminalEval_EndZero[]   = _("ENDURANCE: 0");
+static const u8 sText_TerminalEval_ChaZero[]   = _("CHARISMA: 0");
+static const u8 sText_TerminalEval_IntZero[]   = _("INTELLIGENCE: 0");
+static const u8 sText_TerminalEval_AgiZero[]   = _("AGILITY: 0");
+static const u8 sText_TerminalEval_LckZero[]   = _("LUCK: 0");
+
 #define EVAL_MAX_ROWS  18
 
 static EWRAM_DATA struct TerminalItem sTerminalEval_Items[EVAL_MAX_ROWS] = {0};
@@ -500,6 +511,24 @@ static void TerminalEval_Prepare(void)
 {
     u8 a = gSaveBlock2Ptr->introAnswers;
     u8 i = 0;
+
+    if (FlagGet(FLAG_VIEWED_OWN_TEST_SCORES))
+    {
+        EvalPushText(&i, sText_TerminalEval_Title1);
+        EvalPushBlank(&i);
+        EvalPushText(&i, sText_TerminalEval_StrZero);
+        EvalPushText(&i, sText_TerminalEval_PerZero);
+        EvalPushText(&i, sText_TerminalEval_EndZero);
+        EvalPushText(&i, sText_TerminalEval_ChaZero);
+        EvalPushText(&i, sText_TerminalEval_IntZero);
+        EvalPushText(&i, sText_TerminalEval_AgiZero);
+        EvalPushText(&i, sText_TerminalEval_LckZero);
+        EvalPushBlank(&i);
+        EvalPushBack(&i);
+        AGB_ASSERT(i <= EVAL_MAX_ROWS);
+        sTC->activeItemCount = i;
+        return;
+    }
 
     EvalPushText(&i, sText_TerminalEval_Title1);
     EvalPushText(&i, sText_TerminalEval_Title2);

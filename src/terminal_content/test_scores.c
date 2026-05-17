@@ -67,73 +67,64 @@ static const u8 sText_Elmer_Display[]      = _("Elmer B.");
 static const u8 sText_Elmer_FirstName[]    = _("Elmer");
 static const u8 sText_Elmer_LastInitial[]  = _("B");
 static const u8 sText_Elmer_Assignment[]   = _("Electrician");
-static const u8 sText_Elmer_Desc1[]        = _("Maintains lighting,");
-static const u8 sText_Elmer_Desc2[]        = _("wiring, and circuit");
-static const u8 sText_Elmer_Desc3[]        = _("integrity in the vault.");
+static const u8 sText_Elmer_Desc1[]        = _("Maintains lighting, wiring, and");
+static const u8 sText_Elmer_Desc2[]        = _("circuit integrity in the vault.");
 
 static const u8 sText_Dorris_Display[]       = _("Dorris T.");
 static const u8 sText_Dorris_FirstName[]     = _("Dorris");
 static const u8 sText_Dorris_LastInitial[]   = _("T");
 static const u8 sText_Dorris_Assignment[]    = _("Barber");
-static const u8 sText_Dorris_Desc1[]         = _("Cuts and styles hair");
-static const u8 sText_Dorris_Desc2[]         = _("vault-wide. The shop");
-static const u8 sText_Dorris_Desc3[]         = _("is a social hub.");
+static const u8 sText_Dorris_Desc1[]         = _("Cuts and styles hair vault-wide.");
+static const u8 sText_Dorris_Desc2[]         = _("The shop is a social hub.");
 
 static const u8 sText_Clifford_Display[]      = _("Clifford R.");
 static const u8 sText_Clifford_FirstName[]    = _("Clifford");
 static const u8 sText_Clifford_LastInitial[]  = _("R");
 static const u8 sText_Clifford_Assignment[]   = _("Janitor");
-static const u8 sText_Clifford_Desc1[]        = _("Daily sanitation of");
-static const u8 sText_Clifford_Desc2[]        = _("corridors, common");
-static const u8 sText_Clifford_Desc3[]        = _("areas, and quarters.");
+static const u8 sText_Clifford_Desc1[]        = _("Daily sanitation of corridors,");
+static const u8 sText_Clifford_Desc2[]        = _("common areas, and quarters.");
 
 static const u8 sText_Herschel_Display[]     = _("Herschel F.");
 static const u8 sText_Herschel_FirstName[]   = _("Herschel");
 static const u8 sText_Herschel_LastInitial[] = _("F");
 static const u8 sText_Herschel_Assignment[]  = _("Archivist");
-static const u8 sText_Herschel_Desc1[]       = _("Catalogs records of");
-static const u8 sText_Herschel_Desc2[]       = _("births, deaths, work");
-static const u8 sText_Herschel_Desc3[]       = _("logs, and incidents.");
+static const u8 sText_Herschel_Desc1[]       = _("Catalogs vault records:");
+static const u8 sText_Herschel_Desc2[]       = _("births, deaths, work logs.");
 
 static const u8 sText_Loretta_Display[]        = _("Loretta D.");
 static const u8 sText_Loretta_FirstName[]      = _("Loretta");
 static const u8 sText_Loretta_LastInitial[]    = _("D");
 static const u8 sText_Loretta_Assignment[]     = _("Morale Officer");
-static const u8 sText_Loretta_Desc1[]          = _("Organizes events,");
-static const u8 sText_Loretta_Desc2[]          = _("holiday observances,");
-static const u8 sText_Loretta_Desc3[]          = _("and contests.");
+static const u8 sText_Loretta_Desc1[]          = _("Organizes events, holiday");
+static const u8 sText_Loretta_Desc2[]          = _("observances, and contests.");
 
 static const u8 sText_Mavis_Display[]      = _("Mavis R.");
 static const u8 sText_Mavis_FirstName[]    = _("Mavis");
 static const u8 sText_Mavis_LastInitial[]  = _("R");
 static const u8 sText_Mavis_Assignment[]   = _("Hall Monitor");
-static const u8 sText_Mavis_Desc1[]        = _("Patrols corridors,");
-static const u8 sText_Mavis_Desc2[]        = _("enforces curfew, and");
-static const u8 sText_Mavis_Desc3[]        = _("reports violations.");
+static const u8 sText_Mavis_Desc1[]        = _("Patrols corridors and enforces");
+static const u8 sText_Mavis_Desc2[]        = _("curfew. Reports violations.");
 
 static const u8 sText_Orville_Display[]       = _("Orville W.");
 static const u8 sText_Orville_FirstName[]     = _("Orville");
 static const u8 sText_Orville_LastInitial[]   = _("W");
 static const u8 sText_Orville_Assignment[]    = _("Chaplain");
-static const u8 sText_Orville_Desc1[]         = _("Provides spiritual");
-static const u8 sText_Orville_Desc2[]         = _("counseling. Leads");
-static const u8 sText_Orville_Desc3[]         = _("ceremonies & services.");
+static const u8 sText_Orville_Desc1[]         = _("Provides spiritual counseling.");
+static const u8 sText_Orville_Desc2[]         = _("Leads ceremonies and services.");
 
 static const u8 sText_Posey_Display[]       = _("Posey C.");
 static const u8 sText_Posey_FirstName[]     = _("Posey");
 static const u8 sText_Posey_LastInitial[]   = _("C");
 static const u8 sText_Posey_Assignment[]    = _("Botanist");
-static const u8 sText_Posey_Desc1[]         = _("Tends hydroponics");
-static const u8 sText_Posey_Desc2[]         = _("and crops. Oversees");
-static const u8 sText_Posey_Desc3[]         = _("food production.");
+static const u8 sText_Posey_Desc1[]         = _("Tends hydroponics and crops.");
+static const u8 sText_Posey_Desc2[]         = _("Oversees food production.");
 
 static const u8 sText_Susette_Display[]      = _("Susette B.");
 static const u8 sText_Susette_FirstName[]    = _("Susette");
 static const u8 sText_Susette_LastInitial[]  = _("B");
 static const u8 sText_Susette_Assignment[]   = _("Gym Coach");
-static const u8 sText_Susette_Desc1[]        = _("Leads fitness and");
-static const u8 sText_Susette_Desc2[]        = _("sports leagues. Sets");
-static const u8 sText_Susette_Desc3[]        = _("health standards.");
+static const u8 sText_Susette_Desc1[]        = _("Leads fitness programs and");
+static const u8 sText_Susette_Desc2[]        = _("sports leagues. Sets standards.");
 
 static const u8 sText_Todd_Display[]        = _("Todd H.");
 static const u8 sText_Todd_FirstName[]      = _("Todd");
@@ -146,31 +137,31 @@ static const u8 sText_Todd_Desc1[]          = _("See Overseer Clay.");
 static const struct StudentScore sNpcStudents[NUM_TEST_SCORE_NPCS] =
 {
     { sText_Clifford_Display,  sText_Clifford_FirstName,  sText_Clifford_LastInitial,
-      sText_Clifford_Assignment,  sText_Clifford_Desc1, sText_Clifford_Desc2, sText_Clifford_Desc3,
+      sText_Clifford_Assignment,  sText_Clifford_Desc1, sText_Clifford_Desc2, NULL,
       6, 3, 8, 2, 3, 4, 2 },
     { sText_Dorris_Display,   sText_Dorris_FirstName,   sText_Dorris_LastInitial,
-      sText_Dorris_Assignment,   sText_Dorris_Desc1, sText_Dorris_Desc2, sText_Dorris_Desc3,
+      sText_Dorris_Assignment,   sText_Dorris_Desc1, sText_Dorris_Desc2, NULL,
       2, 6, 3, 6, 3, 7, 1 },
     { sText_Elmer_Display,  sText_Elmer_FirstName,  sText_Elmer_LastInitial,
-      sText_Elmer_Assignment,  sText_Elmer_Desc1, sText_Elmer_Desc2, sText_Elmer_Desc3,
+      sText_Elmer_Assignment,  sText_Elmer_Desc1, sText_Elmer_Desc2, NULL,
       3, 6, 3, 2, 7, 5, 2 },
     { sText_Herschel_Display, sText_Herschel_FirstName, sText_Herschel_LastInitial,
-      sText_Herschel_Assignment, sText_Herschel_Desc1, sText_Herschel_Desc2, sText_Herschel_Desc3,
+      sText_Herschel_Assignment, sText_Herschel_Desc1, sText_Herschel_Desc2, NULL,
       1, 6, 3, 3, 9, 2, 4 },
     { sText_Loretta_Display,    sText_Loretta_FirstName,    sText_Loretta_LastInitial,
-      sText_Loretta_Assignment,    sText_Loretta_Desc1, sText_Loretta_Desc2, sText_Loretta_Desc3,
+      sText_Loretta_Assignment,    sText_Loretta_Desc1, sText_Loretta_Desc2, NULL,
       1, 4, 3, 10, 4, 2, 4 },
     { sText_Mavis_Display,  sText_Mavis_FirstName,  sText_Mavis_LastInitial,
-      sText_Mavis_Assignment,  sText_Mavis_Desc1, sText_Mavis_Desc2, sText_Mavis_Desc3,
+      sText_Mavis_Assignment,  sText_Mavis_Desc1, sText_Mavis_Desc2, NULL,
       3, 8, 4, 3, 4, 5, 1 },
     { sText_Orville_Display,   sText_Orville_FirstName,   sText_Orville_LastInitial,
-      sText_Orville_Assignment,   sText_Orville_Desc1, sText_Orville_Desc2, sText_Orville_Desc3,
+      sText_Orville_Assignment,   sText_Orville_Desc1, sText_Orville_Desc2, NULL,
       1, 4, 3, 9, 8, 1, 2 },
     { sText_Posey_Display,   sText_Posey_FirstName,   sText_Posey_LastInitial,
-      sText_Posey_Assignment,   sText_Posey_Desc1, sText_Posey_Desc2, sText_Posey_Desc3,
+      sText_Posey_Assignment,   sText_Posey_Desc1, sText_Posey_Desc2, NULL,
       2, 6, 5, 3, 7, 3, 2 },
     { sText_Susette_Display,  sText_Susette_FirstName,  sText_Susette_LastInitial,
-      sText_Susette_Assignment,  sText_Susette_Desc1, sText_Susette_Desc2, sText_Susette_Desc3,
+      sText_Susette_Assignment,  sText_Susette_Desc1, sText_Susette_Desc2, NULL,
       6, 4, 7, 5, 2, 3, 1 },
     { sText_Todd_Display,    sText_Todd_FirstName,    sText_Todd_LastInitial,
       sText_Todd_Assignment,    sText_Todd_Desc1,    NULL, NULL,  0, 0, 0, 0, 0, 0, 0 },
@@ -214,6 +205,8 @@ static EWRAM_DATA u8 sDetails_LckRow[DETAIL_ROW_BUF_SIZE]  = {0};
 
 // ----- Page state -----
 static EWRAM_DATA u8 sCurrentStudentIdx = 0;
+static EWRAM_DATA u8 sTestScores_SavedCursor = 0;
+static EWRAM_DATA u8 sTestScores_SavedScroll = 0;
 static EWRAM_DATA struct TerminalItem sTerminalTestScores_Items[TEST_SCORES_MAX_ROWS]       = {0};
 static EWRAM_DATA struct TerminalItem sTerminalStudentDetails_Items[STUDENT_DETAILS_MAX_ROWS] = {0};
 static EWRAM_DATA u8 sRowToStudentIdx[TEST_SCORES_MAX_ROWS] = {0};
@@ -231,6 +224,7 @@ static const struct TerminalPage sTerminalStudentDetails_Page =
     .items         = sTerminalStudentDetails_Items,
     .itemCount     = STUDENT_DETAILS_MAX_ROWS,
     .cols          = 1,
+    .layout        = TERMINAL_LAYOUT_SINGLE,
     .prepare       = TerminalStudentDetails_Prepare,
     .createSprites = NULL,
     .onBack        = StudentDetails_BackToList,
@@ -242,6 +236,7 @@ const struct TerminalPage sTerminalTestScores_Page =
     .items         = sTerminalTestScores_Items,
     .itemCount     = TEST_SCORES_MAX_ROWS,
     .cols          = 1,
+    .layout        = TERMINAL_LAYOUT_SINGLE,
     .prepare       = TerminalTestScores_Prepare,
     .createSprites = NULL,
 };
@@ -335,6 +330,8 @@ static void TerminalTestScores_Prepare(void)
 
 static void TestScores_OpenStudentDetails(void)
 {
+    sTestScores_SavedCursor = sTC->cursorItemIdx;
+    sTestScores_SavedScroll = sTC->scrollOffset;
     sCurrentStudentIdx = sRowToStudentIdx[sTC->cursorItemIdx];
     if (sCurrentStudentIdx == PLAYER_STUDENT_IDX)
         FlagSet(FLAG_VIEWED_OWN_TEST_SCORES);
@@ -420,5 +417,6 @@ static void TerminalStudentDetails_Prepare(void)
 static void StudentDetails_BackToList(void)
 {
     PlaySE(SE_SELECT);
-    TerminalContent_RestorePageItems(0);
+    TerminalContent_SwapPage(&sTerminalTestScores_Page, sTestScores_SavedCursor);
+    TerminalContent_SetScroll(sTestScores_SavedScroll);
 }

@@ -6,7 +6,7 @@ Vault42_Elevator_MapScripts::
 @ during VAR_PROLOGUE_STATE 3 (post-first-catchup, pre-second-catchup).
 Vault42_Elevator_OnTransition::
 	goto_if_ne VAR_PROLOGUE_STATE, 3, Vault42_Elevator_OnTransition_End
-	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 0, Vault42_Elevator_OnTransition_End
-	setvar VAR_TODD_HALLWAY_DETOUR, 1
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 9, Vault42_Elevator_OnTransition_End
+	setvar VAR_TODD_HALLWAY_DETOUR, 5
 Vault42_Elevator_OnTransition_End::
 	end

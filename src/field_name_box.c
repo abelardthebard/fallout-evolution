@@ -108,7 +108,9 @@ void DestroyNamebox(void)
     ClearWindowTilemap(sNameboxWindowId);
     RemoveWindow(sNameboxWindowId);
     sNameboxWindowId = WINDOW_NONE;
-    gSpeakerName = NULL;
+    // Note: gSpeakerName is NOT cleared here. Re-spawning the namebox between
+    // consecutive msgboxes destroys+recreates the window; the speaker must survive
+    // that. Callers that want to clear the speaker (HideFieldMessageBox) do so explicitly.
 }
 
 u32 GetNameboxWidth(void)

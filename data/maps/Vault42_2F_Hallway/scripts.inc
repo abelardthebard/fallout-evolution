@@ -20,51 +20,41 @@ Vault42_2F_Hallway_OnFrame:
 	.2byte 0
 
 Vault42_2F_Hallway_OnTransition::
-	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 1, Vault42_2F_Hallway_OnTransition_End
-	getplayerxy VAR_TEMP_0, VAR_TEMP_1
-	goto_if_eq VAR_TEMP_0, 7, Vault42_2F_Hallway_OnTransition_MaybeMedbay
-	goto_if_eq VAR_TEMP_0, 18, Vault42_2F_Hallway_OnTransition_MaybeTrash
-	goto_if_eq VAR_TEMP_0, 31, Vault42_2F_Hallway_OnTransition_MaybeDining
-	goto_if_eq VAR_TEMP_0, 30, Vault42_2F_Hallway_OnTransition_MaybeElevator
-Vault42_2F_Hallway_OnTransition_End::
+	@ Stage-NPC hide-flag recovery (resilient against stale saves).
+	setflag FLAG_HIDE_HALLWAY_MRSBAUER
+	call_if_ge VAR_PROLOGUE_STATE, 3, Vault42_2F_Hallway_EventScript_HideFirstTodd
+	call_if_lt VAR_PROLOGUE_STATE, 3, Vault42_2F_Hallway_EventScript_HideToddLater
+	call_if_ge VAR_PROLOGUE_STATE, 5, Vault42_2F_Hallway_EventScript_HideToddLater
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 2, Vault42_2F_Hallway_OnTransition_StageMedbay
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 3, Vault42_2F_Hallway_OnTransition_StageTrash
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 4, Vault42_2F_Hallway_OnTransition_StageDining
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 5, Vault42_2F_Hallway_OnTransition_StageElevator
 	end
 
-Vault42_2F_Hallway_OnTransition_MaybeMedbay::
-	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageMedbay
-	end
+Vault42_2F_Hallway_EventScript_HideFirstTodd::
+	setflag FLAG_HIDE_HALLWAY_TODD
+	return
 
-Vault42_2F_Hallway_OnTransition_MaybeTrash::
-	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageTrash
-	end
-
-Vault42_2F_Hallway_OnTransition_MaybeDining::
-	goto_if_eq VAR_TEMP_1, 2, Vault42_2F_Hallway_OnTransition_StageDining
-	end
-
-Vault42_2F_Hallway_OnTransition_MaybeElevator::
-	goto_if_eq VAR_TEMP_1, 12, Vault42_2F_Hallway_OnTransition_StageElevator
-	end
+Vault42_2F_Hallway_EventScript_HideToddLater::
+	setflag FLAG_HIDE_HALLWAY_TODD_LATER
+	return
 
 Vault42_2F_Hallway_OnTransition_StageMedbay::
-	setvar VAR_TODD_HALLWAY_DETOUR, 2
 	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 7, 3
 	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
 	end
 
 Vault42_2F_Hallway_OnTransition_StageTrash::
-	setvar VAR_TODD_HALLWAY_DETOUR, 3
 	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 18, 3
 	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
 	end
 
 Vault42_2F_Hallway_OnTransition_StageDining::
-	setvar VAR_TODD_HALLWAY_DETOUR, 4
 	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 31, 3
 	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
 	end
 
 Vault42_2F_Hallway_OnTransition_StageElevator::
-	setvar VAR_TODD_HALLWAY_DETOUR, 5
 	setobjectxyperm LOCALID_HALLWAY_TODD_LATER, 30, 13
 	setobjectmovementtype LOCALID_HALLWAY_TODD_LATER, MOVEMENT_TYPE_FACE_UP
 	end
@@ -142,6 +132,7 @@ Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core::
 	clearflag FLAG_HIDE_HALLWAY_MRSBAUER
 	addobject LOCALID_HALLWAY_MRSBAUER
 	applymovement LOCALID_HALLWAY_MRSBAUER, Vault42_2F_Hallway_Movement_BauerWalkOutOfDoor
+	applymovement LOCALID_PLAYER, Common_Movement_FaceUp
 	waitmovement 0
 	closedoor 4, 23
 	waitdooranim
@@ -180,14 +171,8 @@ Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core::
 	clearflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	clearflag FLAG_HIDE_CLASSROOM_TODD
 	setvar VAR_PROLOGUE_STATE, 5
-	warp MAP_VAULT42_CLASSROOM, 4, 9
+	warp MAP_VAULT42_CLASSROOM, 4, 6
 	waitstate
-
-	@ Face player north on classroom arrival (walk-in-place is more reliable than face_up post-warp)
-	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterUp
-	waitmovement 0
-
-	releaseall
 	end
 
 Vault42_2F_Hallway_EventScript_ToddWalkUpFromCol25::
@@ -300,8 +285,6 @@ Vault42_2F_Hallway_Movement_FaceUp:
 	step_end
 
 Vault42_2F_Hallway_Movement_BauerWalkOutOfDoor:
-	set_invisible
-	set_visible
 	walk_down
 	step_end
 
@@ -317,6 +300,7 @@ Vault42_2F_Hallway_Movement_ToddEnterDoor:
 	step_end
 
 Vault42_2F_Hallway_Movement_PlayerEnterDoor:
+	face_left
 	walk_left
 	walk_up
 	walk_up
@@ -327,7 +311,7 @@ Vault42_2F_Hallway_EventScript_DetourFromMedbay::
 	setvar VAR_TODD_HALLWAY_DETOUR, 9
 	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
 	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromMedbay
-	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromMedbay
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromMedbay_Player
 	waitmovement 0
 	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
 	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
@@ -339,7 +323,7 @@ Vault42_2F_Hallway_EventScript_DetourFromTrash::
 	setvar VAR_TODD_HALLWAY_DETOUR, 9
 	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
 	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromTrash
-	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromTrash
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromTrash_Player
 	waitmovement 0
 	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
 	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
@@ -351,7 +335,7 @@ Vault42_2F_Hallway_EventScript_DetourFromDining::
 	setvar VAR_TODD_HALLWAY_DETOUR, 9
 	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
 	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromDining
-	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromDining
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromDining_Player
 	waitmovement 0
 	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
 	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
@@ -363,7 +347,7 @@ Vault42_2F_Hallway_EventScript_DetourFromElevator::
 	setvar VAR_TODD_HALLWAY_DETOUR, 9
 	call Vault42_2F_Hallway_EventScript_DillyDallyCommonSetup
 	applymovement LOCALID_HALLWAY_TODD_LATER, Vault42_2F_Hallway_Movement_DetourFromElevator
-	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromElevator
+	applymovement LOCALID_PLAYER, Vault42_2F_Hallway_Movement_DetourFromElevator_Player
 	waitmovement 0
 	applymovement LOCALID_HALLWAY_TODD_LATER, Common_Movement_FaceUp
 	applymovement LOCALID_PLAYER, Common_Movement_FaceDown
@@ -494,11 +478,127 @@ Vault42_2F_Hallway_Movement_DetourFromElevator:
 	walk_fast_down
 	step_end
 
+@ Player follows Todd's path with a leading walk_down (drop from row 2 / 12 to Todd's row)
+@ and one fewer south step so she trails 1 tile north of Todd at the end (alignment for BothSouthFromCol26).
+Vault42_2F_Hallway_Movement_DetourFromMedbay_Player:
+	walk_fast_down        @ (7,2) -> (7,3) — onto Todd's row
+	walk_fast_right       @ -> (8,3)
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right       @ -> (26,3)
+	walk_fast_down        @ -> (26,4)
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down        @ -> (26,21)
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromTrash_Player:
+	walk_fast_down        @ (18,2) -> (18,3)
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right
+	walk_fast_right       @ -> (26,3)
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down        @ -> (26,21)
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromDining_Player:
+	walk_fast_down        @ (31,2) -> (31,3)
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left        @ -> (26,3)
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down        @ -> (26,21)
+	step_end
+
+Vault42_2F_Hallway_Movement_DetourFromElevator_Player:
+	walk_fast_down        @ (30,12) -> (30,13)
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left
+	walk_fast_left        @ -> (26,13)
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down
+	walk_fast_down        @ -> (26,21)
+	step_end
+
 Vault42_2F_Hallway_Text_ToddDillyDally:
 	.string "Are you lost?\p"
-	.string "I'm not going to be late\n"
-	.string "to the most important test\l"
-	.string "of my life because of you.\p"
+	.string "I'm not going to be late to\n"
+	.string "the most important test of my life\l"
+	.string "because of you.\p"
 	.string "Come on!$"
 
 Vault42_2F_Hallway_Text_ToddCatchup2A:

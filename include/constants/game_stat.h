@@ -54,8 +54,16 @@
 #define GAME_STAT_NUM_UNION_ROOM_BATTLES      50
 #define GAME_STAT_PLAYED_BERRY_CRUSH          51
 #define GAME_STAT_DEXNAV_SCANNED              52
+#define GAME_STAT_RESTED_AT_VAULT             53 // Fallout Evolution: Nanny heal interactions
+#define GAME_STAT_TERMINALS_ACCESSED          54 // Fallout Evolution: first-time access count, any tier
+#define GAME_STAT_TERMINALS_AUTO              55 // Fallout Evolution: TIER_0 (no-password) first-access count
+#define GAME_STAT_HACKED_TIER1                56 // Fallout Evolution: TIER_1 hack mini-game first-success count
+#define GAME_STAT_HACKED_TIER2                57 // Fallout Evolution: TIER_2 hack mini-game first-success count
+#define GAME_STAT_HACKED_TIER3                58 // Fallout Evolution: TIER_3 hack mini-game first-success count
+#define GAME_STAT_TERMINAL_HACK_FAILURES      59 // Fallout Evolution: ran out of attempts in hack mini-game (lockout triggered)
+#define GAME_STAT_TERMINAL_LOCKOUTS_HIT       60 // Fallout Evolution: tried to access a terminal during its cooldown
 
-#define NUM_USED_GAME_STATS                   53
+#define NUM_USED_GAME_STATS                   61
 #define NUM_GAME_STATS                        64
 
 #endif // GUARD_CONSTANTS_GAME_STAT_H

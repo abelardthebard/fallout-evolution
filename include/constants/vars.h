@@ -101,7 +101,7 @@
 #define VAR_LOTAD_SIZE_RECORD                            0x404F
 #define VAR_LITTLEROOT_TOWN_STATE                        0x4050
 #define VAR_OLDALE_TOWN_STATE                            0x4051
-#define VAR_TERMINALS_ACCESSED_COUNT                     0x4052
+#define VAR_UNUSED_0x4052                                0x4052 // Fallout Evolution: was VAR_TERMINALS_ACCESSED_COUNT; superseded by GAME_STAT_TERMINALS_ACCESSED
 #define VAR_LAVARIDGE_TOWN_STATE                         0x4053
 #define VAR_CURRENT_SECRET_BASE                          0x4054 // was probably allocated for VAR_FALLARBOR_TOWN_STATE at one point
 #define VAR_VERDANTURF_TOWN_STATE                        0x4055 // Unused Var

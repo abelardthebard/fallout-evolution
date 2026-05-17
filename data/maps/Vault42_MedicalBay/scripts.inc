@@ -17,8 +17,8 @@ Vault42_MedicalBay_OnFrame:
 @ during VAR_PROLOGUE_STATE 3 (post-first-catchup, pre-second-catchup).
 Vault42_MedicalBay_OnTransition::
 	goto_if_ne VAR_PROLOGUE_STATE, 3, Vault42_MedicalBay_OnTransition_End
-	goto_if_ne VAR_TODD_HALLWAY_DETOUR, 0, Vault42_MedicalBay_OnTransition_End
-	setvar VAR_TODD_HALLWAY_DETOUR, 1
+	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 9, Vault42_MedicalBay_OnTransition_End
+	setvar VAR_TODD_HALLWAY_DETOUR, 2
 Vault42_MedicalBay_OnTransition_End::
 	end
 
@@ -87,6 +87,7 @@ Vault42_MedicalBay_EventScript_Nanny::
 	lock
 	faceplayer
 	setspeaker SP_NAME_NANNY
+	goto_if_ge VAR_PROLOGUE_STATE, 5, Vault42_MedicalBay_EventScript_NannyPostExam
 	goto_if_set FLAG_RECEIVED_RUNNING_SHOES, Vault42_MedicalBay_EventScript_NannyAfterShoes
 	msgbox Vault42_MedicalBay_Text_NannyBeforeShoes, MSGBOX_DEFAULT
 	release
@@ -95,6 +96,26 @@ Vault42_MedicalBay_EventScript_Nanny::
 Vault42_MedicalBay_EventScript_NannyAfterShoes::
 	setspeaker SP_NAME_NANNY
 	msgbox Vault42_MedicalBay_Text_NannyAfterShoes, MSGBOX_DEFAULT
+	release
+	end
+
+Vault42_MedicalBay_EventScript_NannyPostExam::
+	msgbox Vault42_MedicalBay_Text_NannyOfferHeal, MSGBOX_DEFAULT
+	yesnobox 20, 8
+	goto_if_eq VAR_RESULT, YES, Vault42_MedicalBay_EventScript_NannyDoHeal
+	goto Vault42_MedicalBay_EventScript_NannyDecline
+
+Vault42_MedicalBay_EventScript_NannyDoHeal::
+	closemessage
+	call Common_EventScript_OutOfCenterPartyHeal
+	incrementgamestat GAME_STAT_RESTED_AT_VAULT
+	setspeaker SP_NAME_NANNY
+	msgbox Vault42_MedicalBay_Text_NannyRestored, MSGBOX_DEFAULT
+	release
+	end
+
+Vault42_MedicalBay_EventScript_NannyDecline::
+	msgbox Vault42_MedicalBay_Text_NannyDoorOpen, MSGBOX_DEFAULT
 	release
 	end
 
@@ -135,13 +156,25 @@ Vault42_MedicalBay_Text_NannyBeforeShoes:
 Vault42_MedicalBay_Text_NannyAfterShoes:
 	.string "You'd best get going.\n"
 	.string "The G.O.A.T. waits for no one!\p"
-	.string "And mind your step.\n"
-	.string "We've patched you up\l"
-	.string "once today already.$"
+	.string "And mind your step. We've patched\n"
+	.string "you up once today already.$"
 
 Vault42_MedicalBay_Text_NannyBlockExit:
 	.string "Wait!\n"
 	.string "Don't forget your shoes!$"
+
+Vault42_MedicalBay_Text_NannyOfferHeal:
+	.string "Do you require\n"
+	.string "medical attention?$"
+
+Vault42_MedicalBay_Text_NannyRestored:
+	.string "You have been restored to\n"
+	.string "working order.\l"
+	.string "On your way!$"
+
+Vault42_MedicalBay_Text_NannyDoorOpen:
+	.string "Very well.\n"
+	.string "My door remains open.$"
 
 Vault42_MedicalBay_Text_ToddFinally:
 	.string "Finally.\p"

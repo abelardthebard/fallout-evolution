@@ -5,13 +5,49 @@
 .set LOCALID_CLASSROOM_TODD, 2
 
 Vault42_Classroom_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Vault42_Classroom_OnTransition
+	map_script MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE, Vault42_Classroom_OnWarp
 	map_script MAP_SCRIPT_ON_FRAME_TABLE, Vault42_Classroom_OnFrame
 	.byte 0
+
+Vault42_Classroom_OnWarp:
+	map_script_2 VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_TurnPlayerNorth
+	.2byte 0
+
+Vault42_Classroom_EventScript_TurnPlayerNorth::
+	turnobject LOCALID_PLAYER, DIR_NORTH
+	end
 
 Vault42_Classroom_OnFrame:
 	map_script_2 VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_AfterTimeJump
 	map_script_2 VAR_PROLOGUE_STATE, 6, Vault42_Classroom_EventScript_PostScoresCheck
 	.2byte 0
+
+@ Stage-NPC hide-flag recovery (resilient against stale saves).
+@ Bauer visible from state 5 (post-warp). Todd visible only at state 5
+@ (removeobject'd at end of AfterTimeJump as state → 6).
+Vault42_Classroom_OnTransition::
+	call_if_lt VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_HideBauer
+	call_if_ge VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_ShowBauer
+	call_if_ne VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_HideTodd
+	call_if_eq VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_ShowTodd
+	end
+
+Vault42_Classroom_EventScript_HideBauer::
+	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
+	return
+
+Vault42_Classroom_EventScript_ShowBauer::
+	clearflag FLAG_HIDE_CLASSROOM_MRSBAUER
+	return
+
+Vault42_Classroom_EventScript_HideTodd::
+	setflag FLAG_HIDE_CLASSROOM_TODD
+	return
+
+Vault42_Classroom_EventScript_ShowTodd::
+	clearflag FLAG_HIDE_CLASSROOM_TODD
+	return
 
 @ Fires once on classroom arrival after the time-jump (VAR_PROLOGUE_STATE == 5).
 @ Todd realizes time was lost, blames the player, exits south.
@@ -22,7 +58,8 @@ Vault42_Classroom_EventScript_AfterTimeJump::
 	playse SE_PIN
 	applymovement LOCALID_CLASSROOM_TODD, Vault42_Classroom_Movement_ToddDoubleExclaim
 	waitmovement 0
-	delay 30
+	waitfieldeffect FLDEFF_DOUBLE_EXCL_MARK_ICON
+	delay 15
 
 	@ Todd and Bauer turn to face each other
 	applymovement LOCALID_CLASSROOM_TODD, Common_Movement_FaceRight
@@ -34,14 +71,17 @@ Vault42_Classroom_EventScript_AfterTimeJump::
 	playse SE_PIN
 	applymovement LOCALID_CLASSROOM_TODD, Vault42_Classroom_Movement_ToddQuestion
 	waitmovement 0
-	delay 30
+	waitfieldeffect FLDEFF_QUESTION_MARK_ICON
+	delay 15
 
 	@ Bauer: "..."
 	applymovement LOCALID_CLASSROOM_MRSBAUER, Vault42_Classroom_Movement_BauerEllipsis
 	waitmovement 0
 	waitfieldeffect FLDEFF_ELLIPSIS_ICON
 
-	@ Todd's path: (3,4) -> (3,3) -> (7,3) -> (7,6) -> (5,6) -> (5,9)
+	@ Todd's path: (3,4) -> (3,3) -> (7,3) -> (7,6) -> (5,6). Stops next to player at (4,6).
+	@ Bauer returns to her default south-facing as Todd walks off.
+	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceDown
 	applymovement LOCALID_CLASSROOM_TODD, Vault42_Classroom_Movement_ToddApproachPlayer
 	waitmovement 0
 
@@ -54,7 +94,7 @@ Vault42_Classroom_EventScript_AfterTimeJump::
 	msgbox Vault42_Classroom_Text_ToddYourFault, MSGBOX_DEFAULT
 	closemessage
 
-	@ Todd exits south to (5,18) and vanishes
+	@ Todd exits south from (5,6) to (5,18) and vanishes
 	applymovement LOCALID_CLASSROOM_TODD, Vault42_Classroom_Movement_ToddExit
 	waitmovement 0
 	playse SE_EXIT
@@ -96,7 +136,6 @@ Vault42_Classroom_EventScript_PostScoresCheck::
 	goto_if_unset FLAG_VIEWED_OWN_TEST_SCORES, Vault42_Classroom_EventScript_PostScoresCheck_End
 	lockall
 
-	@ Bauer turns to face player (west); player turns to face Bauer (east)
 	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceLeft
 	applymovement LOCALID_PLAYER, Common_Movement_FaceRight
 	waitmovement 0
@@ -173,13 +212,13 @@ Vault42_Classroom_Movement_ToddApproachPlayer:
 	walk_down             @ -> (7,6)
 	walk_left             @ -> (6,6)
 	walk_left             @ -> (5,6)
-	walk_down             @ -> (5,7)
-	walk_down             @ -> (5,8)
-	walk_down             @ -> (5,9)
 	step_end
 
 Vault42_Classroom_Movement_ToddExit:
-	walk_down             @ (5,9) -> (5,10)
+	walk_down             @ (5,6) -> (5,7)
+	walk_down
+	walk_down
+	walk_down
 	walk_down
 	walk_down
 	walk_down
@@ -207,10 +246,8 @@ Vault42_Classroom_Text_BauerBlockExit:
 Vault42_Classroom_Text_BauerPostScoresIntro:
 	.string "Ah. There you are, dear.\n"
 	.string "A quick word before you go.\p"
-	.string "In regards to your exam\n"
-	.string "results…\p"
-	.string "Your scores were very\n"
-	.string "consistent.\p"
+	.string "In regards to your exam results…\p"
+	.string "Your scores were very consistent.\p"
 	.string "The same number, in every\n"
 	.string "single category.\l"
 	.string "And that number was zero.$"
@@ -220,15 +257,13 @@ Vault42_Classroom_Text_BauerMistakeReply:
 	.string "The machine does not err…$"
 
 Vault42_Classroom_Text_BauerWhatNowReply:
-	.string "That, dear, is above my\n"
-	.string "station.$"
+	.string "That, dear, is above my station.$"
 
 Vault42_Classroom_Text_BauerOverseerClose:
 	.string "The particulars are best\n"
 	.string "left to the Overseer…\p"
 	.string "He is expecting you.\n"
-	.string "Do try not to keep him\l"
-	.string "waiting.$"
+	.string "Do try not to keep him waiting.$"
 
 Vault42_Classroom_Text_BauerOverseerReminder:
 	.string "Still here?\p"
