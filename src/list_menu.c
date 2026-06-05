@@ -403,12 +403,20 @@ s32 ListMenu_ProcessInput(u8 listTaskId)
     }
     else if (JOY_REPEAT(DPAD_UP))
     {
-        ListMenuChangeSelection(list, TRUE, 1, FALSE);
+        // Unbound-style wrap: from the top item, jump to the bottom.
+        if (list->scrollOffset + list->selectedRow == 0)
+            ListMenuChangeSelection(list, TRUE, list->template.totalItems - 1, TRUE);
+        else
+            ListMenuChangeSelection(list, TRUE, 1, FALSE);
         return LIST_NOTHING_CHOSEN;
     }
     else if (JOY_REPEAT(DPAD_DOWN))
     {
-        ListMenuChangeSelection(list, TRUE, 1, TRUE);
+        // Unbound-style wrap: from the bottom item, jump to the top.
+        if (list->scrollOffset + list->selectedRow == list->template.totalItems - 1)
+            ListMenuChangeSelection(list, TRUE, list->template.totalItems - 1, FALSE);
+        else
+            ListMenuChangeSelection(list, TRUE, 1, TRUE);
         return LIST_NOTHING_CHOSEN;
     }
     else // try to move by one window scroll
