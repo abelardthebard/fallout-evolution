@@ -693,3 +693,29 @@ Vault42_2F_Hallway_Text_SignOverseersOffice:
 
 Vault42_2F_Hallway_Text_SignElevator:
 	.string "ELEVATOR$"
+
+@ ===========================================================================
+@ Power-outage triggers (coord_events in map.json).
+@   Blackout (10,25)/(10,26): fires once, only after Mrs. Bauer sends the
+@     player to the Overseer (VAR_PROLOGUE_STATE >= 7). Earlier walk-overs
+@     no-op. Sets VAR_POWER_STATE 0 -> 1.
+@   Restore (32,24..26): armed only while VAR_POWER_STATE == 1, so it can't
+@     fire before the blackout or after it has already restored. Sets 1 -> 2.
+@ ===========================================================================
+Vault42_2F_Hallway_EventScript_BlackoutTrigger::
+	goto_if_lt VAR_PROLOGUE_STATE, 7, Vault42_2F_Hallway_EventScript_PowerTrigger_Ignore
+	lockall
+	call EventScript_DoPowerOutage
+	setvar VAR_POWER_STATE, 1
+	releaseall
+	end
+
+Vault42_2F_Hallway_EventScript_RestoreTrigger::
+	lockall
+	call EventScript_DoPowerRestore
+	setvar VAR_POWER_STATE, 2
+	releaseall
+	end
+
+Vault42_2F_Hallway_EventScript_PowerTrigger_Ignore::
+	end

@@ -1057,6 +1057,7 @@ gStdScripts_End::
 	.include "data/scripts/debug.inc"
 	.include "data/scripts/vault_tec_posters.inc"
 	.include "data/scripts/terminals.inc"
+	.include "data/scripts/emergency_lighting.inc"
 
 EventScript_WhiteOut::
 	call EverGrandeCity_HallOfFame_EventScript_ResetEliteFour

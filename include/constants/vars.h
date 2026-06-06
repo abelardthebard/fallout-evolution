@@ -268,8 +268,8 @@
 #define VAR_RIVAL_RAYQUAZA_CALL_STEP_COUNTER             0x40F6
 #define VAR_TERMINAL_LOCKED_ID                           0x40F7 // Fallout Evolution: flag id of the currently-locked terminal (0 = none).
 #define VAR_TERMINAL_LOCKOUT_STEPS                       0x40F8 // Fallout Evolution: step countdown until the locked terminal becomes hackable again.
-#define VAR_TODD_HALLWAY_DETOUR                          0x40F9 // Fallout Evolution: 2F Hallway dilly-dally detour state. 0=idle, 1=armed (player entered side-room at state 3), 2-5=staged at doorway (Medbay/Trash/Dining/Elevator), 9=consumed.
-#define VAR_UNUSED_0x40FA                                0x40FA // Unused Var
+#define VAR_TODD_HALLWAY_DETOUR                          0x40F9 // Fallout Evolution: 2F Hallway dilly-dally detour state. 0=idle; 2-5=staged by the side room the player wandered into at state 3 (Medbay/Trash/Dining/Elevator); 9=consumed (detour fires once).
+#define VAR_POWER_STATE                                  0x40FA // Fallout Evolution: vault power-outage gate. 0=normal, 1=emergency lighting active, 2=restored.
 #define VAR_UNUSED_0x40FB                                0x40FB // Unused Var
 #define VAR_UNUSED_0x40FC                                0x40FC // Unused Var
 #define VAR_UNUSED_0x40FD                                0x40FD // Unused Var

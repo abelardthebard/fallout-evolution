@@ -132,6 +132,51 @@
       "var": "VAR_PROLOGUE_STATE",
       "var_value": "3",
       "script": "Vault42_2F_Hallway_EventScript_ToddCatchup2A"
+    },
+    {
+      "type": "trigger",
+      "x": 10,
+      "y": 25,
+      "elevation": 0,
+      "var": "VAR_POWER_STATE",
+      "var_value": "0",
+      "script": "Vault42_2F_Hallway_EventScript_BlackoutTrigger"
+    },
+    {
+      "type": "trigger",
+      "x": 10,
+      "y": 26,
+      "elevation": 0,
+      "var": "VAR_POWER_STATE",
+      "var_value": "0",
+      "script": "Vault42_2F_Hallway_EventScript_BlackoutTrigger"
+    },
+    {
+      "type": "trigger",
+      "x": 32,
+      "y": 24,
+      "elevation": 0,
+      "var": "VAR_POWER_STATE",
+      "var_value": "1",
+      "script": "Vault42_2F_Hallway_EventScript_RestoreTrigger"
+    },
+    {
+      "type": "trigger",
+      "x": 32,
+      "y": 25,
+      "elevation": 0,
+      "var": "VAR_POWER_STATE",
+      "var_value": "1",
+      "script": "Vault42_2F_Hallway_EventScript_RestoreTrigger"
+    },
+    {
+      "type": "trigger",
+      "x": 32,
+      "y": 26,
+      "elevation": 0,
+      "var": "VAR_POWER_STATE",
+      "var_value": "1",
+      "script": "Vault42_2F_Hallway_EventScript_RestoreTrigger"
     }
   ],
   "bg_events": [

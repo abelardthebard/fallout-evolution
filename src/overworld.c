@@ -1785,6 +1785,9 @@ u8 UpdateSpritePaletteWithTime(u8 paletteNum)
     if (MapHasNaturalLight(gMapHeader.mapType)
      && !IS_BLEND_IMMUNE_TAG(GetSpritePaletteTagByPaletteNum(paletteNum)))
         TimeMixPalettes(1, &gPlttBufferUnfaded[OBJ_PLTT_ID(paletteNum)], &gPlttBufferFaded[OBJ_PLTT_ID(paletteNum)], &gTimeBlend.startBlend, &gTimeBlend.endBlend, gTimeBlend.weight);
+    // Emergency red wash for sprites loaded while weather is idle (incl. indoors,
+    // where the time-blend above is skipped). No-op unless the flag is set.
+    ApplyEmergencyTintToRange(16 + paletteNum, 1);
     return paletteNum;
 }
 

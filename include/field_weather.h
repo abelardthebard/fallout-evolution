@@ -153,6 +153,13 @@ void FadeScreenHardware(u32 mode, s32 delay);
 bool8 IsWeatherNotFadingIn(void);
 void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex, bool8 allowFog);
 void ApplyWeatherColorMapToPals(u8 startPalIndex, u8 numPalettes);
+
+// Emergency lighting (power-outage red wash) -- a persistent tint applied in the
+// palette-reload path, fully decoupled from the day/night cycle and the clock.
+#define EMERGENCY_LIGHTING_COLOR  RGB(13, 0, 0)  // dark "darkroom" red -- tune
+#define EMERGENCY_LIGHTING_COEFF  11             // blend strength 0..16 -- tune
+void ApplyEmergencyTintToRange(u8 startPal, u8 numPals);
+void RefreshEmergencyLighting(void);
 void LoadCustomWeatherSpritePalette(const u16 *palette);
 void ResetDroughtWeatherPaletteLoading(void);
 bool8 LoadDroughtWeatherPalettes(void);

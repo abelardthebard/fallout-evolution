@@ -239,6 +239,8 @@ gSpecials::
 	def_special StartTerminalHack
 	def_special IsTerminalLockedOut
 	def_special ShowTerminalContent
+	def_special StartPowerOutage
+	def_special StartPowerRestore
 	def_special SetDeptStoreFloor
 	def_special DoLotteryCornerComputerEffect
 	def_special EndLotteryCornerComputerEffect

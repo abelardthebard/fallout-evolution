@@ -14,6 +14,8 @@
 #include "script.h"
 #include "start_menu.h"
 #include "sound.h"
+#include "event_data.h"
+#include "constants/flags.h"
 #include "sprite.h"
 #include "task.h"
 #include "trig.h"
@@ -451,6 +453,8 @@ static void ApplyColorMap(u8 startPalIndex, u8 numPalettes, s8 colorMapIndex)
     u16 palOffset;
     const u8 *colorMap;
     u32 i;
+    u8 emStart = startPalIndex;   // captured before the branches mutate numPalettes
+    u8 emNum = numPalettes;
 
     if (colorMapIndex > 0)
     {
@@ -546,6 +550,9 @@ static void ApplyColorMap(u8 startPalIndex, u8 numPalettes, s8 colorMapIndex)
             CpuFastCopy(&gPlttBufferUnfaded[PLTT_ID(startPalIndex)], &gPlttBufferFaded[PLTT_ID(startPalIndex)], numPalettes * PLTT_SIZE_4BPP);
         }
     }
+
+    // Power-outage red wash, applied last (no-op unless FLAG_EMERGENCY_LIGHTING).
+    ApplyEmergencyTintToRange(emStart, emNum);
 }
 
 static void ApplyColorMapWithBlend(u8 startPalIndex, u8 numPalettes, s8 colorMapIndex, u8 blendCoeff, u32 blendColor)
@@ -904,6 +911,36 @@ void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex, bool8 allowFog)
 void ApplyWeatherColorMapToPals(u8 startPalIndex, u8 numPalettes)
 {
     ApplyColorMap(startPalIndex, numPalettes, gWeatherPtr->colorMapIndex);
+}
+
+// Wash a palette range toward the emergency red. Called at the end of the two
+// palette-reload leaves (ApplyColorMap here, UpdateSpritePaletteWithTime in
+// overworld.c), so it survives walking, map changes, and streaming sprites.
+// Blends from the untinted base buffer -> idempotent, never compounds.
+void ApplyEmergencyTintToRange(u8 startPal, u8 numPals)
+{
+    u16 pal;
+
+    if (!FlagGet(FLAG_EMERGENCY_LIGHTING))
+        return;
+
+    for (pal = startPal; pal < startPal + numPals; pal++)
+    {
+        if (sPaletteColorMapTypes[pal] == COLOR_MAP_NONE)
+            continue;
+        if (pal >= 16 && IS_BLEND_IMMUNE_TAG(GetSpritePaletteTagByPaletteNum(pal - 16)))
+            continue;
+
+        BlendPalettesFine(1, &gPlttBufferUnfaded[PLTT_ID(pal)], &gPlttBufferFaded[PLTT_ID(pal)],
+                          EMERGENCY_LIGHTING_COEFF, EMERGENCY_LIGHTING_COLOR);
+    }
+}
+
+// Re-apply the overworld palettes so the red wash takes effect immediately
+// (e.g. the moment the outage flicker ends).
+void RefreshEmergencyLighting(void)
+{
+    ApplyWeatherColorMapToPals(0, 32);
 }
 
 static bool8 UNUSED IsFirstFrameOfWeatherFadeIn(void)
