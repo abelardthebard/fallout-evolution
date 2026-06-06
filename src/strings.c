@@ -1219,9 +1219,10 @@ const u8 gText_OakThisIsListOfPokemon[] = _("This is a list of your POKéMON,\n{
 
 //// side quest data
 //generic strings
-const u8 gText_QuestAnnounce[] = _("The quest '{STR_VAR_1}'\nis now {STR_VAR_2}.");
-const u8 gText_QuestComplete[] =_("complete");
-const u8 gText_QuestActive[] =_("active");
+const u8 gText_QuestAnnounce[] = _("QUEST {STR_VAR_2}:\n{STR_VAR_1}");
+const u8 gText_QuestComplete[] =_("COMPLETE");
+const u8 gText_QuestActive[] =_("ACTIVE");
+const u8 gText_QuestUpdated[] =_("UPDATED");
 
 //names
 const u8 gText_SideQuestName_1[] = _("Side Quest 1");

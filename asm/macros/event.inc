@@ -3006,3 +3006,20 @@
     subquestmenu QUEST_MENU_CHECK_COMPLETE \parent \child
     call_if_eq VAR_RESULT, FALSE, \dest
     .endm
+
+	@ Reveal a subquest -- silently add it to the parent's checklist as [ ].
+	.macro revealsubquest quest:req, subquest:req
+	subquestmenu QUEST_MENU_SET_ACTIVE, \quest, \subquest
+	.endm
+
+	@ Announce that a quest's subquests changed: "QUEST UPDATED: <parent name>".
+	@ Pair with silent revealsubquest/completesubquest calls to batch into one toast.
+	.macro questupdate quest:req
+	closemessage
+	delay 30
+	questmenu QUEST_MENU_BUFFER_QUEST_NAME \quest
+	bufferstring 1 gText_QuestUpdated
+	playfanfare MUS_LEVEL_UP
+	msgbox gText_QuestAnnounce, MSGBOX_SIGN
+	waitfanfare
+	.endm

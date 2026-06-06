@@ -136,6 +136,11 @@ Vault42_Classroom_EventScript_PostScoresCheck::
 	goto_if_unset FLAG_VIEWED_OWN_TEST_SCORES, Vault42_Classroom_EventScript_PostScoresCheck_End
 	lockall
 
+	@ G.O.A.T. done -> check it off, reveal the next objective, one "QUEST UPDATED" toast.
+	completesubquest QUEST_BRIGHT_FUTURE, SUB_BF_TAKE_THE_GOAT
+	revealsubquest QUEST_BRIGHT_FUTURE, SUB_BF_SPEAK_OVERSEER
+	questupdate QUEST_BRIGHT_FUTURE
+
 	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceLeft
 	applymovement LOCALID_PLAYER, Common_Movement_FaceRight
 	waitmovement 0

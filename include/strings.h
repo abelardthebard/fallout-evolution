@@ -2220,6 +2220,7 @@ extern const u8 gText_Girl[];
 extern const u8 gText_QuestAnnounce[];
 extern const u8 gText_QuestComplete[];
 extern const u8 gText_QuestActive[];
+extern const u8 gText_QuestUpdated[];
 
 //names
 extern const u8 gText_SideQuestName_1[];

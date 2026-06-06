@@ -27,14 +27,12 @@
 
 struct SubQuest
 {
-    const u8 id;
+    const u8 id;          // unique id; addresses the save-block reveal/complete bits
 	const u8 *name;
-	const u8 *desc;
+	const u8 *desc;       // shown while the subquest is active   [ ]
+	const u8 *donedesc;   // shown once the subquest is complete  [X]
 	const u8 *map;
-	const u16 sprite;
-    const u8 spritetype;
-    const u8 *type;
-}; 
+};
 
 struct SideQuest
 {

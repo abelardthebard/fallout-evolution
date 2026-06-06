@@ -631,8 +631,9 @@ struct SaveBlock2
 #define QUEST_STATES 5 // Number of different quest states tracked in the saveblock
 
     u8 questData[QUEST_FLAGS_COUNT * QUEST_STATES];
-    u8 subQuests[SUB_FLAGS_COUNT];
-}; // sizeof=0xF44
+    u8 subQuests[SUB_FLAGS_COUNT];        // per-subquest "completed" bit  [X]
+    u8 subQuestsActive[SUB_FLAGS_COUNT];  // per-subquest "revealed" bit (in checklist)
+}; // sizeof=0xF45
 
 extern struct SaveBlock2 *gSaveBlock2Ptr;
 

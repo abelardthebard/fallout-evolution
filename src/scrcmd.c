@@ -3450,8 +3450,14 @@ bool8 ScrCmd_subquestmenu(struct ScriptContext *ctx)
 
     switch (caseId)
     {
+        case QUEST_MENU_SET_ACTIVE:
+            // "Reveal" a subquest -- add it to the checklist as [ ].
+            QuestMenu_GetSetSubquestState(parentId, FLAG_SET_ACTIVE, childId);
+            break;
         case QUEST_MENU_COMPLETE_QUEST:
-            QuestMenu_GetSetSubquestState(parentId ,FLAG_SET_COMPLETED,childId);
+            // Completing implies revealed, so a stand-alone complete still shows [X].
+            QuestMenu_GetSetSubquestState(parentId, FLAG_SET_ACTIVE, childId);
+            QuestMenu_GetSetSubquestState(parentId, FLAG_SET_COMPLETED, childId);
             break;
         case QUEST_MENU_CHECK_COMPLETE:
             if (QuestMenu_GetSetSubquestState(parentId ,FLAG_GET_COMPLETED,childId))

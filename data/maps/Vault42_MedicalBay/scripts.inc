@@ -54,6 +54,9 @@ Vault42_MedicalBay_EventScript_Intro::
 	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	setflag FLAG_HIDE_CLASSROOM_TODD
 	setvar VAR_PROLOGUE_STATE, 1
+	@ Begin the umbrella quest; the "QUEST ACTIVE" toast is what hands control back.
+	revealsubquest QUEST_BRIGHT_FUTURE, SUB_BF_TAKE_THE_GOAT
+	startquest QUEST_BRIGHT_FUTURE
 	releaseall
 	end
 

@@ -277,6 +277,8 @@ EventScript_ResetAllMapFlags::
 	setflag FLAG_HIDE_HALLWAY_TODD_LATER
 	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	setflag FLAG_HIDE_CLASSROOM_TODD
+	@ Quest log (Pip-Boy) available in the START menu from the first frame.
+	setflag FLAG_SYS_QUEST_MENU_GET
 	call EventScript_ResetAllBerries
 	end
 
