@@ -919,6 +919,17 @@ void ApplyWeatherColorMapToPals(u8 startPalIndex, u8 numPalettes)
 // Blends from the untinted base buffer -> idempotent, never compounds.
 void ApplyEmergencyTintToRange(u8 startPal, u8 numPals)
 {
+    // Multiplicative red tint (same math as the day/night tint). Built locally so
+    // emergency lighting stays independent of gTimeBlend / the clock.
+    struct BlendSettings blend =
+    {
+        .blendColor = Q_8_8(EMERGENCY_TINT_R)
+                    | (Q_8_8(EMERGENCY_TINT_G) << 8)
+                    | (Q_8_8(EMERGENCY_TINT_B) << 16),
+        .isTint = TRUE,
+        .coeff = 0, // unused for tints
+    };
+    u32 mask = 0;
     u16 pal;
 
     if (!FlagGet(FLAG_EMERGENCY_LIGHTING))
@@ -930,10 +941,12 @@ void ApplyEmergencyTintToRange(u8 startPal, u8 numPals)
             continue;
         if (pal >= 16 && IS_BLEND_IMMUNE_TAG(GetSpritePaletteTagByPaletteNum(pal - 16)))
             continue;
-
-        BlendPalettesFine(1, &gPlttBufferUnfaded[PLTT_ID(pal)], &gPlttBufferFaded[PLTT_ID(pal)],
-                          EMERGENCY_LIGHTING_COEFF, EMERGENCY_LIGHTING_COLOR);
+        mask |= 1u << pal;
     }
+
+    // channel * tint keeps black (the void, outlines, shadows) black for free.
+    if (mask)
+        TimeMixPalettes(mask, gPlttBufferUnfaded, gPlttBufferFaded, &blend, &blend, 256);
 }
 
 // Re-apply the overworld palettes so the red wash takes effect immediately

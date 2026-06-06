@@ -154,10 +154,15 @@ bool8 IsWeatherNotFadingIn(void);
 void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex, bool8 allowFog);
 void ApplyWeatherColorMapToPals(u8 startPalIndex, u8 numPalettes);
 
-// Emergency lighting (power-outage red wash) -- a persistent tint applied in the
-// palette-reload path, fully decoupled from the day/night cycle and the clock.
-#define EMERGENCY_LIGHTING_COLOR  RGB(13, 0, 0)  // dark "darkroom" red -- tune
-#define EMERGENCY_LIGHTING_COEFF  11             // blend strength 0..16 -- tune
+// Emergency lighting (power-outage red wash) -- a MULTIPLICATIVE tint (same model
+// as the day/night tint, but red-dominant), applied in the palette-reload path
+// and fully decoupled from the day/night cycle and the clock. Each overworld
+// palette channel is multiplied by these factors (1.0 = unchanged, 0 = removed).
+// Because channel * 0 == 0, black/dark pixels -- the indoor void border, tile
+// outlines, shadows -- stay black automatically; no special-casing needed.
+#define EMERGENCY_TINT_R  0.70  // tune
+#define EMERGENCY_TINT_G  0.15  // tune
+#define EMERGENCY_TINT_B  0.15  // tune
 void ApplyEmergencyTintToRange(u8 startPal, u8 numPals);
 void RefreshEmergencyLighting(void);
 void LoadCustomWeatherSpritePalette(const u16 *palette);
