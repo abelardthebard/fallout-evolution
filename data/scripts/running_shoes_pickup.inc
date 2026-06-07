@@ -9,7 +9,7 @@ Common_EventScript_RunningShoesPickup::
 	waitmessage
 	setflag FLAG_RECEIVED_RUNNING_SHOES
 	setflag FLAG_SYS_B_DASH
-	setvar VAR_PROLOGUE_STATE, 2
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_GOT_SHOES
 	msgbox Text_RunningShoesExplain, MSGBOX_DEFAULT
 	closemessage
 	delay 30

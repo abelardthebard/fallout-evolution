@@ -10,13 +10,13 @@ Vault42_MedicalBay_MapScripts::
 	.byte 0
 
 Vault42_MedicalBay_OnFrame:
-	map_script_2 VAR_PROLOGUE_STATE, 0, Vault42_MedicalBay_EventScript_Intro
+	map_script_2 VAR_PROLOGUE_STATE, PROLOGUE_MEDBAY_INTRO, Vault42_MedicalBay_EventScript_Intro
 	.2byte 0
 
 @ Arms the hallway dilly-dally detour if the player backtracked here
 @ during VAR_PROLOGUE_STATE 3 (post-first-catchup, pre-second-catchup).
 Vault42_MedicalBay_OnTransition::
-	goto_if_ne VAR_PROLOGUE_STATE, 3, Vault42_MedicalBay_OnTransition_End
+	goto_if_ne VAR_PROLOGUE_STATE, PROLOGUE_CATCHUP_1, Vault42_MedicalBay_OnTransition_End
 	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 9, Vault42_MedicalBay_OnTransition_End
 	setvar VAR_TODD_HALLWAY_DETOUR, 2
 Vault42_MedicalBay_OnTransition_End::
@@ -53,7 +53,7 @@ Vault42_MedicalBay_EventScript_Intro::
 	setflag FLAG_HIDE_HALLWAY_TODD_LATER
 	setflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	setflag FLAG_HIDE_CLASSROOM_TODD
-	setvar VAR_PROLOGUE_STATE, 1
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_AWAKE
 	@ Begin the umbrella quest; the "QUEST ACTIVE" toast is what hands control back.
 	revealsubquest QUEST_BRIGHT_FUTURE, SUB_BF_TAKE_THE_GOAT
 	startquest QUEST_BRIGHT_FUTURE
@@ -90,7 +90,7 @@ Vault42_MedicalBay_EventScript_Nanny::
 	lock
 	faceplayer
 	setspeaker SP_NAME_NANNY
-	goto_if_ge VAR_PROLOGUE_STATE, 5, Vault42_MedicalBay_EventScript_NannyPostExam
+	goto_if_ge VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_MedicalBay_EventScript_NannyPostExam
 	goto_if_set FLAG_RECEIVED_RUNNING_SHOES, Vault42_MedicalBay_EventScript_NannyAfterShoes
 	msgbox Vault42_MedicalBay_Text_NannyBeforeShoes, MSGBOX_DEFAULT
 	release

@@ -98,6 +98,18 @@
 #define VAR_POKELOT_RND2                                 0x404C
 #define VAR_POKELOT_PRIZE_PLACE                          0x404D
 #define VAR_PROLOGUE_STATE                               0x404E
+// VAR_PROLOGUE_STATE values -- the Vault 42 prologue spine. (4 is intentionally
+// unused: the Bauer door scene folds straight into the time-jump warp, 3 -> 5.)
+// NOTE: map.json coord_event var_values are numeric (engine convention), so if a
+// number here ever changes, update the matching map.json gate too.
+#define PROLOGUE_MEDBAY_INTRO                            0  // new game; medbay intro pending
+#define PROLOGUE_AWAKE                                   1  // intro done, before running shoes
+#define PROLOGUE_GOT_SHOES                               2  // shoes taken; hallway catch-up #1 armed
+#define PROLOGUE_CATCHUP_1                               3  // first hallway catch-up done; detour armed
+#define PROLOGUE_TIMEJUMP                                5  // Bauer door scene + time-jump -> classroom
+#define PROLOGUE_ACCUSED                                 6  // Todd's classroom accusation done
+#define PROLOGUE_SENT_TO_OVERSEER                        7  // post-G.O.A.T.; Bauer sends player onward
+#define PROLOGUE_MET_OVERSEER                            8  // (next) Overseer scene / starter received
 #define VAR_LOTAD_SIZE_RECORD                            0x404F
 #define VAR_LITTLEROOT_TOWN_STATE                        0x4050
 #define VAR_OLDALE_TOWN_STATE                            0x4051
@@ -270,7 +282,9 @@
 #define VAR_TERMINAL_LOCKOUT_STEPS                       0x40F8 // Fallout Evolution: step countdown until the locked terminal becomes hackable again.
 #define VAR_TODD_HALLWAY_DETOUR                          0x40F9 // Fallout Evolution: 2F Hallway dilly-dally detour state. 0=idle; 2-5=staged by the side room the player wandered into at state 3 (Medbay/Trash/Dining/Elevator); 9=consumed (detour fires once).
 #define VAR_POWER_STATE                                  0x40FA // Fallout Evolution: vault power-outage gate. 0=normal, 1=emergency lighting active, 2=restored.
-#define VAR_UNUSED_0x40FB                                0x40FB // Unused Var
+#define VAR_OVERSEER_DOOR                                0x40FB // Fallout Evolution: Overseer's-office door gate (fail-closed). 0=locked, 1=open.
+#define OVERSEER_DOOR_LOCKED                             0      // default; Regine's door trigger blocks while locked
+#define OVERSEER_DOOR_OPEN                               1      // set when an appointment is confirmed; Overseer scene re-locks
 #define VAR_UNUSED_0x40FC                                0x40FC // Unused Var
 #define VAR_UNUSED_0x40FD                                0x40FD // Unused Var
 #define VAR_UNUSED_0x40FE                                0x40FE // Unused Var

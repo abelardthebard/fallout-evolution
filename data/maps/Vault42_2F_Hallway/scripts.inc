@@ -12,7 +12,7 @@ Vault42_2F_Hallway_MapScripts::
 	.byte 0
 
 Vault42_2F_Hallway_OnFrame:
-	map_script_2 VAR_PROLOGUE_STATE, 2, Vault42_2F_Hallway_EventScript_ToddCatchup1
+	map_script_2 VAR_PROLOGUE_STATE, PROLOGUE_GOT_SHOES, Vault42_2F_Hallway_EventScript_ToddCatchup1
 	map_script_2 VAR_TODD_HALLWAY_DETOUR, 2, Vault42_2F_Hallway_EventScript_DetourFromMedbay
 	map_script_2 VAR_TODD_HALLWAY_DETOUR, 3, Vault42_2F_Hallway_EventScript_DetourFromTrash
 	map_script_2 VAR_TODD_HALLWAY_DETOUR, 4, Vault42_2F_Hallway_EventScript_DetourFromDining
@@ -22,9 +22,9 @@ Vault42_2F_Hallway_OnFrame:
 Vault42_2F_Hallway_OnTransition::
 	@ Stage-NPC hide-flag recovery (resilient against stale saves).
 	setflag FLAG_HIDE_HALLWAY_MRSBAUER
-	call_if_ge VAR_PROLOGUE_STATE, 3, Vault42_2F_Hallway_EventScript_HideFirstTodd
-	call_if_lt VAR_PROLOGUE_STATE, 3, Vault42_2F_Hallway_EventScript_HideToddLater
-	call_if_ge VAR_PROLOGUE_STATE, 5, Vault42_2F_Hallway_EventScript_HideToddLater
+	call_if_ge VAR_PROLOGUE_STATE, PROLOGUE_CATCHUP_1, Vault42_2F_Hallway_EventScript_HideFirstTodd
+	call_if_lt VAR_PROLOGUE_STATE, PROLOGUE_CATCHUP_1, Vault42_2F_Hallway_EventScript_HideToddLater
+	call_if_ge VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_2F_Hallway_EventScript_HideToddLater
 	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 2, Vault42_2F_Hallway_OnTransition_StageMedbay
 	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 3, Vault42_2F_Hallway_OnTransition_StageTrash
 	goto_if_eq VAR_TODD_HALLWAY_DETOUR, 4, Vault42_2F_Hallway_OnTransition_StageDining
@@ -82,7 +82,7 @@ Vault42_2F_Hallway_EventScript_ToddCatchup1::
 	setflag FLAG_HIDE_HALLWAY_TODD
 	clearflag FLAG_HIDE_HALLWAY_TODD_LATER
 	addobject LOCALID_HALLWAY_TODD_LATER
-	setvar VAR_PROLOGUE_STATE, 3
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_CATCHUP_1
 	releaseall
 	end
 
@@ -170,7 +170,7 @@ Vault42_2F_Hallway_EventScript_ToddCatchup2A_Core::
 	@ Reveal classroom NPCs and warp player to the classroom
 	clearflag FLAG_HIDE_CLASSROOM_MRSBAUER
 	clearflag FLAG_HIDE_CLASSROOM_TODD
-	setvar VAR_PROLOGUE_STATE, 5
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP
 	warp MAP_VAULT42_CLASSROOM, 4, 6
 	waitstate
 	end
@@ -703,7 +703,7 @@ Vault42_2F_Hallway_Text_SignElevator:
 @     fire before the blackout or after it has already restored. Sets 1 -> 2.
 @ ===========================================================================
 Vault42_2F_Hallway_EventScript_BlackoutTrigger::
-	goto_if_lt VAR_PROLOGUE_STATE, 7, Vault42_2F_Hallway_EventScript_PowerTrigger_Ignore
+	goto_if_lt VAR_PROLOGUE_STATE, PROLOGUE_SENT_TO_OVERSEER, Vault42_2F_Hallway_EventScript_PowerTrigger_Ignore
 	lockall
 	call EventScript_DoPowerOutage
 	setvar VAR_POWER_STATE, 1
