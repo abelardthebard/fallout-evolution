@@ -1093,12 +1093,6 @@ static const struct MenuAction MultichoiceList_Exit[] =
     {gText_Exit},
 };
 
-static const struct MenuAction MultichoiceList_Vault42ScoresResponse[] =
-{
-    {COMPOUND_STRING("Some mistake!")},
-    {COMPOUND_STRING("What now?")},
-};
-
 struct MultichoiceListStruct
 {
     const struct MenuAction *list;
@@ -1266,7 +1260,6 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_HOF_VICTORIES_QUIT]                         = MULTICHOICE(sMultichoiceList_HOF_Victories_Quit),
     [MULTI_EGGS_VICTORIES_QUIT]                        = MULTICHOICE(sMultichoiceList_Eggs_Victories_Quit),
     [MULTI_HOF_EGGS_VICTORIES_QUIT]                    = MULTICHOICE(sMultichoiceList_HOF_Eggs_Victories_Quit),
-    [MULTI_VAULT42_SCORES_RESPONSE]                    = MULTICHOICE(MultichoiceList_Vault42ScoresResponse),
 };
 
 const u8 *const gStdStrings[] =

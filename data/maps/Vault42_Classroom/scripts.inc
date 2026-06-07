@@ -11,7 +11,7 @@ Vault42_Classroom_MapScripts::
 	.byte 0
 
 Vault42_Classroom_OnWarp:
-	map_script_2 VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_TurnPlayerNorth
+	map_script_2 VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_TurnPlayerNorth
 	.2byte 0
 
 Vault42_Classroom_EventScript_TurnPlayerNorth::
@@ -19,18 +19,18 @@ Vault42_Classroom_EventScript_TurnPlayerNorth::
 	end
 
 Vault42_Classroom_OnFrame:
-	map_script_2 VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_AfterTimeJump
-	map_script_2 VAR_PROLOGUE_STATE, 6, Vault42_Classroom_EventScript_PostScoresCheck
+	map_script_2 VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_AfterTimeJump
+	map_script_2 VAR_PROLOGUE_STATE, PROLOGUE_ACCUSED, Vault42_Classroom_EventScript_PostScoresCheck
 	.2byte 0
 
 @ Stage-NPC hide-flag recovery (resilient against stale saves).
 @ Bauer visible from state 5 (post-warp). Todd visible only at state 5
 @ (removeobject'd at end of AfterTimeJump as state → 6).
 Vault42_Classroom_OnTransition::
-	call_if_lt VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_HideBauer
-	call_if_ge VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_ShowBauer
-	call_if_ne VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_HideTodd
-	call_if_eq VAR_PROLOGUE_STATE, 5, Vault42_Classroom_EventScript_ShowTodd
+	call_if_lt VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_HideBauer
+	call_if_ge VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_ShowBauer
+	call_if_ne VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_HideTodd
+	call_if_eq VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_Classroom_EventScript_ShowTodd
 	end
 
 Vault42_Classroom_EventScript_HideBauer::
@@ -101,7 +101,7 @@ Vault42_Classroom_EventScript_AfterTimeJump::
 	removeobject LOCALID_CLASSROOM_TODD
 	setflag FLAG_HIDE_CLASSROOM_TODD
 
-	setvar VAR_PROLOGUE_STATE, 6
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_ACCUSED
 	releaseall
 	end
 
@@ -111,8 +111,9 @@ Vault42_Classroom_EventScript_MrsBauerIdle::
 	lock
 	faceplayer
 	setspeaker SP_NAME_MRSBAUER
-	goto_if_eq VAR_PROLOGUE_STATE, 6, Vault42_Classroom_EventScript_BauerCheckScoresPrompt
-	goto_if_eq VAR_PROLOGUE_STATE, 7, Vault42_Classroom_EventScript_BauerOverseerReminder
+	goto_if_set FLAG_EMERGENCY_LIGHTING, Vault42_Classroom_EventScript_BauerPowerOff
+	goto_if_eq VAR_PROLOGUE_STATE, PROLOGUE_ACCUSED, Vault42_Classroom_EventScript_BauerCheckScoresPrompt
+	goto_if_eq VAR_PROLOGUE_STATE, PROLOGUE_SENT_TO_OVERSEER, Vault42_Classroom_EventScript_BauerOverseerReminder
 	release
 	end
 
@@ -123,6 +124,12 @@ Vault42_Classroom_EventScript_BauerCheckScoresPrompt::
 
 Vault42_Classroom_EventScript_BauerOverseerReminder::
 	msgbox Vault42_Classroom_Text_BauerOverseerReminder, MSGBOX_DEFAULT
+	release
+	end
+
+@ Power-out line takes priority over her story idle whenever the lights are out.
+Vault42_Classroom_EventScript_BauerPowerOff::
+	msgbox Vault42_Classroom_Text_BauerPowerOff, MSGBOX_DEFAULT
 	release
 	end
 
@@ -147,7 +154,9 @@ Vault42_Classroom_EventScript_PostScoresCheck::
 
 	setspeaker SP_NAME_MRSBAUER
 	msgbox Vault42_Classroom_Text_BauerPostScoresIntro, MSGBOX_DEFAULT
-	multichoice 20, 8, MULTI_VAULT42_SCORES_RESPONSE, TRUE
+	dynmultipush Vault42_Classroom_Text_ScoresMistake, 0
+	dynmultipush Vault42_Classroom_Text_ScoresWhatNow, 1
+	dynmultistack 20, 8, TRUE, 2, FALSE, 0, DYN_MULTICHOICE_CB_NONE
 	switch VAR_RESULT
 	case 0, Vault42_Classroom_EventScript_PostScores_Mistake
 	case 1, Vault42_Classroom_EventScript_PostScores_WhatNow
@@ -165,7 +174,7 @@ Vault42_Classroom_EventScript_PostScores_Merge::
 	closemessage
 	applymovement LOCALID_CLASSROOM_MRSBAUER, Common_Movement_FaceDown
 	waitmovement 0
-	setvar VAR_PROLOGUE_STATE, 7
+	setvar VAR_PROLOGUE_STATE, PROLOGUE_SENT_TO_OVERSEER
 	releaseall
 	end
 
@@ -257,6 +266,12 @@ Vault42_Classroom_Text_BauerPostScoresIntro:
 	.string "single category.\l"
 	.string "And that number was zero.$"
 
+Vault42_Classroom_Text_ScoresMistake:
+	.string "Some mistake!$"
+
+Vault42_Classroom_Text_ScoresWhatNow:
+	.string "What now?$"
+
 Vault42_Classroom_Text_BauerMistakeReply:
 	.string "I did check it twice, dear.\n"
 	.string "The machine does not err…$"
@@ -275,3 +290,7 @@ Vault42_Classroom_Text_BauerOverseerReminder:
 	.string "The Overseer's office is\n"
 	.string "just down the hall.\p"
 	.string "Do hurry along.$"
+
+Vault42_Classroom_Text_BauerPowerOff:
+	.string "Oh dear… I hope the\n"
+	.string "power is restored soon…$"
