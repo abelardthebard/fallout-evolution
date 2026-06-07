@@ -90,6 +90,7 @@ Vault42_MedicalBay_EventScript_Nanny::
 	lock
 	faceplayer
 	setspeaker SP_NAME_NANNY
+	goto_if_set FLAG_EMERGENCY_LIGHTING, Vault42_MedicalBay_EventScript_NannyPowerOff
 	goto_if_ge VAR_PROLOGUE_STATE, PROLOGUE_TIMEJUMP, Vault42_MedicalBay_EventScript_NannyPostExam
 	goto_if_set FLAG_RECEIVED_RUNNING_SHOES, Vault42_MedicalBay_EventScript_NannyAfterShoes
 	msgbox Vault42_MedicalBay_Text_NannyBeforeShoes, MSGBOX_DEFAULT
@@ -97,10 +98,17 @@ Vault42_MedicalBay_EventScript_Nanny::
 	end
 
 Vault42_MedicalBay_EventScript_NannyAfterShoes::
-	setspeaker SP_NAME_NANNY
 	msgbox Vault42_MedicalBay_Text_NannyAfterShoes, MSGBOX_DEFAULT
 	release
 	end
+
+@ Power-out reaction: announce reserve power, then fall straight into the heal
+@ offer -- medical systems stay up on reserve cells. Checked first in
+@ EventScript_Nanny, so it supersedes the hurry/heal gating while the lights are
+@ out, and auto-reverts when power is restored.
+Vault42_MedicalBay_EventScript_NannyPowerOff::
+	msgbox Vault42_MedicalBay_Text_NannyPowerOff, MSGBOX_DEFAULT
+	goto Vault42_MedicalBay_EventScript_NannyPostExam
 
 Vault42_MedicalBay_EventScript_NannyPostExam::
 	msgbox Vault42_MedicalBay_Text_NannyOfferHeal, MSGBOX_DEFAULT
@@ -178,6 +186,12 @@ Vault42_MedicalBay_Text_NannyRestored:
 Vault42_MedicalBay_Text_NannyDoorOpen:
 	.string "Very well.\n"
 	.string "My door remains open.$"
+
+Vault42_MedicalBay_Text_NannyPowerOff:
+	.string "Main power is offline.\p"
+	.string "Medical systems remain\n"
+	.string "operational on reserve\l"
+	.string "cells.$"
 
 Vault42_MedicalBay_Text_ToddFinally:
 	.string "Finally.\p"

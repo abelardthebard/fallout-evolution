@@ -51,6 +51,8 @@ Vault42_OverseersLobby_EventScript_RegineRebuff3::
 @ Desk reception (talked across the counter).
 @ ---------------------------------------------------------------------------
 Vault42_OverseersLobby_EventScript_RegineDesk::
+	@ Power's out -> a brief reassurance that supersedes the normal reception flow.
+	goto_if_set FLAG_EMERGENCY_LIGHTING, Vault42_OverseersLobby_EventScript_ReginePowerOff
 	@ Door already unlocked (appointment confirmed, not gone in yet): wave through.
 	goto_if_eq VAR_OVERSEER_DOOR, OVERSEER_DOOR_OPEN, Vault42_OverseersLobby_EventScript_RegineGoOnIn
 	call Vault42_OverseersLobby_EventScript_RegineBufferGreeting
@@ -64,6 +66,12 @@ Vault42_OverseersLobby_EventScript_RegineDesk::
 @ Door already open -> brief wave-in.
 Vault42_OverseersLobby_EventScript_RegineGoOnIn::
 	msgbox Vault42_OverseersLobby_Text_RegineGoOnIn, MSGBOX_DEFAULT
+	release
+	end
+
+@ Power-out reaction (desk only; the side approach keeps the rebuff gag).
+Vault42_OverseersLobby_EventScript_ReginePowerOff::
+	msgbox Vault42_OverseersLobby_Text_ReginePowerOff, MSGBOX_DEFAULT
 	release
 	end
 
@@ -208,6 +216,12 @@ Vault42_OverseersLobby_Text_RegineMenuNevermind:
 Vault42_OverseersLobby_Text_RegineGoOnIn:
 	.string "Go on in.\n"
 	.string "He's expecting you.$"
+
+Vault42_OverseersLobby_Text_ReginePowerOff:
+	.string "Don't worry. The Overseer\n"
+	.string "is aware of the power\l"
+	.string "situation.\p"
+	.string "It's being handled.$"
 
 Vault42_OverseersLobby_Text_RegineAppointmentQ:
 	.string "Of course.\n"
