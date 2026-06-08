@@ -17,7 +17,7 @@
     {
       "graphics_id": "OBJ_EVENT_GFX_VAULT_OVERSEER",
       "x": 5,
-      "y": 6,
+      "y": 7,
       "elevation": 3,
       "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
       "movement_range_x": 0,
