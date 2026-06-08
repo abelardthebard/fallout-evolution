@@ -238,6 +238,76 @@ const struct SpeciesInfo gSpeciesInfo[] =
         .eggMoveLearnset = sNoneEggMoveLearnset,
     },
 
+    [SPECIES_DOGMEAT] =
+    {
+        .baseHP        = 55,
+        .baseAttack    = 55,
+        .baseDefense   = 50,
+        .baseSpeed     = 55,
+        .baseSpAttack  = 45,
+        .baseSpDefense = 65,
+        .types = MON_TYPES(TYPE_NORMAL),
+        .catchRate = 45,
+        .expYield = 65,
+        .evYield_Speed = 1,
+        .genderRatio = PERCENT_FEMALE(0),
+        .eggCycles = 20,
+        .friendship = STANDARD_FRIENDSHIP,
+        .growthRate = GROWTH_MEDIUM_FAST,
+        .eggGroups = MON_EGG_GROUPS(EGG_GROUP_FIELD),
+        .abilities = { ABILITY_RUN_AWAY, ABILITY_ADAPTABILITY },
+        .bodyColor = BODY_COLOR_BROWN,
+        .speciesName = _("Dogmeat"),
+        .cryId = CRY_EEVEE,
+        .natDexNum = NATIONAL_DEX_NONE,
+        .categoryName = _("Loyal"),
+        .height = 10,
+        .weight = 250,
+        .description = COMPOUND_STRING(
+            "A fiercely loyal canine companion\n"
+            "that chose you as its own. Its past\n"
+            "is a mystery, but its devotion is\n"
+            "absolute."),
+        .pokemonScale = 476,
+        .pokemonOffset = 18,
+        .trainerScale = 256,
+        .trainerOffset = 0,
+        // Battle graphics: Eevee stand-ins until Dogmeat art exists.
+        .frontPic = gMonFrontPic_Eevee,
+        .frontPicSize = MON_COORDS_SIZE(40, 48),
+        .frontPicYOffset = P_GBA_STYLE_SPECIES_GFX ? 9 : 11,
+        .frontAnimFrames = ANIM_FRAMES(
+            ANIMCMD_FRAME(1, 33),
+            ANIMCMD_FRAME(0, 5),
+        ),
+        .frontAnimId = ANIM_V_STRETCH,
+        .backPic = gMonBackPic_Eevee,
+        .backPicSize = P_GBA_STYLE_SPECIES_GFX ? MON_COORDS_SIZE(48, 48) : MON_COORDS_SIZE(56, 48),
+        .backPicYOffset = 10,
+        .backAnimId = BACK_ANIM_CONCAVE_ARC_SMALL,
+        .palette = gMonPalette_Eevee,
+        .shinyPalette = gMonShinyPalette_Eevee,
+        .iconSprite = gMonIcon_Eevee,
+        .iconPalIndex = 2,
+        FOOTPRINT(Eevee)
+    #if OW_POKEMON_OBJECT_EVENTS
+        // Overworld: Dogmeat's own sprite.
+        OVERWORLD(
+            sPicTable_Dogmeat,
+            SIZE_32x32,
+            SHADOW_SIZE_M,
+            TRACKS_FOOT,
+            sAnimTable_Following,
+            gOverworldPalette_Dogmeat,
+            gShinyOverworldPalette_Dogmeat
+        )
+    #endif
+        // Learnsets: Eevee stand-ins.
+        .levelUpLearnset = sEeveeLevelUpLearnset,
+        .teachableLearnset = sEeveeTeachableLearnset,
+        .eggMoveLearnset = sEeveeEggMoveLearnset,
+    },
+
     /* You may add any custom species below this point based on the following structure: */
 
     /*

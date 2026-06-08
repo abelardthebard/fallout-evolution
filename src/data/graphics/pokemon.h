@@ -27515,6 +27515,16 @@ const u16 gShinyOverworldPalette_Nanny[] = INCBIN_U16("graphics/pokemon/nanny/ov
 #endif //OW_PKMN_OBJECTS_SHARE_PALETTES
 #endif //OW_POKEMON_OBJECT_EVENTS
 
+// Dogmeat (Fallout Evolution custom species) -- own overworld sprite; battle
+// graphics borrow Eevee as stand-ins (see species_info.h).
+#if OW_POKEMON_OBJECT_EVENTS
+const u32 gObjectEventPic_Dogmeat[] = INCBIN_COMP("graphics/pokemon/dogmeat/overworld.4bpp");
+#if OW_PKMN_OBJECTS_SHARE_PALETTES == FALSE
+const u16 gOverworldPalette_Dogmeat[] = INCBIN_U16("graphics/pokemon/dogmeat/overworld_normal.gbapal");
+const u16 gShinyOverworldPalette_Dogmeat[] = INCBIN_U16("graphics/pokemon/dogmeat/overworld_shiny.gbapal");
+#endif //OW_PKMN_OBJECTS_SHARE_PALETTES
+#endif //OW_POKEMON_OBJECT_EVENTS
+
     const u32 gMonFrontPic_Egg[] = INCBIN_U32("graphics/pokemon/egg/anim_front.4bpp.smol");
     const u16 gMonPalette_Egg[] = INCBIN_U16("graphics/pokemon/egg/normal.gbapal");
     const u8 gMonIcon_Egg[] = INCBIN_U8("graphics/pokemon/egg/icon.4bpp");

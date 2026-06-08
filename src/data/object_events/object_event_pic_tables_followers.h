@@ -6734,4 +6734,9 @@ static const struct SpriteFrameImage sPicTable_Nanny[] = {
     overworld_ascending_frames(gObjectEventPic_Nanny, 4, 4),
 };
 
+// Dogmeat (Fallout Evolution custom species)
+static const struct SpriteFrameImage sPicTable_Dogmeat[] = {
+    overworld_ascending_frames(gObjectEventPic_Dogmeat, 4, 4),
+};
+
 #endif //OW_POKEMON_OBJECT_EVENTS

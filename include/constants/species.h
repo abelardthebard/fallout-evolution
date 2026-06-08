@@ -1690,8 +1690,9 @@
 
 // Fallout Evolution custom species
 #define SPECIES_NANNY                                   1573
+#define SPECIES_DOGMEAT                                 1574
 
-#define SPECIES_EGG                                     (SPECIES_NANNY + 1)
+#define SPECIES_EGG                                     (SPECIES_DOGMEAT + 1)
 
 #define NUM_SPECIES SPECIES_EGG
 
