@@ -428,8 +428,9 @@
 #define OBJ_EVENT_GFX_VAULT_MRSBAUER             390
 #define OBJ_EVENT_GFX_VAULT_CHEF                 391
 #define OBJ_EVENT_GFX_VAULT_SECRETARY            392
+#define OBJ_EVENT_GFX_VAULT_OVERSEER             393
 
-#define NUM_OBJ_EVENT_GFX                        393
+#define NUM_OBJ_EVENT_GFX                        394
 
 
 // These are dynamic object gfx ids.
@@ -548,6 +549,8 @@
 #define OBJ_EVENT_PAL_TAG_VAULT_CHEF_REFLECTION   0x1145
 #define OBJ_EVENT_PAL_TAG_VAULT_SECRETARY         0x1146
 #define OBJ_EVENT_PAL_TAG_VAULT_SECRETARY_REFLECTION 0x1147
+#define OBJ_EVENT_PAL_TAG_VAULT_OVERSEER          0x1148
+#define OBJ_EVENT_PAL_TAG_VAULT_OVERSEER_REFLECTION 0x1149
 #define OBJ_EVENT_PAL_TAG_MOVING_BOX              0x1112
 #define OBJ_EVENT_PAL_TAG_CABLE_CAR               0x1113
 #define OBJ_EVENT_PAL_TAG_SSTIDAL                 0x1114

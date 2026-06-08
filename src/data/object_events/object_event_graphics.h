@@ -657,4 +657,9 @@ const u32 gObjectEventPic_VaultSecretary[] = INCBIN_U32("graphics/object_events/
 const u16 gObjectEventPal_VaultSecretary[] = INCBIN_U16("graphics/object_events/palettes/vault_ginger1.gbapal");
 const u16 gObjectEventPal_VaultSecretaryReflection[] = INCBIN_U16("graphics/object_events/palettes/vault_ginger1.gbapal");
 
+// Vault Overseer (Clay)
+const u32 gObjectEventPic_VaultOverseer[] = INCBIN_U32("graphics/object_events/pics/people/vault_overseer.4bpp");
+const u16 gObjectEventPal_VaultOverseer[] = INCBIN_U16("graphics/object_events/palettes/vault_old2.gbapal");
+const u16 gObjectEventPal_VaultOverseerReflection[] = INCBIN_U16("graphics/object_events/palettes/vault_old2.gbapal");
+
 const u32 gObjectEventPic_RunningShoes[] = INCBIN_U32("graphics/object_events/pics/misc/running_shoes.4bpp");

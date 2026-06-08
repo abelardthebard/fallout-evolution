@@ -57,7 +57,7 @@
 #define FLAG_HIDE_CLASSROOM_MRSBAUER    0x23
 #define FLAG_HIDE_CLASSROOM_TODD    0x24
 #define FLAG_HIDE_HALLWAY_TODD_LATER    0x25
-#define FLAG_UNUSED_0x026    0x26 // Unused Flag
+#define FLAG_HIDE_OFFICE_TODD    0x26
 #define FLAG_UNUSED_0x027    0x27 // Unused Flag
 #define FLAG_UNUSED_0x028    0x28 // Unused Flag
 #define FLAG_UNUSED_0x029    0x29 // Unused Flag

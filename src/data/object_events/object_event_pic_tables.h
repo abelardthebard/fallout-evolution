@@ -3046,6 +3046,10 @@ static const struct SpriteFrameImage sPicTable_VaultSecretary[] = {
     overworld_ascending_frames(gObjectEventPic_VaultSecretary, 2, 4),
 };
 
+static const struct SpriteFrameImage sPicTable_VaultOverseer[] = {
+    overworld_ascending_frames(gObjectEventPic_VaultOverseer, 2, 4),
+};
+
 static const struct SpriteFrameImage sPicTable_RunningShoes[] = {
     overworld_frame(gObjectEventPic_RunningShoes, 2, 2, 0),
 };
