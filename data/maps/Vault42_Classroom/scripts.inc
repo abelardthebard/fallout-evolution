@@ -156,7 +156,7 @@ Vault42_Classroom_EventScript_PostScoresCheck::
 	msgbox Vault42_Classroom_Text_BauerPostScoresIntro, MSGBOX_DEFAULT
 	dynmultipush Vault42_Classroom_Text_ScoresMistake, 0
 	dynmultipush Vault42_Classroom_Text_ScoresWhatNow, 1
-	dynmultistack 20, 8, TRUE, 2, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	dynmultistack 0, 0, TRUE, 2, FALSE, 0, DYN_MULTICHOICE_CB_NONE
 	switch VAR_RESULT
 	case 0, Vault42_Classroom_EventScript_PostScores_Mistake
 	case 1, Vault42_Classroom_EventScript_PostScores_WhatNow

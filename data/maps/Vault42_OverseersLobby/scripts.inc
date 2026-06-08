@@ -59,7 +59,7 @@ Vault42_OverseersLobby_EventScript_RegineDesk::
 	msgbox Vault42_OverseersLobby_Text_RegineWelcome, MSGBOX_DEFAULT
 	dynmultipush Vault42_OverseersLobby_Text_RegineMenuVisit, 0
 	dynmultipush Vault42_OverseersLobby_Text_RegineMenuNevermind, 1
-	dynmultistack 20, 8, FALSE, 2, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	dynmultistack 0, 0, FALSE, 2, FALSE, 0, DYN_MULTICHOICE_CB_NONE
 	goto_if_eq VAR_RESULT, 0, Vault42_OverseersLobby_EventScript_RegineVisitOverseer
 	goto Vault42_OverseersLobby_EventScript_RegineGoodbye
 
